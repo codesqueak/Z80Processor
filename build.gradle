@@ -1,0 +1,98 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        jcenter()
+    }
+}
+
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'jacoco'
+apply plugin: 'findbugs'
+
+sourceCompatibility = javaVersion
+targetCompatibility = javaVersion
+
+
+task setVersion {
+	if(System.env.BUILD_NUMBER){
+  	version =  projectVersionMajor+'.'+projectVersionMinor+'.'+System.env.BUILD_NUMBER
+  }
+  else
+  {
+  	version =  projectVersionMajor+'.'+projectVersionMinor+'.'+projectVersionBuild
+  }
+}
+
+
+task toJar (dependsOn: setVersion, type: Jar) {
+		println version
+		baseName = projectName
+        manifest
+        {
+        attributes 'Implementation-Title': projectName,
+                   'Implementation-Version': version
+   	 }
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+jacoco {
+    toolVersion = "0.7+"
+    reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
+test
+{
+ 	maxParallelForks = 1
+	filter
+	{
+	     includeTestsMatching "net.codingrodent.microprocessor.*"
+	}
+    jacoco {
+        append = false
+        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+        classDumpFile = file("$buildDir/jacoco/classpathdumps")
+    }
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination "${buildDir}/jacocoHtml"
+    }
+}
+    
+findbugs {
+    toolVersion = "3.+"
+    sourceSets = [sourceSets.main]
+    effort = "max"
+    reportLevel = "medium"
+}
+
+    
+check.dependsOn jacocoTestReport
+test.dependsOn javadoc
+toJar.dependsOn setVersion
+
+
+dependencies {
+    testCompile("junit:junit:4.+")
+    testCompile("org.mockito:mockito-all:2.+")
+    testCompile("com.jayway.jsonpath:json-path-parent:1.+")
+    testCompile("org.hamcrest:hamcrest-all:1.+")
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.0'
+}
+
+task listJars << {
+    configurations.compile.each { File file -> println file.name }
+}
