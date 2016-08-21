@@ -28,14 +28,6 @@ public class ProcessorException extends Exception
 	public final static String	COMPUTER_PROCESSOR_HALT			= "The processor has halted";
 
 	/**
-	 * Empty exception for the Z80 emulator
-	 */
-	public ProcessorException()
-	{
-		super();
-	}
-
-	/**
 	 * Known exception for the Z80 emulator
 	 * 
 	 * @param msg

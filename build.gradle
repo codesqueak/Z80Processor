@@ -73,9 +73,17 @@ findbugs {
     toolVersion = "3.+"
     sourceSets = [sourceSets.main]
     effort = "max"
-    reportLevel = "medium"
+    reportLevel = "high"
+    findbugsTest.enabled=false
+    ignoreFailures = true
 }
 
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
     
 check.dependsOn jacocoTestReport
 test.dependsOn javadoc

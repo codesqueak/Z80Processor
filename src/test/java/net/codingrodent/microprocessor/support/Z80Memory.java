@@ -14,6 +14,7 @@
  */package net.codingrodent.microprocessor.support;
 
 import java.io.*;
+import java.nio.charset.Charset;
 
 import net.codingrodent.microprocessor.IMemory;
 
@@ -56,10 +57,9 @@ public class Z80Memory implements IMemory
 	 */
 	public void readHexDumpFile(String fileName) throws FileNotFoundException, IOException
 	{
-		Utilities Utilities = new Utilities();
 		String line;
 		int address, base;
-		LineNumberReader source = new LineNumberReader(new FileReader(fileName));
+		LineNumberReader source = new LineNumberReader(new InputStreamReader(new FileInputStream(fileName), Charset.forName("UTF-8")));
 		//
 		boolean firstTime = true;
 		while (true)

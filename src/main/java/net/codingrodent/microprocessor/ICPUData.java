@@ -15,7 +15,7 @@
 package net.codingrodent.microprocessor;
 
 /**
- * Interface to describe the processor verfsion
+ * Interface to describe the processor version
  * 
  */
 public interface ICPUData
