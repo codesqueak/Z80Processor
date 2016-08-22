@@ -10,10 +10,16 @@ def build() {
     sh './gradlew clean build -x test'
 }
 
+def test() {
+    stage 'test'
+    sh './gradlew test'
+}
+
 
 stage 'execute Z80 build'
 
 node {
   checkoutCode()
   build()
+  test()
 }
