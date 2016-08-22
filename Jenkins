@@ -1,0 +1,19 @@
+#!groovy
+
+def checkoutCode() {
+    stage 'checkout'
+    checkout scm
+}
+
+def build() {
+    stage 'build'
+    sh './gradlew clean build -x test'
+}
+
+
+stage 'execute build'
+
+node {
+  checkoutCode()
+  build()
+}
