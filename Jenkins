@@ -2,7 +2,7 @@
 
 def checkoutCode() {
     stage 'checkout'
-    checkout scm
+    checkout scm "https://github.com/codesqueak/Z80Processor.git"
 }
 
 def build() {
