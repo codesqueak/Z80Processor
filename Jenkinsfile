@@ -18,7 +18,7 @@ def test() {
 
 def junitreport() {
     stage 'JUnit report'
-    step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
+    step([$class: 'JUnitResultArchiver', testResults: '**/test-results/test/TEST-*.xml'])
 }
 
 
