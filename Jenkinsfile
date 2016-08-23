@@ -16,10 +16,17 @@ def test() {
 }
 
 
+def junitreport() {
+    stage 'JUnit report'
+    step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
+}
+
+
 stage 'execute Z80 build'
 
 node {
   checkoutCode()
   build()
   test()
+  junitreport()
 }
