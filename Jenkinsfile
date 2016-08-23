@@ -15,10 +15,19 @@ def test() {
     sh './gradlew test'
 }
 
-
 def junitreport() {
     stage 'JUnit report'
-    step([$class: 'JUnitResultArchiver', testResults: '**/test-results/test/TEST-*.xml'])
+    step([$class: 'JUnitResultArchiver', testResults: 'build/test-results/test/TEST-*.xml'])
+}
+
+def findbugsreport() {
+    stage 'Findbugs report'
+    step([$class: 'FindBugsPublisher', pattern: 'build/reports/findbugs/findbugsXml.xml'])
+}
+
+def jacocoreport() {
+    stage 'Jacoco report'
+     step([$class: 'JacocoPublisher', execPattern: 'build/jacoco/jacocoTest.exec', pattern: 'build/jacoco/classpathdumps/net/codingrodent/**/*.class'])
 }
 
 
@@ -29,4 +38,6 @@ node {
   build()
   test()
   junitreport()
+  findbugsreport()
+  jacocoreport()
 }
