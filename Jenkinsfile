@@ -22,12 +22,12 @@ def junitreport() {
 
 def findbugsreport() {
     stage 'Findbugs report'
-    step([$class: 'FindBugsPublisher', pattern: 'build/reports/findbugs/findbugsXml.xml'])
+    step([$class: 'FindBugsPublisher', pattern: 'build/reports/findbugs/main.xml'])
 }
 
 def jacocoreport() {
     stage 'Jacoco report'
-     step([$class: 'JacocoPublisher', execPattern: 'build/jacoco/jacocoTest.exec', pattern: 'build/jacoco/classpathdumps/net/codingrodent/**/*.class'])
+    step([$class: 'JacocoPublisher', execPattern: 'build/jacoco/jacocoTest.exec', pattern: 'build/jacoco/classpathdumps/net/codingrodent/**/*.class'])
 }
 
 
