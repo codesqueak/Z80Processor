@@ -16,42 +16,38 @@ package net.codingrodent.microprocessor;
 
 /**
  * Interface to the processor
- * 
  */
-public interface ICPU
-{
+public interface ICPU {
 
-	/**
-	 * Reset the processor to a known state. Equivalent to a hardware reset.
-	 */
-	public void reset();
+    /**
+     * Reset the processor to a known state. Equivalent to a hardware reset.
+     */
+    public void reset();
 
-	/**
-	 * Returns the state of the halt flag
-	 * 
-	 * @return True if the processor has executed a HALT instruction
-	 */
-	public boolean getHalt();
+    /**
+     * Returns the state of the halt flag
+     *
+     * @return True if the processor has executed a HALT instruction
+     */
+    public boolean getHalt();
 
-	/**
-	 * Execute a single instruction at the present program counter (PC) then return. The internal state of the processor
-	 * is updated along with the T state count.
-	 * 
-	 * @throws ProcessorException
-	 *             Thrown if an unexpected state arises
-	 */
-	public void executeOneInstruction() throws ProcessorException;
+    /**
+     * Execute a single instruction at the present program counter (PC) then return. The internal state of the processor
+     * is updated along with the T state count.
+     *
+     * @throws ProcessorException Thrown if an unexpected state arises
+     */
+    public void executeOneInstruction() throws ProcessorException;
 
-	/**
-	 * Return the number of T states since last reset
-	 * 
-	 * @return Processor T states
-	 */
-	public long getTStates();
+    /**
+     * Return the number of T states since last reset
+     *
+     * @return Processor T states
+     */
+    public long getTStates();
 
-	/**
-	 * Reset the T state counter to zero
-	 * 
-	 */
-	public void resetTStates();
+    /**
+     * Reset the T state counter to zero
+     */
+    public void resetTStates();
 }

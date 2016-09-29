@@ -1,11 +1,11 @@
 /**
  * <p>
  * The Z80 core
- *</p>
- *<p>
+ * </p>
+ * <p>
  * A complete Z80 microprocessor core including:
  * </p>
- * 
+ * <p>
  * <ul>
  * <li>All standard instructions</li>
  * <li>All flags, including unused bits</li>
@@ -16,7 +16,6 @@
  * <li>IFF1 and IFF2 handling</li>
  * <li>NMI handling
  * </ul>
- * 
  */
 package net.codingrodent.microprocessor.Z80;
 

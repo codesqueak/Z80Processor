@@ -16,36 +16,34 @@ package net.codingrodent.microprocessor;
 
 /**
  * Interface to describe the processor version
- * 
  */
-public interface ICPUData
-{
+public interface ICPUData {
 
-	/**
-	 * Get the processor major CPU version number
-	 * 
-	 * @return major revision number
-	 */
-	public String getMajorVersion();
+    /**
+     * Get the processor major CPU version number
+     *
+     * @return major revision number
+     */
+    public String getMajorVersion();
 
-	/**
-	 * Get the processor major CPU minor number
-	 * 
-	 * @return minor revision number
-	 */
-	public String getMinorVersion();
+    /**
+     * Get the processor major CPU minor number
+     *
+     * @return minor revision number
+     */
+    public String getMinorVersion();
 
-	/**
-	 * Get the processor major CPU patch number
-	 * 
-	 * @return patch number
-	 */
-	public String getPatchVersion();
+    /**
+     * Get the processor major CPU patch number
+     *
+     * @return patch number
+     */
+    public String getPatchVersion();
 
-	/**
-	 * Get the CPU name string
-	 * 
-	 * @return name string
-	 */
-	public String getName();
+    /**
+     * Get the CPU name string
+     *
+     * @return name string
+     */
+    public String getName();
 }

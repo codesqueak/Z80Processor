@@ -16,26 +16,23 @@ package net.codingrodent.microprocessor.support;
 
 import net.codingrodent.microprocessor.IBaseDevice;
 
-public class Z80IO implements IBaseDevice
-{
-	private int	value;
+public class Z80IO implements IBaseDevice {
+    private int value;
 
-	/**
-	 * Just return the latest value output
-	 */
-	@Override
-	public int IORead(int address)
-	{
-		return value;
-	}
+    /**
+     * Just return the latest value output
+     */
+    @Override
+    public int IORead(int address) {
+        return value;
+    }
 
-	/**
-	 * Print a character
-	 */
-	@Override
-	public void IOWrite(int address, int data)
-	{
-		System.out.print((char) data);
-		value = data;
-	}
+    /**
+     * Print a character
+     */
+    @Override
+    public void IOWrite(int address, int data) {
+        System.out.print((char) data);
+        value = data;
+    }
 }

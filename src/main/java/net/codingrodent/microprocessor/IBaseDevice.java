@@ -16,35 +16,28 @@ package net.codingrodent.microprocessor;
 
 /**
  * Interface to describe the I/O processor bus
- * 
  */
-public interface IBaseDevice
-{
+public interface IBaseDevice {
 
-	int a = 0;
+    int a = 0;
 
-	/**
-	 * Read data from an I/O port
-	 * 
-	 * @param address
-	 *            The port to be read from
-	 * @return The 8 bit value at the request port address
-	 */
-	default int IORead(int address)
-	{
-		return 0;
-	}
+    /**
+     * Read data from an I/O port
+     *
+     * @param address The port to be read from
+     * @return The 8 bit value at the request port address
+     */
+    default int IORead(int address) {
+        return 0;
+    }
 
-	/**
-	 * Write data to an I/O port
-	 * 
-	 * @param address
-	 *            The port to be written to
-	 * @param data
-	 *            The 8 bit value to be written
-	 */
-	default void IOWrite(int address, int data)
-	{
-		// do nothhing
-	}
+    /**
+     * Write data to an I/O port
+     *
+     * @param address The port to be written to
+     * @param data    The 8 bit value to be written
+     */
+    default void IOWrite(int address, int data) {
+        // do nothhing
+    }
 }

@@ -16,58 +16,46 @@ package net.codingrodent.microprocessor;
 
 /**
  * Interface to describe the memory processor bus
- * 
  */
-public interface IMemory
-{
+public interface IMemory {
 
-	/**
-	 * Read a byte from memory
-	 * 
-	 * @param address
-	 *            The address to read from
-	 * @return The byte read
-	 */
-	default int readByte(int address)
-	{
-		return 0x76; // Halt
-	}
+    /**
+     * Read a byte from memory
+     *
+     * @param address The address to read from
+     * @return The byte read
+     */
+    default int readByte(int address) {
+        return 0x76; // Halt
+    }
 
-	/**
-	 * Read a 16 bit word from memory, LSB, MSB order
-	 * 
-	 * @param address
-	 *            The address to read from
-	 * @return The word read
-	 */
-	default int readWord(int address)
-	{
-		return 0x7676; // Halt
-	}
+    /**
+     * Read a 16 bit word from memory, LSB, MSB order
+     *
+     * @param address The address to read from
+     * @return The word read
+     */
+    default int readWord(int address) {
+        return 0x7676; // Halt
+    }
 
-	/**
-	 * Write a byte into memory
-	 * 
-	 * @param address
-	 *            The address to be written to
-	 * @param data
-	 *            The byte to be written
-	 */
-	default void writeByte(int address, int data)
-	{
-		// do nothhing
-	}
+    /**
+     * Write a byte into memory
+     *
+     * @param address The address to be written to
+     * @param data    The byte to be written
+     */
+    default void writeByte(int address, int data) {
+        // do nothhing
+    }
 
-	/**
-	 * Write a 16 bit word into memory, LSB, MSB order.
-	 * 
-	 * @param address
-	 *            The address to be written to
-	 * @param data
-	 *            The word to be written
-	 */
-	default void writeWord(int address, int data)
-	{
-		// do nothing
-	}
+    /**
+     * Write a 16 bit word into memory, LSB, MSB order.
+     *
+     * @param address The address to be written to
+     * @param data    The word to be written
+     */
+    default void writeWord(int address, int data) {
+        // do nothing
+    }
 }

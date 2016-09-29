@@ -16,25 +16,21 @@ package net.codingrodent.microprocessor;
 
 /**
  * Exception thrown under various CPU states that may need exception processing
- * 
  */
-public class ProcessorException extends Exception
-{
+public class ProcessorException extends Exception {
 
-	private static final long	serialVersionUID				= 3257847701181118519L;
-	public final static String	COMPUTER_INVALID_OPCODE			= "Invalid opcode detected";
-	public final static String	COMPUTER_UNIMPLEMENTED_OPCODE	= "Unimplemented opcode detected";
-	public final static String	COMPUTER_INVALID_REGISTER		= "Invalid register value detected";
-	public final static String	COMPUTER_PROCESSOR_HALT			= "The processor has halted";
+    public final static String COMPUTER_INVALID_OPCODE = "Invalid opcode detected";
+    public final static String COMPUTER_UNIMPLEMENTED_OPCODE = "Unimplemented opcode detected";
+    public final static String COMPUTER_INVALID_REGISTER = "Invalid register value detected";
+    public final static String COMPUTER_PROCESSOR_HALT = "The processor has halted";
+    private static final long serialVersionUID = 3257847701181118519L;
 
-	/**
-	 * Known exception for the Z80 emulator
-	 * 
-	 * @param msg
-	 *            Emulator exception message
-	 */
-	public ProcessorException(String msg)
-	{
-		super(msg);
-	}
+    /**
+     * Known exception for the Z80 emulator
+     *
+     * @param msg Emulator exception message
+     */
+    public ProcessorException(String msg) {
+        super(msg);
+    }
 }
