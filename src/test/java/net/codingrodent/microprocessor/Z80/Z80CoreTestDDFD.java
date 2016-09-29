@@ -49,12 +49,12 @@ public class Z80CoreTestDDFD {
         z80Memory.writeByte(addr++, 0x10); //
         z80Memory.writeByte(addr++, 0xDD); // JP (IX)
         z80Memory.writeByte(addr++, 0xE9); //
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         //
         addr = 0x1000;
         z80Memory.writeByte(addr++, 0x3E); // LD A
         z80Memory.writeByte(addr++, 0x34); //
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
         assertEquals(0x34, z80.getRegisterValue(RegisterNames.A));
@@ -67,7 +67,7 @@ public class Z80CoreTestDDFD {
         z80Memory.writeByte(addr++, 0x12); //
         z80Memory.writeByte(addr++, 0xDD); // LD SP
         z80Memory.writeByte(addr++, 0xF9); //
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
         assertEquals(0x1234, z80.getRegisterValue(RegisterNames.SP));
@@ -87,7 +87,7 @@ public class Z80CoreTestDDFD {
         z80Memory.writeByte(addr++, 0xE5); // PUSH HL
         z80Memory.writeByte(addr++, 0xDD); // EX (SP) IX
         z80Memory.writeByte(addr++, 0xE3);
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         //
         z80.reset();
         run(0xC000);
@@ -121,7 +121,7 @@ public class Z80CoreTestDDFD {
             z80Memory.writeByte(addr++, opcode); // Make sure we have +ve and =ve offsets
             z80Memory.writeByte(addr++, opcode); //
         }
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
     }

@@ -58,7 +58,7 @@ public class Z80CoreTestUnimplemented {
             z80.setProgramCounter(loc);
             z80Memory.writeByte(loc++, 0xED); // ED block
             z80Memory.writeByte(loc++, opcode); // Which ever op-code
-            z80Memory.writeByte(loc++, 0x76); // HALT
+            z80Memory.writeByte(loc, 0x76); // HALT
             boolean fault = false;
             try {
 
@@ -97,7 +97,7 @@ public class Z80CoreTestUnimplemented {
             z80.setProgramCounter(loc);
             z80Memory.writeByte(loc++, 0xDD); // DD block
             z80Memory.writeByte(loc++, opcode); // Which ever op-code
-            z80Memory.writeByte(loc++, 0x76); // HALT
+            z80Memory.writeByte(loc, 0x76); // HALT
             boolean fault = false;
             try {
                 run(0xC000);
@@ -135,7 +135,7 @@ public class Z80CoreTestUnimplemented {
             z80.setProgramCounter(loc);
             z80Memory.writeByte(loc++, 0xFD); // FD block
             z80Memory.writeByte(loc++, opcode); // Which ever op-code
-            z80Memory.writeByte(loc++, 0x76); // HALT
+            z80Memory.writeByte(loc, 0x76); // HALT
             boolean fault = false;
             try {
                 run(0xC000);

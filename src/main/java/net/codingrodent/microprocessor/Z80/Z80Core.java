@@ -16,7 +16,6 @@
 package net.codingrodent.microprocessor.Z80;
 
 import net.codingrodent.microprocessor.*;
-import net.codingrodent.microprocessor.Z80.CPUConstants.*;
 
 import static net.codingrodent.microprocessor.Z80.CPUConstants.*;
 
@@ -28,8 +27,9 @@ public class Z80Core implements ICPUData {
     //
     // maximum address size
     private final static int MAX_ADDRESS = 65535;
-    private IMemory ram;
-    private IBaseDevice io;
+    private final IMemory ram;
+    private final IBaseDevice io;
+    //
     private int instruction;
     private boolean halt;
     private long tStates;
@@ -2356,7 +2356,7 @@ public class Z80Core implements ICPUData {
     }
 
 	/*
-	 * *****************************************************************************
+     * *****************************************************************************
 	 *
 	 * Extended Instruction area
 	 *
@@ -3791,7 +3791,7 @@ public class Z80Core implements ICPUData {
 	 *
 	 * *****************************************************************************
 	 */
-    private void extendedIndexCB() throws ProcessorException {
+    private void extendedIndexCB() {
         instruction = ram.readByte(reg_PC + 1); // fudge for DD CB dd ii
         tStates = tStates + OPCODE_INDEXED_CB_STATES[instruction];
 
@@ -5747,12 +5747,11 @@ public class Z80Core implements ICPUData {
     /**
      * Extra weird RLC (IX+nn) & LD R,(IX+nn)
      */
-    private int shiftRLCIndexed() {
+    private void shiftRLCIndexed() {
         int address = getIndexAddress();
         int regValue = shiftGenericRLC(ram.readByte(address));
         ram.writeByte(address, regValue);
         reg_R++;
-        return regValue;
     }
 
     private int shiftGenericRL(int temp) {
@@ -6797,7 +6796,7 @@ public class Z80Core implements ICPUData {
      * @return major revision number
      */
     public String getMajorVersion() {
-        return "4";
+        return "1";
     }
 
     /**
@@ -6806,7 +6805,7 @@ public class Z80Core implements ICPUData {
      * @return minor revision number
      */
     public String getMinorVersion() {
-        return "0";
+        return "2";
     }
 
     /**
@@ -6815,7 +6814,7 @@ public class Z80Core implements ICPUData {
      * @return patch number
      */
     public String getPatchVersion() {
-        return "1";
+        return "0";
     }
 
     /**

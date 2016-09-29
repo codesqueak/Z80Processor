@@ -47,7 +47,7 @@ public class Z80CoreTestCB {
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // RLC B
         z80Memory.writeByte(addr++, 0x00); //
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
@@ -58,7 +58,7 @@ public class Z80CoreTestCB {
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // RRC B
         z80Memory.writeByte(addr++, 0x08); //
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
@@ -69,7 +69,7 @@ public class Z80CoreTestCB {
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // RL B
         z80Memory.writeByte(addr++, 0x10); //
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
@@ -80,7 +80,7 @@ public class Z80CoreTestCB {
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // RR B
         z80Memory.writeByte(addr++, 0x18); //
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
@@ -91,7 +91,7 @@ public class Z80CoreTestCB {
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // SLA B
         z80Memory.writeByte(addr++, 0x20); //
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
@@ -102,7 +102,7 @@ public class Z80CoreTestCB {
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // SRA B
         z80Memory.writeByte(addr++, 0x28); //
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
@@ -113,7 +113,7 @@ public class Z80CoreTestCB {
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // SLL B
         z80Memory.writeByte(addr++, 0x30); //
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
         assertEquals(0x0100, z80.getRegisterValue(RegisterNames.BC));
@@ -124,7 +124,7 @@ public class Z80CoreTestCB {
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // SRL B
         z80Memory.writeByte(addr++, 0x38); //
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));

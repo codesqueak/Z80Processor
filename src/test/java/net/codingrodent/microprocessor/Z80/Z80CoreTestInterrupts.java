@@ -45,12 +45,12 @@ public class Z80CoreTestInterrupts {
         z80Memory.writeByte(addr++, 0xF3); // DI
         z80Memory.writeByte(addr++, 0x3C); // INC A
         z80Memory.writeByte(addr++, 0x3C); // INC A
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         //
         addr = 0x0066;
         z80Memory.writeByte(addr++, 0x3C); // INC A
         z80Memory.writeByte(addr++, 0x00); // NOP
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000, true);
         assertEquals(0x02, z80.getRegisterValue(RegisterNames.A));
@@ -59,12 +59,12 @@ public class Z80CoreTestInterrupts {
         z80Memory.writeByte(addr++, 0xFB); // EI
         z80Memory.writeByte(addr++, 0x3C); // INC A
         z80Memory.writeByte(addr++, 0x3C); // INC A
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         //
         addr = 0x0066;
         z80Memory.writeByte(addr++, 0x3C); // INC A
         z80Memory.writeByte(addr++, 0x00); // NOP
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000, true);
         assertEquals(0x02, z80.getRegisterValue(RegisterNames.A));
@@ -75,12 +75,12 @@ public class Z80CoreTestInterrupts {
         z80Memory.writeByte(addr++, 0x3C); // INC A
         z80Memory.writeByte(addr++, 0x76); // HALT
         z80Memory.writeByte(addr++, 0x76); // HALT
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         //
         addr = 0x0066;
         z80Memory.writeByte(addr++, 0x3C); // INC A
         z80Memory.writeByte(addr++, 0x00); // NOP
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000, true);
         assertEquals(0x01, z80.getRegisterValue(RegisterNames.A));
@@ -91,12 +91,12 @@ public class Z80CoreTestInterrupts {
         addr = 0xC000;
         z80Memory.writeByte(addr++, 0x76); // HALT
         z80Memory.writeByte(addr++, 0x76); // HALT
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         //
         addr = 0x0066;
         z80Memory.writeByte(addr++, 0x3C); // INC A
         z80Memory.writeByte(addr++, 0x00); // NOP
-        z80Memory.writeByte(addr++, 0x76); // HALT
+        z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000, true);
         //

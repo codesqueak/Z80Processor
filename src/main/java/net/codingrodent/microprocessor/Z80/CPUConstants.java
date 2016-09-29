@@ -15,7 +15,7 @@
 package net.codingrodent.microprocessor.Z80;
 
 public class CPUConstants {
-    // Precalculate parity table
+    // Pre-calculate parity table
     static final boolean[] PARITY_TABLE = new boolean[256];
     //
     // T States for all instructions (Where fixed) - If variable, handled locally
@@ -71,7 +71,6 @@ public class CPUConstants {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0                                                                    // F0
     };
 
-    ;
     final static byte[] OPCODE_ED_STATES = new byte[]{8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,            // 0
             8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,                                                                    // 10
             8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,                                                                    // 20
@@ -122,8 +121,8 @@ public class CPUConstants {
     final static int regCodeDE = 0x0001;
     final static int regCodeHL = 0x0002;
     final static int regCodeSP = 0x0003;
-    // or maks values
-    final static int setBit0 = 0x0001;                                                                // or maks value
+    // or mask values
+    final static int setBit0 = 0x0001;
     final static int setBit1 = 0x0002;
     final static int setBit2 = 0x0004;
     final static int setBit3 = 0x0008;
@@ -183,7 +182,7 @@ public class CPUConstants {
     /**
      * All supported processor registers which can be accessed externally to the core
      */
-    public static enum RegisterNames {
+    public enum RegisterNames {
         /**
          * 16 bit BC register pair
          */

@@ -36,6 +36,6 @@ public interface IBaseDevice {
      * @param data    The 8 bit value to be written
      */
     default void IOWrite(int address, int data) {
-        // do nothhing
+        // do nothing
     }
 }

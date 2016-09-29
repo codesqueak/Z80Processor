@@ -18,7 +18,7 @@ import net.codingrodent.microprocessor.ProcessorException;
 import net.codingrodent.microprocessor.Z80.Z80Core;
 import net.codingrodent.microprocessor.support.*;
 
-public class TimedExecution {
+class TimedExecution {
 
     private Z80Core z80;
 

@@ -20,7 +20,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 
 public class Z80Memory implements IMemory {
-    private int[] memory = new int[65536];
+    private final int[] memory = new int[65536];
 
     public Z80Memory() {
         // Set all to HALT - stops runaway code

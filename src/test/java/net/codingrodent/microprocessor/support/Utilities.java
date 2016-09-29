@@ -14,7 +14,7 @@
  */
 package net.codingrodent.microprocessor.support;
 
-public class Utilities {
+class Utilities {
     private final static String hexChar = "0123456789ABCDEF";
 
     /*
@@ -33,7 +33,7 @@ public class Utilities {
     /*
       turn a byte into two hex digits
      */
-    public static String getByte(final int value) {
+    private static String getByte(final int value) {
 
         char[] byteText = new char[2];
         try {
