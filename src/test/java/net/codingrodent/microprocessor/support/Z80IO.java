@@ -28,7 +28,7 @@ public class Z80IO implements IBaseDevice {
     }
 
     /**
-     * Print a character. Flus with any non printable
+     * Print a character. Flush with any non printable
      */
     @Override
     public void IOWrite(int address, int data) {
