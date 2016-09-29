@@ -27,8 +27,7 @@ task setVersion {
 }
 
 
-task toJar (dependsOn: setVersion, type: Jar) {
-		println version
+jar {
 		baseName = projectName
         manifest
         {
@@ -87,7 +86,7 @@ tasks.withType(FindBugs) {
     
 check.dependsOn jacocoTestReport
 test.dependsOn javadoc
-toJar.dependsOn setVersion
+jar.dependsOn setVersion
 
 
 dependencies {
@@ -98,7 +97,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
+    gradleVersion = '3.1'
 }
 
 task listJars << {
