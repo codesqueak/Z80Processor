@@ -5,7 +5,6 @@
  * <p>
  * A complete Z80 microprocessor core including:
  * </p>
- * <p>
  * <ul>
  * <li>All standard instructions</li>
  * <li>All flags, including unused bits</li>

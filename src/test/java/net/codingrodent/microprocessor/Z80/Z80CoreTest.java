@@ -66,7 +66,6 @@ public class Z80CoreTest {
         assertTrue(z80.getTStates() > 0);
         z80.resetTStates();
         assertEquals(0, z80.getTStates());
-
     }
 
     /**

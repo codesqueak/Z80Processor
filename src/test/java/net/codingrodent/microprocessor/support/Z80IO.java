@@ -28,11 +28,14 @@ public class Z80IO implements IBaseDevice {
     }
 
     /**
-     * Print a character
+     * Print a character. Flus with any non printable
      */
     @Override
     public void IOWrite(int address, int data) {
-        System.out.print((char) data);
+        if (data < 32)
+            System.out.println();
+        else
+            System.out.print((char) data);
         value = data;
     }
 }
