@@ -24,26 +24,26 @@ public interface ICPUData {
      *
      * @return major revision number
      */
-    public String getMajorVersion();
+    String getMajorVersion();
 
     /**
      * Get the processor major CPU minor number
      *
      * @return minor revision number
      */
-    public String getMinorVersion();
+    String getMinorVersion();
 
     /**
      * Get the processor major CPU patch number
      *
      * @return patch number
      */
-    public String getPatchVersion();
+    String getPatchVersion();
 
     /**
      * Get the CPU name string
      *
      * @return name string
      */
-    public String getName();
+    String getName();
 }

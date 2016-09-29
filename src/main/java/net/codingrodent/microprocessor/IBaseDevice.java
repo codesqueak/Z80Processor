@@ -19,8 +19,6 @@ package net.codingrodent.microprocessor;
  */
 public interface IBaseDevice {
 
-    int a = 0;
-
     /**
      * Read data from an I/O port
      *

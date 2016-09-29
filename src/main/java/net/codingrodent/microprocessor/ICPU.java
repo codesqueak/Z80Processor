@@ -22,14 +22,14 @@ public interface ICPU {
     /**
      * Reset the processor to a known state. Equivalent to a hardware reset.
      */
-    public void reset();
+    void reset();
 
     /**
      * Returns the state of the halt flag
      *
      * @return True if the processor has executed a HALT instruction
      */
-    public boolean getHalt();
+    boolean getHalt();
 
     /**
      * Execute a single instruction at the present program counter (PC) then return. The internal state of the processor
@@ -37,17 +37,17 @@ public interface ICPU {
      *
      * @throws ProcessorException Thrown if an unexpected state arises
      */
-    public void executeOneInstruction() throws ProcessorException;
+    void executeOneInstruction() throws ProcessorException;
 
     /**
      * Return the number of T states since last reset
      *
      * @return Processor T states
      */
-    public long getTStates();
+    long getTStates();
 
     /**
      * Reset the T state counter to zero
      */
-    public void resetTStates();
+    void resetTStates();
 }

@@ -43,11 +43,9 @@ public class Z80Memory implements IMemory {
      * Read a standard tape dump file into an array and return
      *
      * @param fileName The file to read
-     * @return The block of memory read
-     * @throws FileNotFoundException Thrown if the file specified does not exist
-     * @throws IOException           Thrown if a failure occurs while reading the file
+     * @throws IOException Thrown if a failure occurs while reading the file
      */
-    public void readHexDumpFile(String fileName) throws FileNotFoundException, IOException {
+    private void readHexDumpFile(String fileName) throws IOException {
         String line;
         int address, base;
         LineNumberReader source = new LineNumberReader(new InputStreamReader(new FileInputStream(fileName), Charset.forName("UTF-8")));

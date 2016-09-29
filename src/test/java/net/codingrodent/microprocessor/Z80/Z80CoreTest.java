@@ -85,7 +85,7 @@ public class Z80CoreTest {
         z80Memory.writeByte(loc++, 0x03); // inc BC
         z80Memory.writeByte(loc++, 0xED); // lddr
         z80Memory.writeByte(loc++, 0xB8); //
-        z80Memory.writeByte(loc++, 0x76); // halt
+        z80Memory.writeByte(loc, 0x76); // halt
 
         //
         // Ok, run the program

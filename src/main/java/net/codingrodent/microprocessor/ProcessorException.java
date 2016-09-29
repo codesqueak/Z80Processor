@@ -19,10 +19,7 @@ package net.codingrodent.microprocessor;
  */
 public class ProcessorException extends Exception {
 
-    public final static String COMPUTER_INVALID_OPCODE = "Invalid opcode detected";
     public final static String COMPUTER_UNIMPLEMENTED_OPCODE = "Unimplemented opcode detected";
-    public final static String COMPUTER_INVALID_REGISTER = "Invalid register value detected";
-    public final static String COMPUTER_PROCESSOR_HALT = "The processor has halted";
     private static final long serialVersionUID = 3257847701181118519L;
 
     /**

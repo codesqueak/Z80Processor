@@ -46,7 +46,7 @@ public interface IMemory {
      * @param data    The byte to be written
      */
     default void writeByte(int address, int data) {
-        // do nothhing
+        // do nothing
     }
 
     /**

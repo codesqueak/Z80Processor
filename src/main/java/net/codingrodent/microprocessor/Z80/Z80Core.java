@@ -1298,8 +1298,8 @@ public class Z80Core implements ICPUData {
 	 *
 	 * *****************************************************************************
 	 */
-	/*
-	 * *****************************************************************************
+    /*
+     * *****************************************************************************
 	 *
 	 * CB Bit twiddling and shifting instructions
 	 *
@@ -4918,22 +4918,22 @@ public class Z80Core implements ICPUData {
     /*
 	 * increment (and wrap) the program counter
 	 */
-    private final void incPC() {
+    private void incPC() {
         reg_PC++;
         reg_PC = reg_PC & MAX_ADDRESS;
     }
 
-    private final void decPC() {
+    private void decPC() {
         reg_PC--;
         reg_PC = reg_PC & MAX_ADDRESS;
     }
 
-    private final void inc2PC() {
+    private void inc2PC() {
         reg_PC = reg_PC + 2;
         reg_PC = reg_PC & MAX_ADDRESS;
     }
 
-    private final void dec2PC() {
+    private void dec2PC() {
         reg_PC = reg_PC - 2;
         reg_PC = reg_PC & MAX_ADDRESS;
     }
@@ -4941,12 +4941,12 @@ public class Z80Core implements ICPUData {
     /*
 	 * increment / decrement (and wrap) the stack pointer
 	 */
-    private final void inc2SP() {
+    private void inc2SP() {
         reg_SP = reg_SP + 2;
         reg_SP = reg_SP & MAX_ADDRESS;
     }
 
-    private final void dec2SP() {
+    private void dec2SP() {
         reg_SP = reg_SP - 2;
         reg_SP = reg_SP & MAX_ADDRESS;
     }
@@ -4956,7 +4956,7 @@ public class Z80Core implements ICPUData {
 	 */
 
     /* half carry flag control */
-    private final void setHalfCarryFlagAdd(int left, int right, int carry) {
+    private void setHalfCarryFlagAdd(int left, int right, int carry) {
         left = left & 0x000f;
         right = right & 0x000f;
         setH((right + left + carry) > 0x0f);
@@ -4964,25 +4964,25 @@ public class Z80Core implements ICPUData {
 
     /* half carry flag control */
 	/*
-	 * private final void setHalfCarryFlagAdd16(int left, int right, int carry) { left = left & 0x0FFF; right = right &
+     * private void setHalfCarryFlagAdd16(int left, int right, int carry) { left = left & 0x0FFF; right = right &
 	 * 0x0FFF; setH( (right + left + carry) > 0x0FFF); }
 	 */
 	/* half carry flag control */
-    private final void setHalfCarryFlagAdd(int left, int right) {
+    private void setHalfCarryFlagAdd(int left, int right) {
         left = left & 0x000F;
         right = right & 0x000F;
         setH((right + left) > 0x0F);
     }
 
     /* half carry flag control */
-    private final void setHalfCarryFlagSub(int left, int right) {
+    private void setHalfCarryFlagSub(int left, int right) {
         left = left & 0x000F;
         right = right & 0x000F;
         setH(left < right);
     }
 
     /* half carry flag control */
-    private final void setHalfCarryFlagSub(int left, int right, int carry) {
+    private void setHalfCarryFlagSub(int left, int right, int carry) {
         left = left & 0x000F;
         right = right & 0x000F;
         setH(left < (right + carry));
@@ -4990,7 +4990,7 @@ public class Z80Core implements ICPUData {
 
     /* half carry flag control */
 	/*
-	 * private final void setHalfCarryFlagSub16(int left, int right, int carry) { left = left & 0x0FFF; right = right &
+     * private void setHalfCarryFlagSub16(int left, int right, int carry) { left = left & 0x0FFF; right = right &
 	 * 0x0FFF; setH ( left < (right+carry) ); }
 	 */
 	/* 2's compliment overflow flag control */
@@ -5232,11 +5232,10 @@ public class Z80Core implements ICPUData {
 
     /* 16 bit ADD */
     private int ALU16BitAdd(int value) {
-        int operand = value;
         int result = getHL() + value; // ADD HL,rr
         resetN(); // N = 0;
         //
-        int temp = (getHL() & 0x0FFF) + (operand & 0x0FFF);
+        int temp = (getHL() & 0x0FFF) + (value & 0x0FFF);
         if ((temp & 0xF000) != 0)
             setH();
         else
@@ -5263,10 +5262,9 @@ public class Z80Core implements ICPUData {
 
     /* 16 bit ADD */
     private int ALU16BitAddIndexed(int value) {
-        int operand = value;
         int result = reg_index + value; // ADD IX,rr
         resetN(); // N = 0;
-        int temp = (reg_index & 0x0FFF) + (operand & 0x0FFF);
+        int temp = (reg_index & 0x0FFF) + (value & 0x0FFF);
         if ((temp & 0xF000) != 0)
             setH();
         else
@@ -5379,204 +5377,204 @@ public class Z80Core implements ICPUData {
     /*
 	 * test & set flag states
 	 */
-    private final boolean getS() {
+    private boolean getS() {
         return ((reg_F & flag_S) != 0);
     }
 
-    private final void setS(boolean b) {
+    private void setS(boolean b) {
         if (b)
             setS();
         else
             resetS();
     }
 
-    private final boolean getZ() {
+    private boolean getZ() {
         return ((reg_F & flag_Z) != 0);
     }
 
-    private final void setZ(boolean b) {
+    private void setZ(boolean b) {
         if (b)
             setZ();
         else
             resetZ();
     }
 
-    private final boolean getH() {
+    private boolean getH() {
         return ((reg_F & flag_H) != 0);
     }
 
-    private final void setH(boolean b) {
+    private void setH(boolean b) {
         if (b)
             setH();
         else
             resetH();
     }
 
-    private final boolean getPV() {
+    private boolean getPV() {
         return ((reg_F & flag_PV) != 0);
     }
 
-    private final void setPV(boolean b) {
+    private void setPV(boolean b) {
         if (b)
             setPV();
         else
             resetPV();
     }
 
-    private final boolean getN() {
+    private boolean getN() {
         return ((reg_F & flag_N) != 0);
     }
 
-    private final boolean getC() {
+    private boolean getC() {
         return ((reg_F & flag_C) != 0);
     }
 
-    // private final void setN(boolean b) { if (b) setN(); else resetN(); }
-    private final void setC(boolean b) {
+    // private void setN(boolean b) { if (b) setN(); else resetN(); }
+    private void setC(boolean b) {
         if (b)
             setC();
         else
             resetC();
     }
 
-    private final void setS() {
+    private void setS() {
         reg_F = reg_F | flag_S;
     }
 
-    private final void setZ() {
+    private void setZ() {
         reg_F = reg_F | flag_Z;
     }
 
-    private final void set5() {
+    private void set5() {
         reg_F = reg_F | flag_5;
     }
 
-    private final void setH() {
+    private void setH() {
         reg_F = reg_F | flag_H;
     }
 
-    private final void set3() {
+    private void set3() {
         reg_F = reg_F | flag_3;
     }
 
-    private final void setPV() {
+    private void setPV() {
         reg_F = reg_F | flag_PV;
     }
 
-    private final void setN() {
+    private void setN() {
         reg_F = reg_F | flag_N;
     }
 
-    private final void setC() {
+    private void setC() {
         reg_F = reg_F | flag_C;
     }
 
-    private final void set5(boolean b) {
+    private void set5(boolean b) {
         if (b)
             set5();
         else
             reset5();
     }
 
-    private final void set3(boolean b) {
+    private void set3(boolean b) {
         if (b)
             set3();
         else
             reset3();
     }
 
-    private final void setUnusedFlags(int value) {
+    private void setUnusedFlags(int value) {
         value = value & 0x28;
         reg_F = reg_F & 0xD7;
         reg_F = reg_F | value;
     }
 
-    private final void flipC() {
+    private void flipC() {
         reg_F = reg_F ^ flag_C;
     }
 
-    private final void resetS() {
+    private void resetS() {
         reg_F = reg_F & flag_S_N;
     }
 
-    private final void resetZ() {
+    private void resetZ() {
         reg_F = reg_F & flag_Z_N;
     }
 
-    private final void reset5() {
+    private void reset5() {
         reg_F = reg_F & flag_5_N;
     }
 
-    private final void resetH() {
+    private void resetH() {
         reg_F = reg_F & flag_H_N;
     }
 
-    private final void reset3() {
+    private void reset3() {
         reg_F = reg_F & flag_3_N;
     }
 
-    private final void resetPV() {
+    private void resetPV() {
         reg_F = reg_F & flag_PV_N;
     }
 
-    private final void resetN() {
+    private void resetN() {
         reg_F = reg_F & flag_N_N;
     }
 
-    private final void resetC() {
+    private void resetC() {
         reg_F = reg_F & flag_C_N;
     }
 
-    private final int getBC() {
+    private int getBC() {
         return (reg_B << 8) + reg_C;
     }
 
-    private final void setBC(int bc) {
+    private void setBC(int bc) {
         reg_B = (bc & 0xFF00) >> 8;
         reg_C = bc & 0x00FF;
     }
 
-    private final int getDE() {
+    private int getDE() {
         return (reg_D << 8) + reg_E;
     }
 
-    private final void setDE(int de) {
+    private void setDE(int de) {
         reg_D = (de & 0xFF00) >> 8;
         reg_E = de & 0x00FF;
     }
 
-    private final int getHL() {
+    private int getHL() {
         return (reg_H << 8) + reg_L;
     }
 
-    private final void setHL(int hl) {
+    private void setHL(int hl) {
         reg_H = (hl & 0xFF00) >> 8;
         reg_L = hl & 0x00FF;
     }
 
-    private final int getBC_ALT() {
+    private int getBC_ALT() {
         return (reg_B_ALT << 8) + reg_C_ALT;
     }
 
-    private final void setBC_ALT(int bc) {
+    private void setBC_ALT(int bc) {
         reg_B_ALT = (bc & 0xFF00) >> 8;
         reg_C_ALT = bc & 0x00FF;
     }
 
-    private final int getDE_ALT() {
+    private int getDE_ALT() {
         return (reg_D_ALT << 8) + reg_E_ALT;
     }
 
-    private final void setDE_ALT(int de) {
+    private void setDE_ALT(int de) {
         reg_D_ALT = (de & 0xFF00) >> 8;
         reg_E_ALT = de & 0x00FF;
     }
 
-    private final int getHL_ALT() {
+    private int getHL_ALT() {
         return (reg_H_ALT << 8) + reg_L_ALT;
     }
 
-    private final void setHL_ALT(int hl) {
+    private void setHL_ALT(int hl) {
         reg_H_ALT = (hl & 0xFF00) >> 8;
         reg_L_ALT = hl & 0x00FF;
     }
@@ -5870,10 +5868,10 @@ public class Z80Core implements ICPUData {
     }
 
     /**
-     * Note: This implemented the broken (and undocumented) SLL instructions. Faulty as it feeds in a zero into bit 0
+     * Note: This implements the broken (and undocumented) SLL instructions. Faulty as it feeds in a zero into bit 0
      *
      * @param temp Register value
-     * @return
+     * @return Incorrect SLL value
      */
     private int shiftGenericSLL(int temp) {
         // do shift operation
@@ -6267,7 +6265,6 @@ public class Z80Core implements ICPUData {
         setPV(0 == value);
         resetN();
         setH();
-        //
     }
 
     private void testBitInMemory(int bit) {
@@ -6349,11 +6346,7 @@ public class Z80Core implements ICPUData {
         while (blockMove) {
             tStates = tStates + 21;
             LDI();
-            if (getBC() != 0) {
-                // dec2PC();
-            } else {
-                blockMove = false;
-            }
+            blockMove = getBC() != 0;
         }
     }
 
@@ -6384,10 +6377,7 @@ public class Z80Core implements ICPUData {
         while (blockMove) {
             tStates = tStates + 21;
             LDD();
-            if (getBC() != 0) {
-                // dec2PC();
-            } else
-                blockMove = false;
+            blockMove = getBC() != 0;
         }
     }
 
@@ -6594,11 +6584,11 @@ public class Z80Core implements ICPUData {
         reg_R = reg_A;
     }
 
-    /**
-     *
-     * Index IX & IY register special instructions
-     *
-     */
+    //
+    //
+    // Index IX & IY register special instructions
+    //
+    //
 
     /**
      * Get the index value, make signed as its two's compliment.
