@@ -12,11 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.Z80;
 
-import net.codingrodent.microprocessor.ProcessorException;
-import net.codingrodent.microprocessor.Z80.CPUConstants.RegisterNames;
-import net.codingrodent.microprocessor.support.*;
+import com.codingrodent.microprocessor.ProcessorException;
+import com.codingrodent.microprocessor.support.*;
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
@@ -54,7 +53,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x4534, z80.getRegisterValue(RegisterNames.BC));
+        assertEquals(0x4534, z80.getRegisterValue(CPUConstants.RegisterNames.BC));
         //
         // RETN
         addr = 0xC000;
@@ -72,7 +71,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // LD I,A
         addr = 0xC000;
@@ -83,7 +82,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x00, z80.getRegisterValue(RegisterNames.I));
+        assertEquals(0x00, z80.getRegisterValue(CPUConstants.RegisterNames.I));
         //
         // LD I,A
         addr = 0xC000;
@@ -94,7 +93,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x80, z80.getRegisterValue(RegisterNames.I));
+        assertEquals(0x80, z80.getRegisterValue(CPUConstants.RegisterNames.I));
     }
 
     /**
@@ -113,7 +112,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x0034, z80.getRegisterValue(RegisterNames.BC));
+        assertEquals(0x0034, z80.getRegisterValue(CPUConstants.RegisterNames.BC));
         //
         // RETI
         addr = 0xC000;
@@ -131,7 +130,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // NEG
         addr = 0xC000;
@@ -141,7 +140,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x4C); //
         z80.reset();
         run(0xC000);
-        assertEquals(0xFF, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0xFF, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // LD A,I
         addr = 0xC000;
@@ -162,8 +161,8 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x80, z80.getRegisterValue(RegisterNames.A));
-        assertEquals(0x80, z80.getRegisterValue(RegisterNames.I));
+        assertEquals(0x80, z80.getRegisterValue(CPUConstants.RegisterNames.A));
+        assertEquals(0x80, z80.getRegisterValue(CPUConstants.RegisterNames.I));
     }
 
     /**
@@ -184,7 +183,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x4500, z80.getRegisterValue(RegisterNames.DE));
+        assertEquals(0x4500, z80.getRegisterValue(CPUConstants.RegisterNames.DE));
         //
         // RETN
         addr = 0xC000;
@@ -202,7 +201,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // NEG
         addr = 0xC000;
@@ -212,7 +211,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x54); //
         z80.reset();
         run(0xC000);
-        assertEquals(0xFF, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0xFF, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // LD R,A
         addr = 0xC000;
@@ -223,7 +222,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x00, z80.getRegisterValue(RegisterNames.R));
+        assertEquals(0x00, z80.getRegisterValue(CPUConstants.RegisterNames.R));
         //
         // LD R,A
         addr = 0xC000;
@@ -234,7 +233,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x34, z80.getRegisterValue(RegisterNames.R));
+        assertEquals(0x34, z80.getRegisterValue(CPUConstants.RegisterNames.R));
     }
 
     /**
@@ -255,7 +254,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x0045, z80.getRegisterValue(RegisterNames.DE));
+        assertEquals(0x0045, z80.getRegisterValue(CPUConstants.RegisterNames.DE));
         //
         // RETN
         addr = 0xC000;
@@ -273,7 +272,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // NEG
         addr = 0xC000;
@@ -283,7 +282,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x5C); //
         z80.reset();
         run(0xC000);
-        assertEquals(0xFF, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0xFF, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // LD A,R
         addr = 0xC000;
@@ -302,8 +301,8 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x00, z80.getRegisterValue(RegisterNames.A));
-        assertEquals(0x80, z80.getRegisterValue(RegisterNames.R));
+        assertEquals(0x00, z80.getRegisterValue(CPUConstants.RegisterNames.A));
+        assertEquals(0x80, z80.getRegisterValue(CPUConstants.RegisterNames.R));
     }
 
     /**
@@ -324,7 +323,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x4500, z80.getRegisterValue(RegisterNames.HL));
+        assertEquals(0x4500, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
         //
         // RETN
         addr = 0xC000;
@@ -342,7 +341,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // NEG
         addr = 0xC000;
@@ -352,7 +351,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x64); //
         z80.reset();
         run(0xC000);
-        assertEquals(0xFF, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0xFF, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // LD A,R
         addr = 0xC000;
@@ -367,7 +366,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x45, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x45, z80.getRegisterValue(CPUConstants.RegisterNames.A));
     }
 
     /**
@@ -388,7 +387,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x0045, z80.getRegisterValue(RegisterNames.HL));
+        assertEquals(0x0045, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
         //
         // RETN
         addr = 0xC000;
@@ -406,7 +405,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // NEG
         addr = 0xC000;
@@ -416,7 +415,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x6C); //
         z80.reset();
         run(0xC000);
-        assertEquals(0xFF, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0xFF, z80.getRegisterValue(CPUConstants.RegisterNames.A));
     }
 
     /**
@@ -435,7 +434,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x44, z80.getRegisterValue(RegisterNames.F));
+        assertEquals(0x44, z80.getRegisterValue(CPUConstants.RegisterNames.F));
         //
         // RETN
         addr = 0xC000;
@@ -453,7 +452,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // NEG
         addr = 0xC000;
@@ -463,7 +462,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x74); //
         z80.reset();
         run(0xC000);
-        assertEquals(0xFF, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0xFF, z80.getRegisterValue(CPUConstants.RegisterNames.A));
     }
 
     /**
@@ -484,7 +483,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x45, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x45, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // RETN
         addr = 0xC000;
@@ -502,7 +501,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // NEG
         addr = 0xC000;
@@ -512,7 +511,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x7C); //
         z80.reset();
         run(0xC000);
-        assertEquals(0xFF, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0xFF, z80.getRegisterValue(CPUConstants.RegisterNames.A));
     }
 
     /**
@@ -540,7 +539,7 @@ public class Z80CoreTestED {
         z80.reset();
         run(0xC000);
         assertEquals(0x1234, z80Memory.readWord(0x1000));
-        assertEquals(0x1234, z80.getRegisterValue(RegisterNames.HL));
+        assertEquals(0x1234, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
         //
         addr = 0xC000;
         // LD (nn),HL
@@ -555,7 +554,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x0000, z80.getRegisterValue(RegisterNames.HL));
+        assertEquals(0x0000, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
         //
         addr = 0xC000;
         // IN / OUT (Checking S flag)
@@ -570,7 +569,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x80, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x80, z80.getRegisterValue(CPUConstants.RegisterNames.A));
     }
 
     /**
@@ -596,8 +595,8 @@ public class Z80CoreTestED {
         z80Memory.writeByte(0x1000, 0x77); // data
         z80.reset();
         run(0xC000);
-        assertEquals(0x1001, z80.getRegisterValue(RegisterNames.HL));
-        assertEquals(0x0134, z80.getRegisterValue(RegisterNames.BC));
+        assertEquals(0x1001, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
+        assertEquals(0x0134, z80.getRegisterValue(CPUConstants.RegisterNames.BC));
         assertEquals(0x00, z80Memory.readByte(0x1000));
         //
         // OUTI
@@ -617,9 +616,9 @@ public class Z80CoreTestED {
         z80Memory.writeByte(0x1000, 0x77); // data
         z80.reset();
         run(0xC000);
-        assertEquals(0x1001, z80.getRegisterValue(RegisterNames.HL));
-        assertEquals(0x0134, z80.getRegisterValue(RegisterNames.BC));
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x1001, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
+        assertEquals(0x0134, z80.getRegisterValue(CPUConstants.RegisterNames.BC));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // IND
         addr = 0xC000;
@@ -638,8 +637,8 @@ public class Z80CoreTestED {
         z80Memory.writeByte(0x1000, 0x77); // data
         z80.reset();
         run(0xC000);
-        assertEquals(0x0FFF, z80.getRegisterValue(RegisterNames.HL));
-        assertEquals(0x0134, z80.getRegisterValue(RegisterNames.BC));
+        assertEquals(0x0FFF, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
+        assertEquals(0x0134, z80.getRegisterValue(CPUConstants.RegisterNames.BC));
         assertEquals(0x00, z80Memory.readByte(0x1000));
         //
         // OUTD
@@ -659,9 +658,9 @@ public class Z80CoreTestED {
         z80Memory.writeByte(0x1000, 0x77); // data
         z80.reset();
         run(0xC000);
-        assertEquals(0x0FFF, z80.getRegisterValue(RegisterNames.HL));
-        assertEquals(0x0134, z80.getRegisterValue(RegisterNames.BC));
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x0FFF, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
+        assertEquals(0x0134, z80.getRegisterValue(CPUConstants.RegisterNames.BC));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
 
         //
         // INIR
@@ -682,8 +681,8 @@ public class Z80CoreTestED {
         z80Memory.writeByte(0x1000, 0x77); // data
         z80.reset();
         run(0xC000);
-        assertEquals(0x1002, z80.getRegisterValue(RegisterNames.HL));
-        assertEquals(0x0034, z80.getRegisterValue(RegisterNames.BC));
+        assertEquals(0x1002, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
+        assertEquals(0x0034, z80.getRegisterValue(CPUConstants.RegisterNames.BC));
         assertEquals(0x00, z80Memory.readByte(0x1000));
         //
         // OUTIR
@@ -704,9 +703,9 @@ public class Z80CoreTestED {
         z80Memory.writeByte(0x1001, 0x77); // data
         z80.reset();
         run(0xC000);
-        assertEquals(0x1002, z80.getRegisterValue(RegisterNames.HL));
-        assertEquals(0x0034, z80.getRegisterValue(RegisterNames.BC));
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x1002, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
+        assertEquals(0x0034, z80.getRegisterValue(CPUConstants.RegisterNames.BC));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // INDR
         addr = 0xC000;
@@ -726,8 +725,8 @@ public class Z80CoreTestED {
         z80Memory.writeByte(0x0FFF, 0x77); // data
         z80.reset();
         run(0xC000);
-        assertEquals(0x0FFE, z80.getRegisterValue(RegisterNames.HL));
-        assertEquals(0x0034, z80.getRegisterValue(RegisterNames.BC));
+        assertEquals(0x0FFE, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
+        assertEquals(0x0034, z80.getRegisterValue(CPUConstants.RegisterNames.BC));
         assertEquals(0x00, z80Memory.readByte(0x1000));
         //
         // OUTDR
@@ -748,9 +747,9 @@ public class Z80CoreTestED {
         z80Memory.writeByte(0x0FFF, 0x77); // data
         z80.reset();
         run(0xC000);
-        assertEquals(0x0FFE, z80.getRegisterValue(RegisterNames.HL));
-        assertEquals(0x0034, z80.getRegisterValue(RegisterNames.BC));
-        assertEquals(0x77, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x0FFE, z80.getRegisterValue(CPUConstants.RegisterNames.HL));
+        assertEquals(0x0034, z80.getRegisterValue(CPUConstants.RegisterNames.BC));
+        assertEquals(0x77, z80.getRegisterValue(CPUConstants.RegisterNames.A));
 
     }
 

@@ -16,5 +16,5 @@
  * <li>NMI handling
  * </ul>
  */
-package net.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.Z80;
 

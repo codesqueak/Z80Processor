@@ -12,9 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.codingrodent.microprocessor.support;
+package com.codingrodent.microprocessor.support;
 
-import net.codingrodent.microprocessor.IBaseDevice;
+import com.codingrodent.microprocessor.IBaseDevice;
 
 public class Z80IO implements IBaseDevice {
     private int value;

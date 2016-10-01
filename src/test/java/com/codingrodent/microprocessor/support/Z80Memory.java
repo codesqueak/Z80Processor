@@ -12,9 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.codingrodent.microprocessor.support;
+package com.codingrodent.microprocessor.support;
 
-import net.codingrodent.microprocessor.IMemory;
+import com.codingrodent.microprocessor.IMemory;
 
 import java.io.*;
 import java.nio.charset.Charset;

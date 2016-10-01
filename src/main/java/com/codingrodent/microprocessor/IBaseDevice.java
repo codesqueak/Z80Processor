@@ -12,38 +12,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.codingrodent.microprocessor;
+package com.codingrodent.microprocessor;
 
 /**
- * Interface to describe the processor version
+ * Interface to describe the I/O processor bus
  */
-public interface ICPUData {
+public interface IBaseDevice {
 
     /**
-     * Get the processor major CPU version number
+     * Read data from an I/O port
      *
-     * @return major revision number
+     * @param address The port to be read from
+     * @return The 8 bit value at the request port address
      */
-    String getMajorVersion();
+    default int IORead(int address) {
+        return 0;
+    }
 
     /**
-     * Get the processor major CPU minor number
+     * Write data to an I/O port
      *
-     * @return minor revision number
+     * @param address The port to be written to
+     * @param data    The 8 bit value to be written
      */
-    String getMinorVersion();
-
-    /**
-     * Get the processor major CPU patch number
-     *
-     * @return patch number
-     */
-    String getPatchVersion();
-
-    /**
-     * Get the CPU name string
-     *
-     * @return name string
-     */
-    String getName();
+    default void IOWrite(int address, int data) {
+        // do nothing
+    }
 }

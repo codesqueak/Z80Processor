@@ -11,54 +11,102 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'jacoco'
 apply plugin: 'findbugs'
+apply plugin: 'maven'
 
 sourceCompatibility = javaVersion
 targetCompatibility = javaVersion
 
 
 task setVersion {
-	if(System.env.BUILD_NUMBER){
-  	version =  projectVersionMajor+'.'+projectVersionMinor+'.'+System.env.BUILD_NUMBER
-  }
-  else
-  {
-  	version =  projectVersionMajor+'.'+projectVersionMinor+'.'+projectVersionBuild
-  }
+    if (System.env.BUILD_NUMBER) {
+        version = projectVersionMajor + '.' + projectVersionMinor + '.' + System.env.BUILD_NUMBER
+    } else {
+        version = projectVersionMajor + '.' + projectVersionMinor + '.' + projectVersionBuild
+    }
 }
 
 
 jar {
-		baseName = projectName
-        manifest
-        {
-        attributes 'Implementation-Title': projectName,
-                   'Implementation-Version': version
-   	 }
+    baseName = projectName
+    manifest
+            {
+                attributes 'Implementation-Title': projectName,
+                        'Implementation-Version': version
+            }
 }
 
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+task createPom << {
+    pom
+    {
+        project {
+            name 'Z80'
+            groupId 'com.codingrodent'
+            description 'A Z80 Microprocessor core in Java'
+            url 'https://github.com/codesqueak/Z80Processor.git'
+            scm {
+                url 'https://github.com/codesqueak/Z80Processor'
+                connection 'scm:git:git://github.com/codesqueak/Z80Processor.git'
+                developerConnection 'scm:git:ssh://github.com:codesqueak/Z80Processor.git'
+            }
+
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            developers {
+                developer {
+                    id 'codesqueak'
+                    name 'codesqueak'
+                    email 'codesqueak@gmail.com'
+                    organizationUrl 'http://www.codesqueak.com'
+                    //  organization 'codesqueak'
+                }
+            }
+        }
+    }.writeTo("$buildDir/libs/" + projectName + "-" + version + ".pom")
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
 
 repositories {
     mavenCentral()
 }
 
 jacoco {
-    toolVersion = "0.7+"
+    toolVersion = "0.7.7.201606060606"
     reportsDir = file("$buildDir/customJacocoReportDir")
 }
 
 test
-{
- 	maxParallelForks = 1
-	filter
-	{
-	     includeTestsMatching "net.codingrodent.microprocessor.*"
-	}
-    jacoco {
-        append = false
-        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
-        classDumpFile = file("$buildDir/jacoco/classpathdumps")
-    }
-}
+        {
+            maxParallelForks = 1
+            filter
+                    {
+                        includeTestsMatching "com.codingrodent.microprocessor.*"
+                    }
+            jacoco {
+                append = false
+                destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+                classDumpFile = file("$buildDir/jacoco/classpathdumps")
+            }
+        }
 
 jacocoTestReport {
     reports {
@@ -67,13 +115,13 @@ jacocoTestReport {
         html.destination "${buildDir}/jacocoHtml"
     }
 }
-    
+
 findbugs {
     toolVersion = "3.+"
     sourceSets = [sourceSets.main]
     effort = "max"
     reportLevel = "high"
-    findbugsTest.enabled=false
+    findbugsTest.enabled = false
     ignoreFailures = true
 }
 
@@ -83,17 +131,19 @@ tasks.withType(FindBugs) {
         html.enabled = false
     }
 }
-    
+
 check.dependsOn jacocoTestReport
 test.dependsOn javadoc
+jar.dependsOn createPom
 jar.dependsOn setVersion
 
 
+
 dependencies {
-    testCompile("junit:junit:4.+")
-    testCompile("org.mockito:mockito-all:2.+")
-    testCompile("com.jayway.jsonpath:json-path-parent:1.+")
-    testCompile("org.hamcrest:hamcrest-all:1.+")
+    testCompile("junit:junit:4.12")
+    testCompile("org.mockito:mockito-all:2.0.2-beta")
+//    testCompile("com.jayway.jsonpath:json-path-parent:1.+")
+    testCompile("org.hamcrest:hamcrest-all:1.3")
 }
 
 task wrapper(type: Wrapper) {

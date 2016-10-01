@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.codingrodent.microprocessor.support;
+package com.codingrodent.microprocessor.support;
 
 class Utilities {
     private final static String hexChar = "0123456789ABCDEF";

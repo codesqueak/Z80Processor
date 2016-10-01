@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.Z80;
 
-import net.codingrodent.microprocessor.ProcessorException;
-import net.codingrodent.microprocessor.Z80.CPUConstants.RegisterNames;
-import net.codingrodent.microprocessor.support.*;
+import com.codingrodent.microprocessor.ProcessorException;
+import com.codingrodent.microprocessor.Z80.CPUConstants.RegisterNames;
+import com.codingrodent.microprocessor.support.*;
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;

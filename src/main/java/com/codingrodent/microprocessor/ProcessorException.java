@@ -12,30 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.codingrodent.microprocessor;
+package com.codingrodent.microprocessor;
 
 /**
- * Interface to describe the I/O processor bus
+ * Exception thrown under various CPU states that may need exception processing
  */
-public interface IBaseDevice {
+public class ProcessorException extends Exception {
+
+    public final static String COMPUTER_UNIMPLEMENTED_OPCODE = "Unimplemented opcode detected";
+    private static final long serialVersionUID = 3257847701181118519L;
 
     /**
-     * Read data from an I/O port
+     * Known exception for the Z80 emulator
      *
-     * @param address The port to be read from
-     * @return The 8 bit value at the request port address
+     * @param msg Emulator exception message
      */
-    default int IORead(int address) {
-        return 0;
-    }
-
-    /**
-     * Write data to an I/O port
-     *
-     * @param address The port to be written to
-     * @param data    The 8 bit value to be written
-     */
-    default void IOWrite(int address, int data) {
-        // do nothing
+    public ProcessorException(String msg) {
+        super(msg);
     }
 }

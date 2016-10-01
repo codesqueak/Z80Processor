@@ -13,11 +13,12 @@
  * limitations under the License.
  */
 
-package net.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.Z80;
 
-import net.codingrodent.microprocessor.*;
+import com.codingrodent.microprocessor.*;
+import com.codingrodent.microprocessor.Z80.CPUConstants.*;
 
-import static net.codingrodent.microprocessor.Z80.CPUConstants.*;
+import static com.codingrodent.microprocessor.Z80.CPUConstants.*;
 
 /**
  * The ZiLOG Z80 processor core
@@ -2844,7 +2845,7 @@ public class Z80Core implements ICPUData {
     }
 
 	/*
-	 * *****************************************************************************
+     * *****************************************************************************
 	 *
 	 * IX and IY index register processing
 	 *
@@ -3785,7 +3786,7 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * *****************************************************************************
+     * *****************************************************************************
 	 *
 	 * CB Bit twiddling and shifting instructions for Index
 	 *

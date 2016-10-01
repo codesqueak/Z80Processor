@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.codingrodent.microprocessor.performance;
+package com.codingrodent.microprocessor.performance;
 
-import net.codingrodent.microprocessor.ProcessorException;
-import net.codingrodent.microprocessor.Z80.Z80Core;
-import net.codingrodent.microprocessor.support.*;
+import com.codingrodent.microprocessor.ProcessorException;
+import com.codingrodent.microprocessor.Z80.Z80Core;
+import com.codingrodent.microprocessor.support.*;
 
 class TimedExecution {
 

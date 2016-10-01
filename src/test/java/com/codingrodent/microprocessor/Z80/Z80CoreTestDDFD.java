@@ -12,11 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.Z80;
 
-import net.codingrodent.microprocessor.ProcessorException;
-import net.codingrodent.microprocessor.Z80.CPUConstants.RegisterNames;
-import net.codingrodent.microprocessor.support.*;
+import com.codingrodent.microprocessor.ProcessorException;
+import com.codingrodent.microprocessor.support.*;
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
@@ -57,7 +56,7 @@ public class Z80CoreTestDDFD {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x34, z80.getRegisterValue(RegisterNames.A));
+        assertEquals(0x34, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // LD SP,IX
         addr = 0xC000;
@@ -70,7 +69,7 @@ public class Z80CoreTestDDFD {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x1234, z80.getRegisterValue(RegisterNames.SP));
+        assertEquals(0x1234, z80.getRegisterValue(CPUConstants.RegisterNames.SP));
         //
         // EX (SP),IX
         addr = 0xC000;
@@ -91,7 +90,7 @@ public class Z80CoreTestDDFD {
         //
         z80.reset();
         run(0xC000);
-        assertEquals(0x5678, z80.getRegisterValue(RegisterNames.IX));
+        assertEquals(0x5678, z80.getRegisterValue(CPUConstants.RegisterNames.IX));
     }
 
     /**
