@@ -117,7 +117,7 @@ jacocoTestReport {
 }
 
 findbugs {
-    toolVersion = "3.+"
+    toolVersion = "3.0.0" // Bug in 3.0.1 [1374] - wait for 3.0.2
     sourceSets = [sourceSets.main]
     effort = "max"
     reportLevel = "high"
