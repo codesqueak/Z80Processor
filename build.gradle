@@ -50,10 +50,11 @@ task createPom << {
     pom
     {
         project {
-            name 'Z80'
-            groupId 'com.codingrodent'
+            artifactId 'Z80Processor'
+            groupId 'com.codingrodent.microprocessor'
+            name 'com.codingrodent.microprocessor.Z80Processor'
             description 'A Z80 Microprocessor core in Java'
-            url 'https://github.com/codesqueak/Z80Processor.git'
+            url 'https://github.com/codesqueak/Z80Processor'
             scm {
                 url 'https://github.com/codesqueak/Z80Processor'
                 connection 'scm:git:git://github.com/codesqueak/Z80Processor.git'
