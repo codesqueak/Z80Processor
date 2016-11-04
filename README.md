@@ -17,6 +17,23 @@ The build may take a few minutes as it includes a comprehensive test suite for t
 
 The project includes a Jenkins file to control a pipeline build.  At present the available version of the Jacoco plugin (2.0.1 at time of writing) does not support a 'publisher'.  The build was tested using a hand built plugin from the master branch of the  [project](https://github.com/jenkinsci/jacoco-plugin)
 
+### Include Using Maven
+
+```
+<!-- https://mvnrepository.com/artifact/com.codingrodent.microprocessor/Z80Processor -->
+<dependency>
+    <groupId>com.codingrodent.microprocessor</groupId>
+    <artifactId>Z80Processor</artifactId>
+    <version>2.0.2</version>
+</dependency>
+```
+
+### Include Using Gradle
+
+```
+// https://mvnrepository.com/artifact/com.codingrodent.microprocessor/Z80Processor
+compile group: 'com.codingrodent.microprocessor', name: 'Z80Processor', version: '2.0.2'
+```
 
 ## Undocumented instruction
 
