@@ -1,6 +1,6 @@
-# Z80 Processor
+# Z80 Processor in Java
 
-Z80Processor is a an implementation of the Mostek / Zilog Z80 processor.
+Z80Processor is a an implementation of the Mostek / Zilog Z80 processor in Java
 
 ## Build
 
