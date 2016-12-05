@@ -1,13 +1,19 @@
+[![License: MIT](https://img.shields.io/badge/license-Apache_2.0-brightgreen.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.codingrodent.microprocessor/Z80Processor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.codingrodent.microprocessor/Z80Processor)
+[![Maven Central](https://img.shields.io/jenkins/s/https/jenkins.qa.ubuntu.com/precise-desktop-amd64_default.svg)](https://img.shields.io/jenkins/s/https/jenkins.qa.ubuntu.com)
+
 # Z80 Processor in Java
 
 Z80Processor is a an implementation of the Mostek / Zilog Z80 processor in Java
 
 ## Build
 
-(Windows)
+Windows
+
 gradlew clean build test
 
-(Linux)
+Linux
+
 ./gradlew clean build test
 
 The build may take a few minutes as it includes a comprehensive test suite for the Z80 instruction set.
