@@ -3,6 +3,12 @@ buildscript {
         mavenCentral()
         mavenLocal()
         jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "gradle.plugin.com.github.spotbugs:gradlePlugin:1.4"
     }
 }
 
@@ -10,8 +16,8 @@ apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'jacoco'
-apply plugin: 'findbugs'
 apply plugin: 'maven'
+apply plugin: 'com.github.spotbugs'
 
 sourceCompatibility = javaVersion
 targetCompatibility = javaVersion
@@ -46,39 +52,41 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
-task createPom << {
-    pom
-    {
-        project {
-            artifactId 'Z80Processor'
-            groupId 'com.codingrodent.microprocessor'
-            name 'com.codingrodent.microprocessor.Z80Processor'
-            description 'A Z80 Microprocessor core in Java'
-            url 'https://github.com/codesqueak/Z80Processor'
-            scm {
+task createPom {
+    doLast {
+        pom
+        {
+            project {
+                artifactId 'Z80Processor'
+                groupId 'com.codingrodent.microprocessor'
+                name 'com.codingrodent.microprocessor.Z80Processor'
+                description 'A Z80 Microprocessor core in Java'
                 url 'https://github.com/codesqueak/Z80Processor'
-                connection 'scm:git:git://github.com/codesqueak/Z80Processor.git'
-                developerConnection 'scm:git:ssh://github.com:codesqueak/Z80Processor.git'
-            }
+                scm {
+                    url 'https://github.com/codesqueak/Z80Processor'
+                    connection 'scm:git:git://github.com/codesqueak/Z80Processor.git'
+                    developerConnection 'scm:git:ssh://github.com:codesqueak/Z80Processor.git'
+                }
 
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'codesqueak'
+                        name 'codesqueak'
+                        email 'codesqueak@gmail.com'
+                        organizationUrl 'http://www.codesqueak.com'
+                        //  organization 'codesqueak'
+                    }
                 }
             }
-            developers {
-                developer {
-                    id 'codesqueak'
-                    name 'codesqueak'
-                    email 'codesqueak@gmail.com'
-                    organizationUrl 'http://www.codesqueak.com'
-                    //  organization 'codesqueak'
-                }
-            }
-        }
-    }.writeTo("$buildDir/libs/" + projectName + "-" + version + ".pom")
+        }.writeTo("$buildDir/libs/" + projectName + "-" + version + ".pom")
+    }
 }
 
 artifacts {
@@ -105,7 +113,7 @@ test
             jacoco {
                 append = false
                 destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
-                classDumpFile = file("$buildDir/jacoco/classpathdumps")
+                classDumpDir = file("$buildDir/jacoco/classpathdumps")
             }
         }
 
@@ -113,20 +121,18 @@ jacocoTestReport {
     reports {
         xml.enabled true
         csv.enabled false
-        html.destination "${buildDir}/jacocoHtml"
+        html.destination = file("${buildDir}/jacocoHtml")
     }
 }
 
-findbugs {
-    toolVersion = "3.0.0" // Bug in 3.0.1 [1374] - wait for 3.0.2
+spotbugs {
     sourceSets = [sourceSets.main]
     effort = "max"
     reportLevel = "high"
-    findbugsTest.enabled = false
     ignoreFailures = true
 }
 
-tasks.withType(FindBugs) {
+tasks.withType(com.github.spotbugs.SpotBugsTask) {
     reports {
         xml.enabled = true
         html.enabled = false
@@ -141,16 +147,11 @@ jar.dependsOn setVersion
 
 
 dependencies {
-    testCompile("junit:junit:4.12")
-    testCompile("org.mockito:mockito-all:2.0.2-beta")
-//    testCompile("com.jayway.jsonpath:json-path-parent:1.+")
-    testCompile("org.hamcrest:hamcrest-all:1.3")
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.10.0'
+    testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.1'
-}
-
-task listJars << {
-    configurations.compile.each { File file -> println file.name }
+    gradleVersion = '4.2.1'
 }
