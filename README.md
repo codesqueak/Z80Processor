@@ -6,6 +6,9 @@
 
 Z80Processor is a an implementation of the Mostek / Zilog Z80 processor in Java
 
+The code is not designed to be nice / clean / compact - however it is designed to be fast. It has been heavily profiled
+using [Yourkit](https://www.yourkit.com/) while running 'real' applications to identify hotspots.
+
 ## Build
 
 Windows
