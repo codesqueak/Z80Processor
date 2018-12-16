@@ -61,9 +61,9 @@ public class Z80Core implements ICPUData {
         resetAddress = 0x0000;
     }
 
-	/*
+    /*
      * Public interfaces to processor control functions
-	 */
+     */
 
     /**
      * Indicate when a block move instruction is in progress, LDIR, CPDR etc. May be sampled during repetitive cycles of
@@ -1294,18 +1294,18 @@ public class Z80Core implements ICPUData {
 
     /*
      * *****************************************************************************
-	 *
-	 * Extended Instruction area
-	 *
-	 * *****************************************************************************
-	 */
+     *
+     * Extended Instruction area
+     *
+     * *****************************************************************************
+     */
     /*
      * *****************************************************************************
-	 *
-	 * CB Bit twiddling and shifting instructions
-	 *
-	 * *****************************************************************************
-	 */
+     *
+     * CB Bit twiddling and shifting instructions
+     *
+     * *****************************************************************************
+     */
     private void extendedCB() {
         instruction = ram.readByte(reg_PC);
         incPC();
@@ -2356,13 +2356,13 @@ public class Z80Core implements ICPUData {
         }
     }
 
-	/*
+    /*
      * *****************************************************************************
-	 *
-	 * Extended Instruction area
-	 *
-	 * *****************************************************************************
-	 */
+     *
+     * Extended Instruction area
+     *
+     * *****************************************************************************
+     */
 
     private void extendedED() throws ProcessorException {
         instruction = ram.readByte(reg_PC);
@@ -2844,13 +2844,13 @@ public class Z80Core implements ICPUData {
         }
     }
 
-	/*
+    /*
      * *****************************************************************************
-	 *
-	 * IX and IY index register processing
-	 *
-	 * *****************************************************************************
-	 */
+     *
+     * IX and IY index register processing
+     *
+     * *****************************************************************************
+     */
 
     /* IX register processing */
     private void extendedDD() throws ProcessorException {
@@ -2866,7 +2866,7 @@ public class Z80Core implements ICPUData {
         reg_IY = reg_index;
     }
 
-	/* generic index register processing */
+    /* generic index register processing */
 
     private void extendedDDFD() throws ProcessorException {
         instruction = ram.readByte(reg_PC);
@@ -3787,11 +3787,11 @@ public class Z80Core implements ICPUData {
 
     /*
      * *****************************************************************************
-	 *
-	 * CB Bit twiddling and shifting instructions for Index
-	 *
-	 * *****************************************************************************
-	 */
+     *
+     * CB Bit twiddling and shifting instructions for Index
+     *
+     * *****************************************************************************
+     */
     private void extendedIndexCB() {
         instruction = ram.readByte(reg_PC + 1); // fudge for DD CB dd ii
         tStates = tStates + OPCODE_INDEXED_CB_STATES[instruction];
@@ -4841,8 +4841,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * return an 8 bit register based on its code 000 -> 111
-	 */
+     * return an 8 bit register based on its code 000 -> 111
+     */
     private int get8BitRegisterForIO(int reg) {
         switch (reg) {
             case 0: {
@@ -4873,8 +4873,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * return a 16 bit register based on its code 00 -> 11
-	 */
+     * return a 16 bit register based on its code 00 -> 11
+     */
     private int get16BitRegister(int reg) {
         switch (reg) {
             case 0: {
@@ -4893,8 +4893,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * set a 16 bit register based on its code 00 -> 11
-	 */
+     * set a 16 bit register based on its code 00 -> 11
+     */
     private void set16BitRegister(int value, int reg) {
         switch (reg) {
             case 0: {
@@ -4917,8 +4917,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * increment (and wrap) the program counter
-	 */
+     * increment (and wrap) the program counter
+     */
     private void incPC() {
         reg_PC++;
         reg_PC = reg_PC & MAX_ADDRESS;
@@ -4940,8 +4940,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * increment / decrement (and wrap) the stack pointer
-	 */
+     * increment / decrement (and wrap) the stack pointer
+     */
     private void inc2SP() {
         reg_SP = reg_SP + 2;
         reg_SP = reg_SP & MAX_ADDRESS;
@@ -4952,9 +4952,9 @@ public class Z80Core implements ICPUData {
         reg_SP = reg_SP & MAX_ADDRESS;
     }
 
-	/*
-	 * ALU Operations
-	 */
+    /*
+     * ALU Operations
+     */
 
     /* half carry flag control */
     private void setHalfCarryFlagAdd(int left, int right, int carry) {
@@ -4964,11 +4964,6 @@ public class Z80Core implements ICPUData {
     }
 
     /* half carry flag control */
-	/*
-     * private void setHalfCarryFlagAdd16(int left, int right, int carry) { left = left & 0x0FFF; right = right &
-	 * 0x0FFF; setH( (right + left + carry) > 0x0FFF); }
-	 */
-	/* half carry flag control */
     private void setHalfCarryFlagAdd(int left, int right) {
         left = left & 0x000F;
         right = right & 0x000F;
@@ -4990,11 +4985,11 @@ public class Z80Core implements ICPUData {
     }
 
     /* half carry flag control */
-	/*
+    /*
      * private void setHalfCarryFlagSub16(int left, int right, int carry) { left = left & 0x0FFF; right = right &
-	 * 0x0FFF; setH ( left < (right+carry) ); }
-	 */
-	/* 2's compliment overflow flag control */
+     * 0x0FFF; setH ( left < (right+carry) ); }
+     */
+    /* 2's compliment overflow flag control */
     private void setOverflowFlagAdd(int left, int right, int carry) {
         if (left > 127)
             left = left - 256;
@@ -5006,12 +5001,7 @@ public class Z80Core implements ICPUData {
 
     /* 2's compliment overflow flag control */
     private void setOverflowFlagAdd(int left, int right) {
-        if (left > 127)
-            left = left - 256;
-        if (right > 127)
-            right = right - 256;
-        left = left + right;
-        setPV((left < -128) || (left > 127));
+        setOverflowFlagAdd(left, right, 0);
     }
 
     /* 2's compliment overflow flag control */
@@ -5036,12 +5026,7 @@ public class Z80Core implements ICPUData {
 
     /* 2's compliment overflow flag control */
     private void setOverflowFlagSub(int left, int right) {
-        if (left > 127)
-            left = left - 256;
-        if (right > 127)
-            right = right - 256;
-        left = left - right;
-        setPV((left < -128) || (left > 127));
+        setOverflowFlagSub(left, right, 0);
     }
 
     /* 2's compliment overflow flag control */
@@ -5094,7 +5079,6 @@ public class Z80Core implements ICPUData {
     /* 8 bit SUB */
     private void ALU8BitSub(int value) {
         int local_reg_A = reg_A;
-
         setHalfCarryFlagSub(local_reg_A, value);
         setOverflowFlagSub(local_reg_A, value);
         local_reg_A = local_reg_A - value;
@@ -5134,10 +5118,7 @@ public class Z80Core implements ICPUData {
         reg_A = reg_A & value;
         setS((reg_A & 0x0080) != 0);
         setZ(reg_A == 0);
-        // setH();
         setPV(PARITY_TABLE[reg_A]);
-        // resetN();
-        // resetC();
         setUnusedFlags(reg_A);
     }
 
@@ -5147,10 +5128,7 @@ public class Z80Core implements ICPUData {
         reg_A = reg_A | value;
         setS((reg_A & 0x0080) != 0);
         setZ(reg_A == 0);
-        // resetH();
         setPV(PARITY_TABLE[reg_A]);
-        // resetN();
-        // resetC();
         setUnusedFlags(reg_A);
     }
 
@@ -5160,23 +5138,19 @@ public class Z80Core implements ICPUData {
         reg_A = reg_A ^ value;
         setS((reg_A & 0x0080) != 0);
         setZ(reg_A == 0);
-        // resetH();
         setPV(PARITY_TABLE[reg_A]);
-        // resetN();
-        // resetC();
         setUnusedFlags(reg_A);
     }
 
     /* 8 bit CP */
     private void ALU8BitCp(int b) {
-        int a = reg_A;
-        int wans = a - b;
-        int ans = wans & 0xff;
+        final int a = reg_A;
+        final int wans = a - b;
+        final int ans = wans & 0xff;
         reg_F = 0x02;
         setS((ans & flag_S) != 0);
         set3((b & flag_3) != 0);
         set5((b & flag_5) != 0);
-        // if ( true ) setN();
         setZ(ans == 0);
         setC((wans & 0x100) != 0);
         setH((((a & 0x0f) - (b & 0x0f)) & flag_H) != 0);
@@ -5196,7 +5170,7 @@ public class Z80Core implements ICPUData {
         setS((value & 0x0080) != 0);
         value = value & 0x00ff;
         setZ(value == 0);
-        // resetN();
+        resetN();
         setUnusedFlags(value);
         return (value);
     }
@@ -5317,7 +5291,7 @@ public class Z80Core implements ICPUData {
         int a = getHL();
         int b = get16BitRegister((byte) regCode);
         int c = getC() ? 1 : 0;
-        int lans = (a - b) - c;
+        int lans = a - b - c;
         int ans = lans & 0xffff;
         setS((ans & (flag_S << 8)) != 0);
         set3((ans & (0x08 << 8)) != 0);
@@ -5335,8 +5309,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * varous register swap operations
-	 */
+     * varous register swap operations
+     */
     private void EXAFAF() {
         int temp;
 
@@ -5376,8 +5350,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * test & set flag states
-	 */
+     * test & set flag states
+     */
     private boolean getS() {
         return ((reg_F & flag_S) != 0);
     }
@@ -5580,9 +5554,9 @@ public class Z80Core implements ICPUData {
         reg_L_ALT = hl & 0x00FF;
     }
 
-	/*
-	 * shifts and rotates
-	 */
+    /*
+     * shifts and rotates
+     */
 
     private void RLCA() {
         boolean carry = (reg_A & 0x0080) != 0;
@@ -5642,7 +5616,7 @@ public class Z80Core implements ICPUData {
     }
 
     private void CPL() {
-        reg_A = (reg_A ^ 0x00FF) & 0x00FF;
+        reg_A = reg_A ^ 0x00FF;
         setH();
         setN();
         setUnusedFlags(reg_A);
@@ -5689,15 +5663,14 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * DAA is weird, can't find Zilog algorithm so using +0110 if Nibble>9 algorithm.
-	 */
+     * DAA is weird, can't find Zilog algorithm so using +0110 if Nibble>9 algorithm.
+     */
     private void DAA() {
-        {
             int ans = reg_A;
             int incr = 0;
             boolean carry = getC();
             if ((getH()) || ((ans & 0x0f) > 0x09)) {
-                incr |= 0x06;
+                incr = 0x06;
             }
             if (carry || (ans > 0x9f) || ((ans > 0x8f) && ((ans & 0x0f) > 0x09))) {
                 incr |= 0x60;
@@ -5716,7 +5689,6 @@ public class Z80Core implements ICPUData {
             else
                 resetC(); // setC( carry );
             setPV(PARITY_TABLE[ans]); // setPV( PARITY_TABLE[ ans ] );
-        }
     }
 
     private int shiftGenericRLC(int temp) {
@@ -5742,7 +5714,6 @@ public class Z80Core implements ICPUData {
         setPV(PARITY_TABLE[temp]);
         setUnusedFlags(temp);
         return temp;
-
     }
 
     /**
@@ -5762,7 +5733,6 @@ public class Z80Core implements ICPUData {
             temp = temp | 0x01;
         // standard flag updates
         setS((temp & 0x0080) != 0);
-        resetH();
         if ((temp & 0x0FF00) == 0)
             resetC();
         else
@@ -5773,6 +5743,7 @@ public class Z80Core implements ICPUData {
         else
             resetZ();
         setPV(PARITY_TABLE[temp]);
+        resetH();
         resetN();
         // put value back
         setUnusedFlags(temp);
@@ -5878,9 +5849,6 @@ public class Z80Core implements ICPUData {
         temp = (temp << 1) | 0x01; // the fault
         // standard flag updates
         setS((temp & 0x0080) != 0);
-        // if ((temp & 0x00FF) == 0)
-        // setZ();
-        // else
         resetZ();
         resetH();
         if ((temp & 0x0FF00) != 0)
@@ -5934,7 +5902,6 @@ public class Z80Core implements ICPUData {
         setC((temp & 0x0001) != 0);
         temp = temp >> 1;
         // standard flag updates
-        // setS((temp & 0x0080) != 0);
         resetS();
         setZ(temp == 0);
         resetH();
@@ -6003,8 +5970,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * calls, jumps and returns + associated stack operations
-	 */
+     * calls, jumps and returns + associated stack operations
+     */
     private void relativeJump() {
         reg_R++;
         int offset = ram.readByte(reg_PC);
@@ -6048,7 +6015,6 @@ public class Z80Core implements ICPUData {
         } else {
             tStates = tStates + 5;
         }
-
     }
 
     private void ret() {
@@ -6127,8 +6093,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * Interrupt handling
-	 */
+     * Interrupt handling
+     */
     private void DI() {
         IFF1 = false;
         EIDIFlag = true;
@@ -6139,9 +6105,9 @@ public class Z80Core implements ICPUData {
         EIDIFlag = true;
     }
 
-	/*
-	 * IO port handling
-	 */
+    /*
+     * IO port handling
+     */
 
     /* IN A,(NN) */
     private void inAN() {
@@ -6216,9 +6182,9 @@ public class Z80Core implements ICPUData {
         io.IOWrite(getBC(), get8BitRegisterForIO(reg));
     }
 
-	/*
-	 * bit manipulation
-	 */
+    /*
+     * bit manipulation
+     */
 
     private void testBit(int value, int bit) {
         //
@@ -6271,53 +6237,54 @@ public class Z80Core implements ICPUData {
         testBitGeneric(bit, ram.readByte(getHL()));
     }
 
-    private void testBitGeneric(int bit, int temp) {
+    private void testBitGeneric(int bit, int value) {
+        int v = value;
         resetS();
         switch (bit) {
             case 0: {
-                temp = temp & setBit0;
+                v = v & setBit0;
                 break;
             }
             case 1: {
-                temp = temp & setBit1;
+                v = v & setBit1;
                 break;
             }
             case 2: {
-                temp = temp & setBit2;
+                v = v & setBit2;
                 break;
             }
             case 3: {
-                temp = temp & setBit3;
+                v = v & setBit3;
                 break;
             }
             case 4: {
-                temp = temp & setBit4;
+                v = v & setBit4;
                 break;
             }
             case 5: {
-                temp = temp & setBit5;
+                v = v & setBit5;
                 break;
             }
             case 6: {
-                temp = temp & setBit6;
+                v = v & setBit6;
                 break;
             }
             default: {
-                temp = temp & setBit7;
-                setS(temp != 0);
+                v = v & setBit7;
+                setS(v != 0);
                 break;
             }
         }
-        setZ(0 == temp);
-        setPV(0 == temp);
+        setZ(0 == v);
+        setPV(0 == v);
         resetN();
         setH();
     }
 
     /*
-	 * Increment / decrement repeat type instructions
-	 */
-	/* loads */
+     * Increment / decrement repeat type instructions
+     */
+    /* loads */
     private void LDI() {
         reg_R++;
         int flags = reg_F;
@@ -6331,11 +6298,11 @@ public class Z80Core implements ICPUData {
         resetN();
         setPV(getBC() != 0);
         int temp = value + reg_A;
-        if ((temp & 0x00002) == 0)
+        if ((temp & 0x02) == 0)
             reset5();
         else
             set5();
-        if ((temp & 0x00008) == 0)
+        if ((temp & 0x08) == 0)
             reset3();
         else
             set3();
@@ -6362,11 +6329,11 @@ public class Z80Core implements ICPUData {
         resetN();
         setPV(getBC() != 0);
         int temp = reg_A + value;
-        if ((temp & 0x00002) == 0)
+        if ((temp & 0x02) == 0)
             reset5();
         else
             set5();
-        if ((temp & 0x00008) == 0)
+        if ((temp & 0x08) == 0)
             reset3();
         else
             set3();
@@ -6382,20 +6349,19 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * block compares
-	 */
+     * block compares
+     */
     private void CPI() {
         reg_R++;
         int value = ram.readByte(getHL());
-        int result = reg_A - value;
+        int result = (reg_A - value) & lsb;
         setHL(ALU16BitInc(getHL()));
         setBC(ALU16BitDec(getBC()));
         //
-        if ((result & 0x0080) == 0)
+        if ((result & 0x80) == 0)
             resetS();
         else
             setS();
-        result = result & 0x00FF;
         if (result == 0)
             setZ();
         else
@@ -6426,15 +6392,14 @@ public class Z80Core implements ICPUData {
     private void CPD() {
         reg_R++;
         int value = ram.readByte(getHL());
-        int result = reg_A - value;
+        int result = (reg_A - value) & lsb;
         setHL(ALU16BitDec(getHL()));
         setBC(ALU16BitDec(getBC()));
         //
-        if ((result & 0x0080) == 0)
+        if ((result & 0x80) == 0)
             resetS();
         else
             setS();
-        result = result & lsb;
         if (result == 0)
             setZ();
         else
@@ -6445,11 +6410,11 @@ public class Z80Core implements ICPUData {
         //
         if (getH())
             result--;
-        if ((result & 0x00002) == 0)
+        if ((result & 0x02) == 0)
             reset5();
         else
             set5();
-        if ((result & 0x00008) == 0)
+        if ((result & 0x08) == 0)
             reset3();
         else
             set3();
@@ -6526,8 +6491,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * extended 16 bit loads for ED instructions
-	 */
+     * extended 16 bit loads for ED instructions
+     */
     private void LDRegnnnnInd16Bit(int regCode) {
         int address = ram.readWord(reg_PC);
         int data = ram.readWord(address);
@@ -6541,17 +6506,17 @@ public class Z80Core implements ICPUData {
         inc2PC();
     }
 
-	/*
-	 * odds & ends
-	 */
+    /*
+     * odds & ends
+     */
 
     private void IM(int mode) {
         // interruptMode = mode;
     }
 
     /*
-	 * special I reg loads
-	 */
+     * special I reg loads
+     */
     private void LDAI() {
         reg_A = reg_I;
         setS((reg_A & flag_S) != 0);
@@ -6566,9 +6531,9 @@ public class Z80Core implements ICPUData {
         reg_I = reg_A;
     }
 
-	/*
-	 * special R reg loads
-	 */
+    /*
+     * special R reg loads
+     */
 
     private void LDAR() {
         reg_A = reg_R & 0x7F;
@@ -6610,8 +6575,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * Support for 8 bit index register manipulation (IX as IXH IXL)
-	 */
+     * Support for 8 bit index register manipulation (IX as IXH IXL)
+     */
     private int getIndexAddressUndocumented(int reg) {
         switch (reg) {
             case 4: {
@@ -6628,8 +6593,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * Support for 8 bit index register manipulation (IX as IXH IXL)
-	 */
+     * Support for 8 bit index register manipulation (IX as IXH IXL)
+     */
     private void setIndexAddressUndocumented(int value, int reg) {
         switch (reg) {
             case 4: {
@@ -6650,8 +6615,8 @@ public class Z80Core implements ICPUData {
     }
 
     /*
-	 * return an 8 bit register based on its code 000 -> 111
-	 */
+     * return an 8 bit register based on its code 000 -> 111
+     */
     private int get8BitRegisterIndexed(int reg) {
         switch (reg) {
             case 4: {

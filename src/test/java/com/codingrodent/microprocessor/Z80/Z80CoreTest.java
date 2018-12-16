@@ -26,45 +26,13 @@ public class Z80CoreTest {
 
     @Before
     public void setUp() throws Exception {
-        z80Memory = new Z80Memory();
+        z80Memory = new Z80Memory("NAS_Test.nas");
         z80 = new Z80Core(z80Memory, new Z80IO());
         z80.reset();
     }
 
     @After
     public void tearDown() throws Exception {
-    }
-
-    /**
-     * Test core by running test application this covers most instructions. Other tests are to 'mop up' uncovered
-     * regions
-     */
-    @Test
-    public final void testCore() {
-        // Initial setup
-        assertEquals(z80.getProgramCounter(), 0x0000);
-        z80.setResetAddress(0x1234);
-        z80.reset();
-        assertEquals(z80.getProgramCounter(), 0x1234);
-        z80.setProgramCounter(0x1000);
-        assertEquals(z80.getProgramCounter(), 0x1000);
-        //
-        // T states ?
-        assertEquals(0, z80.getTStates());
-        //
-        // Ok, run the program
-        while (!z80.getHalt()) {
-            try {
-                z80.executeOneInstruction();
-                // System.out.println(utilities.getWord(z80.getRegisterValue(RegisterNames.PC)));
-            } catch (ProcessorException e) {
-                System.out.println("Hardware crash, oops! " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-        assertTrue(z80.getTStates() > 0);
-        z80.resetTStates();
-        assertEquals(0, z80.getTStates());
     }
 
     /**

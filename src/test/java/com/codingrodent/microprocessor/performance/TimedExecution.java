@@ -37,7 +37,7 @@ class TimedExecution {
      * Set up a computer with simple memory and I/O
      */
     private void init() {
-        z80 = new Z80Core(new Z80Memory(), new Z80IOEcho());
+        z80 = new Z80Core(new Z80Memory("NAS_Test.nas"), new Z80IOEcho());
         z80.reset();
     }
 
