@@ -22,7 +22,7 @@ import java.nio.charset.Charset;
 public class Z80Memory implements IMemory {
     private final int[] memory = new int[65536];
 
-    public Z80Memory() {
+    public Z80Memory(final String filename) {
         // Set all to HALT - stops runaway code
         for (int a = 0; a < memory.length; a++) {
             memory[a] = 0x76;
@@ -32,8 +32,39 @@ public class Z80Memory implements IMemory {
         memory[0x31] = 0x00; //
         memory[0x32] = 0xC9; // ret
         //
+        // A very simple I/O routine to simulate CP/M BDOS string output calls
+        int addr = 0x05;
+        memory[addr++] = 0xC3; // jp
+        memory[addr++] = 0x45; //
+        memory[addr] = 0x00; //
+
+        addr = 0x45; // get it out of teh way of RST addresses
+        memory[addr++] = 0x79; // ld a,c
+        memory[addr++] = 0xFE; // cp a, 09
+        memory[addr++] = 0x09; //
+        memory[addr++] = 0xCA; // jp z
+        memory[addr++] = 0x4F; //
+        memory[addr++] = 0x00; //
+        // output single char BDOS 2
+        memory[addr++] = 0x7B; // ld a,e
+        memory[addr++] = 0xD3; // out (00), a
+        memory[addr++] = 0x00; //
+        memory[addr++] = 0xC9; // ret
+        // Outtput string BDOS 6
+        // addr 000F
+        memory[addr++] = 0x1A; // ld a,(de)
+        memory[addr++] = 0xFE; // cp a, '$'
+        memory[addr++] = 0x24; //
+        memory[addr++] = 0xC8; // ret z
+        memory[addr++] = 0xD3; // out (00), a
+        memory[addr++] = 0x00; //
+        memory[addr++] = 0x13; // inc de
+        memory[addr++] = 0xC3; // jp 0
+        memory[addr++] = 0x4F; //
+        memory[addr] = 0x00; //
+        //
         try {
-            readHexDumpFile("NAS_Test.nas");
+            readHexDumpFile(filename);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -80,6 +111,7 @@ public class Z80Memory implements IMemory {
     @Override
     // Read a byte from memory
     public int readByte(int address) {
+   //     System.out.println("read " + Utilities.getByte(memory[address]) + " @ " + Utilities.getWord(address));
         return memory[address];
     }
 
@@ -91,6 +123,8 @@ public class Z80Memory implements IMemory {
 
     @Override
     public void writeByte(int address, int data) {
+
+   //     System.out.println("write " + Utilities.getByte(data) + " @ " + Utilities.getWord(address));
         memory[address] = data;
     }
 

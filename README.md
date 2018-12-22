@@ -2,7 +2,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.codingrodent.microprocessor/Z80Processor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.codingrodent.microprocessor/Z80Processor)
 [![Maven Central](https://img.shields.io/jenkins/s/https/jenkins.qa.ubuntu.com/precise-desktop-amd64_default.svg)](https://img.shields.io/jenkins/s/https/jenkins.qa.ubuntu.com)
 
-# Z80 Processor in Java
+# Z80 Processor in Java 11
 
 Z80Processor is a an implementation of the Mostek / Zilog Z80 processor in Java
 

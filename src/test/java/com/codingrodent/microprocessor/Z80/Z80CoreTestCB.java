@@ -27,7 +27,7 @@ public class Z80CoreTestCB {
 
     @Before
     public void setUp() throws Exception {
-        z80Memory = new Z80Memory();
+        z80Memory = new Z80Memory("NAS_Test.nas");
         z80 = new Z80Core(z80Memory, new Z80IO());
         z80.reset();
     }
