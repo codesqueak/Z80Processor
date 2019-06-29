@@ -34,7 +34,7 @@ public class I8080CoreTest {
     /**
      * Test core by running an initial i8080 test set
      */
-    //   @Test
+ //   @Test
     public final void test8080Core() {
         // Initial setup
         z80.setProgramCounter(0x0100);
