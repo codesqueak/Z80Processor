@@ -8,7 +8,7 @@ pipeline {
                 checkout scm: [$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: 'https://github.com/codesqueak/Z80Processor.git']]]
                 echo env.BRANCH_NAME
                 sh 'echo $BRANCH_NAME'
-
+                echo sh(script: 'env|sort', returnStdout: true)
             }
         }
 
