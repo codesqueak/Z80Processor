@@ -6,8 +6,14 @@ pipeline {
         stage('Checkout') {
             steps { //Checking out the repo
                 checkout scm: [$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: 'https://github.com/codesqueak/Z80Processor.git']]]
-                echo env.BRANCH_NAME
-                sh 'echo $BRANCH_NAME'
+                echo env.GIT_BRANCH
+                sh 'echo $GIT_BRANCH'
+                echo sh(script: 'env|sort', returnStdout: true)
+            }
+        }
+
+        stage('env') {
+            steps { //Check env variables
                 echo sh(script: 'env|sort', returnStdout: true)
             }
         }
@@ -26,8 +32,8 @@ pipeline {
 
         stage('branch') {
             steps { //branch check
-                echo env.BRANCH_NAME
-                sh 'echo $BRANCH_NAME'
+                echo env.GIT_BRANCH
+                sh 'echo $GIT_BRANCH'
             }
         }
 
