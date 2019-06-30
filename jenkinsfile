@@ -21,6 +21,12 @@ pipeline {
             }
         }
 
+                stage('branch') {
+                    steps { //branch check
+                        echo env.BRANCH_NAME
+                        sh 'echo $BRANCH_NAME'
+                    }
+                }
 
     }
 
