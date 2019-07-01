@@ -8,7 +8,6 @@ pipeline {
                 checkout scm: [$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: 'https://github.com/codesqueak/Z80Processor.git']]]
                 echo env.GIT_BRANCH
                 sh 'echo $GIT_BRANCH'
-                echo sh(script: 'env|sort', returnStdout: true)
             }
         }
 
@@ -34,6 +33,15 @@ pipeline {
             steps { //branch check
                 echo env.GIT_BRANCH
                 sh 'echo $GIT_BRANCH'
+            }
+        }
+
+        stage ('master') {
+            when {
+                expression { env.GIT_BRANCH == 'origin/master' }
+            }
+            steps {
+                echo "Hello origin/master"
             }
         }
 
