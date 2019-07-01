@@ -36,6 +36,24 @@ pipeline {
             }
         }
 
+        stage ('develop') {
+            when {
+                expression { env.GIT_BRANCH == 'origin/develop' }
+            }
+            steps {
+                echo "Hello origin/develop"
+            }
+        }
+
+        stage ('release') {
+            when {
+                expression { env.GIT_BRANCH == 'origin/release' }
+            }
+            steps {
+                echo "Hello origin/release"
+            }
+        }
+
         stage ('master') {
             when {
                 expression { env.GIT_BRANCH == 'origin/master' }
@@ -44,7 +62,6 @@ pipeline {
                 echo "Hello origin/master"
             }
         }
-
     }
 
 }

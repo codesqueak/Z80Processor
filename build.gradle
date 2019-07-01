@@ -37,6 +37,8 @@ task setVersion {
     } else {
         version = projectVersionMajor + '.' + projectVersionMinor + '.' + projectVersionBuild
     }
+    println System.env.BUILD_NUMBER
+    println System.env.GIT_BRANCH
 }
 
 
