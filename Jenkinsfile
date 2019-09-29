@@ -19,7 +19,7 @@ pipeline {
 
         stage('Build') {
             steps { //Build using jenkins
-                sh './gradlew clean build -x test'
+                sh './gradlew clean build  test'
             }
         }
 
@@ -63,5 +63,12 @@ pipeline {
             }
         }
     }
-
+    post {
+        success {
+            echo "success 1"
+            jacoco(execPattern: '**/jacoco/jacocoTest.exec')
+            junit '**/test-results/test/*.xml'
+            echo "success 2"
+        }
+    }
 }
