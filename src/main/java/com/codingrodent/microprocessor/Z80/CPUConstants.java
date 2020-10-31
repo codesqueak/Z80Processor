@@ -186,49 +186,64 @@ public class CPUConstants {
         /**
          * 16 bit BC register pair
          */
-        BC, /**
+        BC,
+        /**
          * 16 bit DE register pair
          */
-        DE, /**
+        DE,
+        /**
          * 16 bit HL register pair
          */
-        HL, /**
+        HL,
+        /**
          * Alternate register file 16 bit BC register pair
          */
-        BC_ALT, /**
+        BC_ALT,
+        /**
          * Alternate register file 16 bit DE register pair
          */
-        DE_ALT, /**
+        DE_ALT,
+        /**
          * Alternate register file 16 bit HL register pair
          */
-        HL_ALT, /**
+        HL_ALT,
+        /**
          * IX 16 bit index register
          */
-        IX, /**
+        IX,
+        /**
          * IY 16 bit index register
          */
-        IY, /**
+        IY,
+        /**
          * Stack pointer
          */
-        SP, /**
+        SP,
+        /**
          * Program counter
          */
-        PC, /**
+        PC,
+        /**
          * 8 bit accumulator
          */
-        A, /**
+        A,
+        /**
          * 8 bit flag register
          */
-        F, /**
+        F,
+        /**
          * Alternate 8 bit accumulator
          */
-        A_ALT, /**
+        A_ALT,
+        /**
          * Alternate 8 bit flag register
          */
-        F_ALT, /**
+        F_ALT,
+        /**
          * 8 bit interrupt register
          */
-        I, /**
+        I,
+        /**
          * 7 bit refresh register
          */
         R

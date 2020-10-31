@@ -1,4 +1,3 @@
-
 buildscript {
     repositories {
         mavenCentral()
@@ -15,22 +14,23 @@ buildscript {
 }
 
 plugins {
-    id "com.github.spotbugs" version "2.0.0"
+    id "com.github.spotbugs" version "4.5.1"
+    id 'java'
+    id 'idea'
+    id 'maven-publish'
+    id 'jacoco'
 }
 
-apply plugin: 'idea'
-apply plugin: 'java'
-apply plugin: 'jacoco'
 apply plugin: 'maven'
 apply plugin: 'com.jfrog.artifactory'
-apply plugin: 'maven-publish'
 
-
-sourceCompatibility = javaVersion
-targetCompatibility = javaVersion
+// set the java version
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 
 group = 'com.codingrodent.microprocessor'
-
 
 task setVersion {
     if (System.env.BUILD_NUMBER) {
@@ -38,8 +38,6 @@ task setVersion {
     } else {
         version = projectVersionMajor + '.' + projectVersionMinor + '.' + projectVersionBuild
     }
-    println System.env.BUILD_NUMBER
-    println System.env.GIT_BRANCH
 }
 
 
@@ -113,45 +111,43 @@ repositories {
 }
 
 jacoco {
-    toolVersion = "0.8.2"
-    reportsDir = file("$buildDir/customJacocoReportDir")
+    toolVersion = "0.8.5"
 }
 
-test
-        {
-            maxParallelForks = 1
-            filter
-                    {
-                        includeTestsMatching "com.codingrodent.microprocessor.*"
-                    }
-            jacoco {
-                append = false
-                destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
-                classDumpDir = file("$buildDir/jacoco/classpathdumps")
+test {
+    useJUnitPlatform()
+    maxParallelForks = 1
+    filter
+            {
+                includeTestsMatching "com.codingrodent.microprocessor.*"
             }
-        }
+    jacoco {
+        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+        classDumpDir = file("$buildDir/jacoco/classpathdumps")
+    }
+}
 
 jacocoTestReport {
     reports {
-        xml.setEnabled(true)
-        csv.setEnabled(false)
-        html.setDestination(file("${buildDir}/jacocoHtml"))
+        xml.enabled true
+        csv.enabled false
+        html.destination file("${buildDir}/jacocoHtml")
     }
 }
-//
-//spotbugs {
-//    sourceSets = [sourceSets.main]
-//    effort = "max"
-//    reportLevel = "high"
-//    ignoreFailures = true
-//}
-//
-//tasks.withType(com.github.spotbugs.SpotBugsTask) {
-//    reports {
-//        xml.enabled false
-//        html.enabled true
-//    }
-//}
+
+spotbugsMain {
+    reports {
+        html {
+            enabled = true
+        }
+    }
+}
+
+spotbugs {
+    toolVersion = '4.1.1'
+    ignoreFailures = false
+    effort = 'max'
+}
 
 publishing {
     publications {
@@ -192,11 +188,14 @@ jar.dependsOn setVersion
 
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.10.0'
-    testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.0'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.0'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
 }
 
+
 wrapper {
-    gradleVersion = '5.6.2'
+    gradleVersion = '6.7'
+    distributionType = Wrapper.DistributionType.BIN
 }

@@ -15,17 +15,20 @@
 package com.codingrodent.microprocessor.Z80;
 
 import com.codingrodent.microprocessor.ProcessorException;
-import com.codingrodent.microprocessor.support.*;
-import org.junit.Before;
+import com.codingrodent.microprocessor.support.Z80IO;
+import com.codingrodent.microprocessor.support.Z80Memory;
+import org.junit.jupiter.api.BeforeEach;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class I8080CoreTest {
     private Z80Core z80;
     private Z80Memory z80Memory;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         z80Memory = new Z80Memory("8080EX1.nas");
         z80 = new Z80Core(z80Memory, new Z80IO());
         z80.reset();
@@ -34,7 +37,7 @@ public class I8080CoreTest {
     /**
      * Test core by running an initial i8080 test set
      */
- //   @Test
+    //   @Test
     public final void test8080Core() {
         // Initial setup
         z80.setProgramCounter(0x0100);

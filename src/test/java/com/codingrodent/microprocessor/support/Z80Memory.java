@@ -17,16 +17,15 @@ package com.codingrodent.microprocessor.support;
 import com.codingrodent.microprocessor.IMemory;
 
 import java.io.*;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class Z80Memory implements IMemory {
     private final int[] memory = new int[65536];
 
     public Z80Memory(final String filename) {
         // Set all to HALT - stops runaway code
-        for (int a = 0; a < memory.length; a++) {
-            memory[a] = 0x76;
-        }
+        Arrays.fill(memory, 0x76);
         // A very simple I/O routine to simulate NAS-SYS character output call
         memory[0x30] = 0xD3; // out (00), a
         memory[0x31] = 0x00; //
@@ -79,7 +78,7 @@ public class Z80Memory implements IMemory {
     private void readHexDumpFile(String fileName) throws IOException {
         String line;
         int address, base;
-        LineNumberReader source = new LineNumberReader(new InputStreamReader(new FileInputStream(fileName), Charset.forName("UTF-8")));
+        LineNumberReader source = new LineNumberReader(new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8));
         //
         boolean firstTime = true;
         while (true) { // read a line

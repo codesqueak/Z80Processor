@@ -16,24 +16,26 @@ package com.codingrodent.microprocessor.Z80;
 
 import com.codingrodent.microprocessor.ProcessorException;
 import com.codingrodent.microprocessor.support.*;
-import org.junit.*;
+import org.junit.jupiter.api.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class Z80NasTest {
     private Z80Core z80;
     private Z80Memory z80Memory;
     private int a = 0;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         z80Memory = new Z80Memory("NAS_Test.nas");
         z80 = new Z80Core(z80Memory, new Z80IO());
         z80.reset();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    public void tearDown() {
     }
 
     /**
