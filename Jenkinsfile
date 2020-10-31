@@ -11,11 +11,7 @@ pipeline {
             }
         }
 
-        stage('env') {
-            steps { //Check env variables
-                echo sh(script: 'env|sort', returnStdout: true)
-            }
-        }
+
 
         stage('Build') {
             steps { //Build using jenkins
@@ -62,12 +58,15 @@ pipeline {
                 echo "Hello origin/master"
             }
         }
+
+
     }
     post {
         success {
             echo "success 1"
-            jacoco(execPattern: '**/jacoco/jacocoTest.exec')
-            junit '**/test-results/test/*.xml'
+            junit testResults: '**/test-results/test/TEST-*.xml'
+            jacoco execPattern: '**/jacoco/jacocoTest.exec'
+            recordIssues enabledForFailure: true, tool: spotBugs(pattern: '**/reports/spotbugs/test.xml')
             echo "success 2"
         }
     }

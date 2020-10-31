@@ -5627,7 +5627,7 @@ public class Z80Core implements ICPUData {
         // if ((value & 0x0f) == 0x00) setH(); else resetH();
         setOverflowFlagSub(0, reg_A, 0);
         // if (value == 0x80) setPV(); else resetPV();
-        reg_A = 0 - reg_A;
+        reg_A = -reg_A;
         if ((reg_A & 0xFF00) != 0)
             setC();
         else
@@ -5666,29 +5666,29 @@ public class Z80Core implements ICPUData {
      * DAA is weird, can't find Zilog algorithm so using +0110 if Nibble>9 algorithm.
      */
     private void DAA() {
-            int ans = reg_A;
-            int incr = 0;
-            boolean carry = getC();
-            if ((getH()) || ((ans & 0x0f) > 0x09)) {
-                incr = 0x06;
-            }
-            if (carry || (ans > 0x9f) || ((ans > 0x8f) && ((ans & 0x0f) > 0x09))) {
-                incr |= 0x60;
-            }
-            if (ans > 0x99) {
-                carry = true;
-            }
-            if (getN()) {
-                ALU8BitSub(incr); // sub_a(incr);
-            } else {
-                ALU8BitAdd(incr); // add_a(incr);
-            }
-            ans = reg_A;
-            if (carry)
-                setC();
-            else
-                resetC(); // setC( carry );
-            setPV(PARITY_TABLE[ans]); // setPV( PARITY_TABLE[ ans ] );
+        int ans = reg_A;
+        int incr = 0;
+        boolean carry = getC();
+        if ((getH()) || ((ans & 0x0f) > 0x09)) {
+            incr = 0x06;
+        }
+        if (carry || (ans > 0x9f) || ((ans > 0x8f) && ((ans & 0x0f) > 0x09))) {
+            incr |= 0x60;
+        }
+        if (ans > 0x99) {
+            carry = true;
+        }
+        if (getN()) {
+            ALU8BitSub(incr); // sub_a(incr);
+        } else {
+            ALU8BitAdd(incr); // add_a(incr);
+        }
+        ans = reg_A;
+        if (carry)
+            setC();
+        else
+            resetC(); // setC( carry );
+        setPV(PARITY_TABLE[ans]); // setPV( PARITY_TABLE[ ans ] );
     }
 
     private int shiftGenericRLC(int temp) {

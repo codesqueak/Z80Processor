@@ -16,7 +16,8 @@ package com.codingrodent.microprocessor.performance;
 
 import com.codingrodent.microprocessor.ProcessorException;
 import com.codingrodent.microprocessor.Z80.Z80Core;
-import com.codingrodent.microprocessor.support.*;
+import com.codingrodent.microprocessor.support.Z80IOEcho;
+import com.codingrodent.microprocessor.support.Z80Memory;
 
 class TimedExecution {
 
@@ -26,11 +27,24 @@ class TimedExecution {
      * Very basic timing loop to check on throughput
      */
     public static void main(String[] args) {
-        TimedExecution timedExecution = new TimedExecution();
-        for (int i = 0; i < 11; i++) {
-            timedExecution.init();
-            System.out.println("MHz=" + timedExecution.run(0x1000));
+        {
+            {
+                {
+                    {
+                    }
+                }
+            }
         }
+        TimedExecution timedExecution = new TimedExecution();
+        var average = 0;
+        var cycles = 25;
+        for (int i = 0; i < cycles; i++) {
+            timedExecution.init();
+            var mhz = (int) timedExecution.run(0x1000);
+            average = average + mhz;
+            System.out.println("MHz: " + mhz);
+        }
+        System.out.println("Average: " + average / cycles + "MHz");
     }
 
     /**
