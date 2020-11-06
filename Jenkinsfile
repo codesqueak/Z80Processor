@@ -11,8 +11,6 @@ pipeline {
             }
         }
 
-
-
         stage('Build') {
             steps { //Build using jenkins
                 sh './gradlew clean build  test'
@@ -59,15 +57,12 @@ pipeline {
             }
         }
 
-
     }
     post {
         success {
-            echo "success 1"
             junit testResults: '**/test-results/test/TEST-*.xml'
             jacoco execPattern: '**/jacoco/jacocoTest.exec'
-            recordIssues enabledForFailure: true, tool: spotBugs(pattern: '**/reports/spotbugs/test.xml')
-            echo "success 2"
+            recordIssues enabledForFailure: true, tool: spotBugs(pattern: '**/reports/spotbugs/*.xml')
         }
     }
 }
