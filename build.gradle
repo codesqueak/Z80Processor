@@ -135,16 +135,9 @@ jacocoTestReport {
     }
 }
 
-spotbugsMain {
-    reports {
-        html {
-            enabled = true
-        }
-    }
-}
 
 spotbugs {
-    toolVersion = '4.1.1'
+    toolVersion = '4.1.4'
     ignoreFailures = false
     effort = 'max'
 }
@@ -181,15 +174,11 @@ artifactory {
     }
 }
 
-check.dependsOn jacocoTestReport
-test.dependsOn javadoc
-jar.dependsOn createPom
-jar.dependsOn setVersion
-
+// check.dependsOn jacocoTestReport
 
 dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.0'
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.0'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
 }

@@ -32,7 +32,7 @@ The project includes a Jenkins file to control a pipeline build.  At present the
 <dependency>
     <groupId>com.codingrodent.microprocessor</groupId>
     <artifactId>Z80Processor</artifactId>
-    <version>2.0.2</version>
+    <version>3.1.1</version>
 </dependency>
 ```
 
