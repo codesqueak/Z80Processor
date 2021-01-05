@@ -8,6 +8,8 @@ Z80Processor is a an implementation of the Mostek / Zilog Z80 processor in Java
 The code is not designed to be nice / clean / compact - however it is designed to be fast. It has been heavily profiled
 using [Yourkit](https://www.yourkit.com/) while running 'real' applications to identify hotspots.
 
+If you find this project useful, you may want to [__Buy me a Coffee!__ :coffee:](https://www.buymeacoffee.com/codesqueak) Thanks :thumbsup:
+
 ## Build
 
 Windows
@@ -32,7 +34,7 @@ The project includes a Jenkins file to control a pipeline build.  At present the
 <dependency>
     <groupId>com.codingrodent.microprocessor</groupId>
     <artifactId>Z80Processor</artifactId>
-    <version>3.1.1</version>
+    <version>3.2.0</version>
 </dependency>
 ```
 
@@ -40,7 +42,7 @@ The project includes a Jenkins file to control a pipeline build.  At present the
 
 ```
 // https://mvnrepository.com/artifact/com.codingrodent.microprocessor/Z80Processor
-compile group: 'com.codingrodent.microprocessor', name: 'Z80Processor', version: '2.0.2'
+compile group: 'com.codingrodent.microprocessor', name: 'Z80Processor', version: '3.2.0'
 ```
 
 ## Undocumented instruction
