@@ -132,7 +132,7 @@ public class Z80Core implements ICPUData {
      * @param pc Value in the range 0x0000 to 0xFFFF
      */
     public void setProgramCounter(int pc) {
-        reg_PC = pc;
+        reg_PC = pc & 0xFFFF;
     }
 
     /**
@@ -142,7 +142,7 @@ public class Z80Core implements ICPUData {
      * @param address Value in the range 0x0000 to 0xFFFF
      */
     public void setResetAddress(int address) {
-        resetAddress = address;
+        resetAddress = address & 0xFFFF;
     }
 
     /**
@@ -183,8 +183,53 @@ public class Z80Core implements ICPUData {
                 return reg_F_ALT;
             case I:
                 return reg_I;
-            default:
+            case R:
                 return reg_R;
+            default:
+                return 0;
+        }
+    }
+
+    /**
+     * Set a register value via a register name
+     *
+     * @param name Register name
+     * @param value the value to set
+     */
+    public void setRegisterValue(RegisterNames name, int value) {
+        switch (name) {
+            case BC:
+                setBC(value);
+            case DE:
+                setDE(value);
+            case HL:
+                setHL(value);
+            case BC_ALT:
+                setBC_ALT(value);
+            case DE_ALT:
+                setDE_ALT(value);
+            case HL_ALT:
+                setHL_ALT(value);
+            case IX:
+                reg_IX = value & 0xFFFF;
+            case IY:
+                reg_IY = value & 0xFFFF;
+            case SP:
+                reg_SP = value & 0xFFFF;
+            case PC:
+                setProgramCounter(value);
+            case A:
+                reg_A = value & 0xFF;
+            case F:
+                reg_F = value & 0xFF;
+            case A_ALT:
+                reg_A_ALT = value & 0xFF;
+            case F_ALT:
+                reg_F_ALT = value & 0xFF;
+            case I:
+                reg_I = value & 0xFF;
+            default:
+                reg_R = value & 0xFF;
         }
     }
 
