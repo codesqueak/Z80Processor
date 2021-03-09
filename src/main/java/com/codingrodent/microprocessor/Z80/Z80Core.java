@@ -184,7 +184,7 @@ public class Z80Core implements ICPUData {
             case I:
                 return reg_I;
             case R:
-                return reg_R;
+                return reg_R & 0xFF; // R is not 8 bit internally
             default:
                 return 0;
         }
