@@ -200,36 +200,54 @@ public class Z80Core implements ICPUData {
         switch (name) {
             case BC:
                 setBC(value);
+                break;
             case DE:
                 setDE(value);
+                break;
             case HL:
                 setHL(value);
+                break;
             case BC_ALT:
                 setBC_ALT(value);
+                break;
             case DE_ALT:
                 setDE_ALT(value);
+                break;
             case HL_ALT:
                 setHL_ALT(value);
+                break;
             case IX:
                 reg_IX = value & 0xFFFF;
+                break;
             case IY:
                 reg_IY = value & 0xFFFF;
+                break;
             case SP:
                 reg_SP = value & 0xFFFF;
+                break;
             case PC:
                 setProgramCounter(value);
+                break;
             case A:
                 reg_A = value & 0xFF;
+                break;
             case F:
                 reg_F = value & 0xFF;
+                break;
             case A_ALT:
                 reg_A_ALT = value & 0xFF;
+                break;
             case F_ALT:
                 reg_F_ALT = value & 0xFF;
+                break;
             case I:
                 reg_I = value & 0xFF;
-            default:
+                break;
+            case R:
                 reg_R = value & 0xFF;
+                break;
+            default:
+                // should never reach this line of code
         }
     }
 
