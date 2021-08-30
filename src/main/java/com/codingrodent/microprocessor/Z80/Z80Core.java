@@ -132,7 +132,7 @@ public class Z80Core implements ICPUData {
      * @param pc Value in the range 0x0000 to 0xFFFF
      */
     public void setProgramCounter(int pc) {
-        reg_PC = pc;
+        reg_PC = pc & 0xFFFF;
     }
 
     /**
@@ -142,7 +142,7 @@ public class Z80Core implements ICPUData {
      * @param address Value in the range 0x0000 to 0xFFFF
      */
     public void setResetAddress(int address) {
-        resetAddress = address;
+        resetAddress = address & 0xFFFF;
     }
 
     /**
@@ -183,8 +183,71 @@ public class Z80Core implements ICPUData {
                 return reg_F_ALT;
             case I:
                 return reg_I;
+            case R:
+                return reg_R & 0xFF; // R is not 8 bit internally
             default:
-                return reg_R;
+                return 0;
+        }
+    }
+
+    /**
+     * Set a register value via a register name
+     *
+     * @param name Register name
+     * @param value the value to set
+     */
+    public void setRegisterValue(RegisterNames name, int value) {
+        switch (name) {
+            case BC:
+                setBC(value);
+                break;
+            case DE:
+                setDE(value);
+                break;
+            case HL:
+                setHL(value);
+                break;
+            case BC_ALT:
+                setBC_ALT(value);
+                break;
+            case DE_ALT:
+                setDE_ALT(value);
+                break;
+            case HL_ALT:
+                setHL_ALT(value);
+                break;
+            case IX:
+                reg_IX = value & 0xFFFF;
+                break;
+            case IY:
+                reg_IY = value & 0xFFFF;
+                break;
+            case SP:
+                reg_SP = value & 0xFFFF;
+                break;
+            case PC:
+                setProgramCounter(value);
+                break;
+            case A:
+                reg_A = value & 0xFF;
+                break;
+            case F:
+                reg_F = value & 0xFF;
+                break;
+            case A_ALT:
+                reg_A_ALT = value & 0xFF;
+                break;
+            case F_ALT:
+                reg_F_ALT = value & 0xFF;
+                break;
+            case I:
+                reg_I = value & 0xFF;
+                break;
+            case R:
+                reg_R = value & 0xFF;
+                break;
+            default:
+                // should never reach this line of code
         }
     }
 
