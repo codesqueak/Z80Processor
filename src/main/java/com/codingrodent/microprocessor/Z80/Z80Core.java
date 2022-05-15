@@ -16,7 +16,7 @@
 package com.codingrodent.microprocessor.Z80;
 
 import com.codingrodent.microprocessor.*;
-import com.codingrodent.microprocessor.Z80.CPUConstants.*;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import static com.codingrodent.microprocessor.Z80.CPUConstants.*;
 
@@ -27,7 +27,7 @@ public class Z80Core implements ICPUData {
 
     //
     // maximum address size
-    private final static int MAX_ADDRESS = 65535;
+    private final static int MAX_ADDRESS = 0xFFFF;
     private final IMemory ram;
     private final IBaseDevice io;
     //
@@ -52,6 +52,7 @@ public class Z80Core implements ICPUData {
      * @param ram Interface to the memory architecture
      * @param io  Interface to the i/o port architecture
      */
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "We may want the memory & I/O changed externally")
     public Z80Core(IMemory ram, IBaseDevice io) {
         this.ram = ram;
         this.io = io;
@@ -152,102 +153,50 @@ public class Z80Core implements ICPUData {
      * @return The register value
      */
     public int getRegisterValue(RegisterNames name) {
-        switch (name) {
-            case BC:
-                return getBC();
-            case DE:
-                return getDE();
-            case HL:
-                return getHL();
-            case BC_ALT:
-                return getBC_ALT();
-            case DE_ALT:
-                return getDE_ALT();
-            case HL_ALT:
-                return getHL_ALT();
-            case IX:
-                return reg_IX;
-            case IY:
-                return reg_IY;
-            case SP:
-                return getSP();
-            case PC:
-                return reg_PC;
-            case A:
-                return reg_A;
-            case F:
-                return reg_F;
-            case A_ALT:
-                return reg_A_ALT;
-            case F_ALT:
-                return reg_F_ALT;
-            case I:
-                return reg_I;
-            case R:
-                return reg_R & 0xFF; // R is not 8 bit internally
-            default:
-                return 0;
-        }
+        return switch (name) {
+            case BC -> getBC();
+            case DE -> getDE();
+            case HL -> getHL();
+            case BC_ALT -> getBC_ALT();
+            case DE_ALT -> getDE_ALT();
+            case HL_ALT -> getHL_ALT();
+            case IX -> reg_IX;
+            case IY -> reg_IY;
+            case SP -> getSP();
+            case PC -> reg_PC;
+            case A -> reg_A;
+            case F -> reg_F;
+            case A_ALT -> reg_A_ALT;
+            case F_ALT -> reg_F_ALT;
+            case I -> reg_I;
+            case R -> reg_R & 0x7F;
+        };
     }
 
     /**
      * Set a register value via a register name
      *
-     * @param name Register name
+     * @param name  Register name
      * @param value the value to set
      */
     public void setRegisterValue(RegisterNames name, int value) {
         switch (name) {
-            case BC:
-                setBC(value);
-                break;
-            case DE:
-                setDE(value);
-                break;
-            case HL:
-                setHL(value);
-                break;
-            case BC_ALT:
-                setBC_ALT(value);
-                break;
-            case DE_ALT:
-                setDE_ALT(value);
-                break;
-            case HL_ALT:
-                setHL_ALT(value);
-                break;
-            case IX:
-                reg_IX = value & 0xFFFF;
-                break;
-            case IY:
-                reg_IY = value & 0xFFFF;
-                break;
-            case SP:
-                reg_SP = value & 0xFFFF;
-                break;
-            case PC:
-                setProgramCounter(value);
-                break;
-            case A:
-                reg_A = value & 0xFF;
-                break;
-            case F:
-                reg_F = value & 0xFF;
-                break;
-            case A_ALT:
-                reg_A_ALT = value & 0xFF;
-                break;
-            case F_ALT:
-                reg_F_ALT = value & 0xFF;
-                break;
-            case I:
-                reg_I = value & 0xFF;
-                break;
-            case R:
-                reg_R = value & 0xFF;
-                break;
-            default:
-                // should never reach this line of code
+            case BC -> setBC(value);
+            case DE -> setDE(value);
+            case HL -> setHL(value);
+            case BC_ALT -> setBC_ALT(value);
+            case DE_ALT -> setDE_ALT(value);
+            case HL_ALT -> setHL_ALT(value);
+            case IX -> reg_IX = value & 0xFFFF;
+            case IY -> reg_IY = value & 0xFFFF;
+            case SP -> reg_SP = value & 0xFFFF;
+            case PC -> setProgramCounter(value);
+            case A -> reg_A = value & 0xFF;
+            case F -> reg_F = value & 0xFF;
+            case A_ALT -> reg_A_ALT = value & 0xFF;
+            case F_ALT -> reg_F_ALT = value & 0xFF;
+            case I -> reg_I = value & 0xFF;
+            case R -> reg_R = value & 0x7F;
         }
     }
 
@@ -263,10 +212,8 @@ public class Z80Core implements ICPUData {
     /**
      * Execute a single instruction at the present program counter (PC) then return. The internal state of the processor
      * is updated along with the T state count.
-     *
-     * @throws ProcessorException Thrown if an unexpected state arises
      */
-    public void executeOneInstruction() throws ProcessorException {
+    public void executeOneInstruction() {
         //
         // NMI check first
         if (NMI_FF) {
@@ -287,12 +234,7 @@ public class Z80Core implements ICPUData {
         halt = false;
         instruction = ram.readByte(reg_PC);
         incPC();
-        try {
-            decodeOneByteInstruction(instruction);
-        } catch (ProcessorException e) {
-            decPC();
-            throw e;
-        }
+        decodeOneByteInstruction(instruction);
     }
 
     /**
@@ -312,150 +254,66 @@ public class Z80Core implements ICPUData {
     }
 
     /**
-     * Execute all one byte instructions and pass multi-byte instructions on for further processing
+     * Execute all one byte instructions and pass multibyte instructions on for further processing
      *
      * @param opcode Instruction byte
-     * @throws ProcessorException Thrown if anything goes wrong
      */
-    private void decodeOneByteInstruction(int opcode) throws ProcessorException {
+    @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "Bytes can only be 0..255")
+    private void decodeOneByteInstruction(int opcode) {
         tStates = tStates + OPCODE_T_STATES[opcode];
         switch (opcode) {
-            case 0x00: {
-                break;
+            case 0x00 -> {
             } // null
-            case 0x01: {
+            case 0x01 -> {
                 setBC(ram.readWord(reg_PC));
                 inc2PC();
-                break;
             } // LD bc, nnnn
-            case 0x02: {
-                ram.writeByte(getBC(), reg_A);
-                break;
-            } // LD (BC), A
-            case 0x03: {
-                setBC(ALU16BitInc(getBC()));
-                break;
-            } // inc BC
-            case 0x04: {
-                reg_B = ALU8BitInc(reg_B);
-                break;
-            } // inc b
-            case 0x05: {
-                reg_B = ALU8BitDec(reg_B);
-                break;
-            } // dec b
-            case 0x06: {
+            case 0x02 -> ram.writeByte(getBC(), reg_A); // LD (BC), A
+            case 0x03 -> setBC(ALU16BitInc(getBC())); // inc BC
+            case 0x04 -> reg_B = ALU8BitInc(reg_B); // inc b
+            case 0x05 -> reg_B = ALU8BitDec(reg_B); // dec b
+            case 0x06 -> {
                 reg_B = ram.readByte(reg_PC);
                 incPC();
-                break;
             } // ld b,nn
-            case 0x07: {
-                RLCA();
-                break;
-            } // rlca
-            case 0x08: {
-                EXAFAF();
-                break;
-            } // ex af,af'
-            case 0x09: {
-                setHL(ALU16BitAdd(getBC()));
-                break;
-            } // add hl,bc
-            case 0x0A: {
-                reg_A = ram.readByte(getBC());
-                break;
-            } // LD a, (bc)
-            case 0x0B: {
-                setBC(ALU16BitDec(getBC()));
-                break;
-            } // dec bc
-            case 0x0C: {
-                reg_C = ALU8BitInc(reg_C);
-                break;
-            } // inc c
-            case 0x0D: {
-                reg_C = ALU8BitDec(reg_C);
-                break;
-            } // dec c
-            case 0x0E: {
+            case 0x07 -> RLCA(); // rlca
+            case 0x08 -> EXAFAF(); // ex af,af'
+            case 0x09 -> setHL(ALU16BitAdd(getBC())); // add hl,bc
+            case 0x0A -> reg_A = ram.readByte(getBC()); // LD a, (bc)
+            case 0x0B -> setBC(ALU16BitDec(getBC())); // dec bc
+            case 0x0C -> reg_C = ALU8BitInc(reg_C); // inc c
+            case 0x0D -> reg_C = ALU8BitDec(reg_C); // dec c
+            case 0x0E -> {
                 reg_C = ram.readByte(reg_PC);
                 incPC();
-                break;
             } // ld c,n
-            case 0x0F: {
-                RRCA();
-                break;
-            } // rrca
-
-            case 0x10: {
-                djnz();
-                break;
-            } // djnz
-            case 0x11: {
+            case 0x0F -> RRCA(); // rrca
+            case 0x10 -> djnz(); // djnz
+            case 0x11 -> {
                 setDE(ram.readWord(reg_PC));
                 inc2PC();
-                break;
             } // LD de, nnnn
-            case 0x12: {
-                ram.writeByte(getDE(), reg_A);
-                break;
-            } // LD (de), A
-            case 0x13: {
-                setDE(ALU16BitInc(getDE()));
-                break;
-            } // inc de
-            case 0x14: {
-                reg_D = ALU8BitInc(reg_D);
-                break;
-            } // inc d
-            case 0x15: {
-                reg_D = ALU8BitDec(reg_D);
-                break;
-            } // dec d
-            case 0x16: {
+            case 0x12 -> ram.writeByte(getDE(), reg_A); // LD (de), A
+            case 0x13 -> setDE(ALU16BitInc(getDE())); // inc de
+            case 0x14 -> reg_D = ALU8BitInc(reg_D); // inc d
+            case 0x15 -> reg_D = ALU8BitDec(reg_D); // dec d
+            case 0x16 -> {
                 reg_D = ram.readByte(reg_PC);
                 incPC();
-                break;
             } // ld d,nn
-            case 0x17: {
-                RLA();
-                break;
-            } // rla
-            case 0x18: {
-                relativeJump();
-                break;
-            } // jr
-            case 0x19: {
-                setHL(ALU16BitAdd(getDE()));
-                break;
-            } // add hl,de
-            case 0x1A: {
-                reg_A = ram.readByte(getDE());
-                break;
-            } // LD a, (de)
-            case 0x1B: {
-                setDE(ALU16BitDec(getDE()));
-                break;
-            } // dec de
-            case 0x1C: {
-                reg_E = ALU8BitInc(reg_E);
-                break;
-            } // inc e
-            case 0x1D: {
-                reg_E = ALU8BitDec(reg_E);
-                break;
-            } // dec e
-            case 0x1E: {
+            case 0x17 -> RLA(); // rla
+            case 0x18 -> relativeJump(); // jr
+            case 0x19 -> setHL(ALU16BitAdd(getDE())); // add hl,de
+            case 0x1A -> reg_A = ram.readByte(getDE()); // LD a, (de)
+            case 0x1B -> setDE(ALU16BitDec(getDE())); // dec de
+            case 0x1C -> reg_E = ALU8BitInc(reg_E); // inc e
+            case 0x1D -> reg_E = ALU8BitDec(reg_E); // dec e
+            case 0x1E -> {
                 reg_E = ram.readByte(reg_PC);
                 incPC();
-                break;
             } // ld e,n
-            case 0x1F: {
-                RRA();
-                break;
-            } // rra
-
-            case 0x20: {
+            case 0x1F -> RRA(); // rra
+            case 0x20 -> {
                 if (!getZ()) {
                     tStates = tStates + 12;
                     relativeJump();
@@ -463,40 +321,24 @@ public class Z80Core implements ICPUData {
                     incPC();
                     tStates = tStates + 7;
                 }
-                break;
             } // jr nz
-            case 0x21: {
+            case 0x21 -> {
                 setHL(ram.readWord(reg_PC));
                 inc2PC();
-                break;
             } // LD hl, nnnn
-            case 0x22: {
+            case 0x22 -> {
                 ram.writeWord(ram.readWord(reg_PC), getHL());
                 inc2PC();
-                break;
             } // LD (nnnn), hl
-            case 0x23: {
-                setHL(ALU16BitInc(getHL()));
-                break;
-            } // inc hl
-            case 0x24: {
-                reg_H = ALU8BitInc(reg_H);
-                break;
-            } // inc h
-            case 0x25: {
-                reg_H = ALU8BitDec(reg_H);
-                break;
-            } // dec h
-            case 0x26: {
+            case 0x23 -> setHL(ALU16BitInc(getHL())); // inc hl
+            case 0x24 -> reg_H = ALU8BitInc(reg_H); // inc h
+            case 0x25 -> reg_H = ALU8BitDec(reg_H); // dec h
+            case 0x26 -> {
                 reg_H = ram.readByte(reg_PC);
                 incPC();
-                break;
             } // ld h,nn
-            case 0x27: {
-                DAA();
-                break;
-            } // daa
-            case 0x28: {
+            case 0x27 -> DAA(); // daa
+            case 0x28 -> {
                 if (getZ()) {
                     tStates = tStates + 12;
                     relativeJump();
@@ -504,40 +346,22 @@ public class Z80Core implements ICPUData {
                     incPC();
                     tStates = tStates + 7;
                 }
-                break;
             } // jr z
-            case 0x29: {
-                setHL(ALU16BitAdd(getHL()));
-                break;
-            } // add hl,hl
-            case 0x2A: {
+            case 0x29 -> setHL(ALU16BitAdd(getHL())); // add hl,hl
+            case 0x2A -> {
                 setHL(ram.readWord(ram.readWord(reg_PC)));
                 inc2PC();
-                break;
             } // LD hl, (nnnn)
-            case 0x2B: {
-                setHL(ALU16BitDec(getHL()));
-                break;
-            } // dec hl
-            case 0x2C: {
-                reg_L = ALU8BitInc(reg_L);
-                break;
-            } // inc l
-            case 0x2D: {
-                reg_L = ALU8BitDec(reg_L);
-                break;
-            } // dec l
-            case 0x2E: {
+            case 0x2B -> setHL(ALU16BitDec(getHL())); // dec hl
+            case 0x2C -> reg_L = ALU8BitInc(reg_L); // inc l
+            case 0x2D -> reg_L = ALU8BitDec(reg_L); // dec l
+            case 0x2E -> {
                 reg_L = ram.readByte(reg_PC);
                 incPC();
-                break;
-            } // ld l,n
-            case 0x2F: {
-                CPL();
-                break;
-            } // rra
 
-            case 0x30: {
+            } // ld l,n
+            case 0x2F -> CPL(); // rra
+            case 0x30 -> {
                 if (!getC()) {
                     tStates = tStates + 12;
                     relativeJump();
@@ -545,40 +369,24 @@ public class Z80Core implements ICPUData {
                     incPC();
                     tStates = tStates + 7;
                 }
-                break;
             } // jr nc
-            case 0x31: {
+            case 0x31 -> {
                 reg_SP = ram.readWord(reg_PC);
                 inc2PC();
-                break;
             } // LD sp, nnnn
-            case 0x32: {
+            case 0x32 -> {
                 ram.writeByte(ram.readWord(reg_PC), reg_A);
                 inc2PC();
-                break;
             } // LD (nnnn), A
-            case 0x33: {
-                reg_SP = ALU16BitInc(reg_SP);
-                break;
-            } // inc SP
-            case 0x34: {
-                ram.writeByte(getHL(), ALU8BitInc(ram.readByte(getHL())));
-                break;
-            } // inc (hl)
-            case 0x35: {
-                ram.writeByte(getHL(), ALU8BitDec(ram.readByte(getHL())));
-                break;
-            } // dec (hl)
-            case 0x36: {
+            case 0x33 -> reg_SP = ALU16BitInc(reg_SP); // inc SP
+            case 0x34 -> ram.writeByte(getHL(), ALU8BitInc(ram.readByte(getHL()))); // inc (hl)
+            case 0x35 -> ram.writeByte(getHL(), ALU8BitDec(ram.readByte(getHL()))); // dec (hl)
+            case 0x36 -> {
                 ram.writeByte(getHL(), ram.readByte(reg_PC));
                 incPC();
-                break;
             } // ld (hl), nn
-            case 0x37: {
-                SCF();
-                break;
-            } // scf
-            case 0x38: {
+            case 0x37 -> SCF(); // scf
+            case 0x38 -> {
                 if (getC()) {
                     tStates = tStates + 12;
                     relativeJump();
@@ -586,772 +394,355 @@ public class Z80Core implements ICPUData {
                     incPC();
                     tStates = tStates + 7;
                 }
-                break;
             } // jr c
-            case 0x39: {
-                setHL(ALU16BitAdd(reg_SP));
-                break;
-            } // add hl,sp
-            case 0x3A: {
+            case 0x39 -> setHL(ALU16BitAdd(reg_SP)); // add hl,sp
+            case 0x3A -> {
                 reg_A = ram.readByte(ram.readWord(reg_PC));
                 inc2PC();
-                break;
             } // LD a, (nnnn)
-            case 0x3B: {
-                reg_SP = ALU16BitDec(reg_SP);
-                break;
-            } // dec sp
-            case 0x3C: {
-                reg_A = ALU8BitInc(reg_A);
-                break;
-            } // inc a
-            case 0x3D: {
-                reg_A = ALU8BitDec(reg_A);
-                break;
-            } // dec a
-            case 0x3E: {
+            case 0x3B -> reg_SP = ALU16BitDec(reg_SP); // dec sp
+            case 0x3C -> reg_A = ALU8BitInc(reg_A); // inc a
+            case 0x3D -> reg_A = ALU8BitDec(reg_A); // dec a
+            case 0x3E -> {
                 reg_A = ram.readByte(reg_PC);
                 incPC();
-                break;
             } // ld a,n
-            case 0x3F: {
-                CCF();
-                break;
-            } // ccf
-
+            case 0x3F -> CCF(); // ccf
             // LD B,*
-            case 0x40: /* reg_B = reg_B; */
-                break; // ld b,b
-            case 0x41:
-                reg_B = reg_C;
-                break; // ld b,c
-            case 0x42:
-                reg_B = reg_D;
-                break; // ld b,d
-            case 0x43:
-                reg_B = reg_E;
-                break; // ld b,e
-            case 0x44:
-                reg_B = reg_H;
-                break; // ld b,h
-            case 0x45:
-                reg_B = reg_L;
-                break; // ld b,l
-            case 0x46:
-                reg_B = ram.readByte(getHL());
-                break; // ld b,(hl)
-            case 0x47:
-                reg_B = reg_A;
-                break; // ld b,a
+            case 0x40 -> {
+            }  /* reg_B = reg_B; */
+            // ld b,b
+            case 0x41 -> reg_B = reg_C;
+            // ld b,c
+            case 0x42 -> reg_B = reg_D;
+            // ld b,d
+            case 0x43 -> reg_B = reg_E;
+            // ld b,e
+            case 0x44 -> reg_B = reg_H;
+            // ld b,h
+            case 0x45 -> reg_B = reg_L;
+            // ld b,l
+            case 0x46 -> reg_B = ram.readByte(getHL());
+            // ld b,(hl)
+            case 0x47 -> reg_B = reg_A;
+            // ld b,a
             // LD C,*
-            case 0x48:
-                reg_C = reg_B;
-                break; // ld c,b
-            case 0x49: /* reg_C = reg_C; */
-                break; // ld c,c
-            case 0x4A:
-                reg_C = reg_D;
-                break; // ld c,d
-            case 0x4B:
-                reg_C = reg_E;
-                break; // ld c,e
-            case 0x4C:
-                reg_C = reg_H;
-                break; // ld c,h
-            case 0x4D:
-                reg_C = reg_L;
-                break; // ld c,l
-            case 0x4E:
-                reg_C = ram.readByte(getHL());
-                break; // ld c,(hl)
-            case 0x4F:
-                reg_C = reg_A;
-                break; // ld c,a
+            case 0x48 -> reg_C = reg_B;
+            // ld c,b
+            case 0x49 -> {
+            }/* reg_C = reg_C; */
+            // ld c,c
+            case 0x4A -> reg_C = reg_D;
+            // ld c,d
+            case 0x4B -> reg_C = reg_E;
+            // ld c,e
+            case 0x4C -> reg_C = reg_H;
+            // ld c,h
+            case 0x4D -> reg_C = reg_L;
+            // ld c,l
+            case 0x4E -> reg_C = ram.readByte(getHL());
+            // ld c,(hl)
+            case 0x4F -> reg_C = reg_A;
+            // ld c,a
             // LD D,*
-            case 0x50:
-                reg_D = reg_B;
-                break; // ld d,b
-            case 0x51:
-                reg_D = reg_C;
-                break; // ld d,c
-            case 0x52: /* reg_D = reg_D; */
-                break; // ld d,d
-            case 0x53:
-                reg_D = reg_E;
-                break; // ld d,e
-            case 0x54:
-                reg_D = reg_H;
-                break; // ld d,h
-            case 0x55:
-                reg_D = reg_L;
-                break; // ld d,l
-            case 0x56:
-                reg_D = ram.readByte(getHL());
-                break; // ld d,(hl)
-            case 0x57:
-                reg_D = reg_A;
-                break; // ld d,a
+            case 0x50 -> reg_D = reg_B;
+            // ld d,b
+            case 0x51 -> reg_D = reg_C;
+            // ld d,c
+            case 0x52 -> {
+            }  /* reg_D = reg_D; */
+            // ld d,d
+            case 0x53 -> reg_D = reg_E;
+            // ld d,e
+            case 0x54 -> reg_D = reg_H;
+            // ld d,h
+            case 0x55 -> reg_D = reg_L;
+            // ld d,l
+            case 0x56 -> reg_D = ram.readByte(getHL());
+            // ld d,(hl)
+            case 0x57 -> reg_D = reg_A;
+            // ld d,a
             // LD E,*
-            case 0x58:
-                reg_E = reg_B;
-                break; // ld e,b
-            case 0x59:
-                reg_E = reg_C;
-                break; // ld e,c
-            case 0x5A:
-                reg_E = reg_D;
-                break; // ld e,d
-            case 0x5B: /* reg_E = reg_E; */
-                break; // ld e,e
-            case 0x5C:
-                reg_E = reg_H;
-                break; // ld e,h
-            case 0x5D:
-                reg_E = reg_L;
-                break; // ld e,l
-            case 0x5E:
-                reg_E = ram.readByte(getHL());
-                break; // ld e,(hl)
-            case 0x5F:
-                reg_E = reg_A;
-                break; // ld e,a
+            case 0x58 -> reg_E = reg_B;
+            // ld e,b
+            case 0x59 -> reg_E = reg_C;
+            // ld e,c
+            case 0x5A -> reg_E = reg_D;
+            // ld e,d
+            case 0x5B -> {
+            }  /* reg_E = reg_E; */
+            // ld e,e
+            case 0x5C -> reg_E = reg_H;
+            // ld e,h
+            case 0x5D -> reg_E = reg_L;
+            // ld e,l
+            case 0x5E -> reg_E = ram.readByte(getHL());
+            // ld e,(hl)
+            case 0x5F -> reg_E = reg_A;
+            // ld e,a
             // LD H,*
-            case 0x60:
-                reg_H = reg_B;
-                break; // ld h,b
-            case 0x61:
-                reg_H = reg_C;
-                break; // ld h,c
-            case 0x62:
-                reg_H = reg_D;
-                break; // ld h,d
-            case 0x63:
-                reg_H = reg_E;
-                break; // ld h,e
-            case 0x64: /* reg_H = reg_H; */
-                break; // ld h,h
-            case 0x65:
-                reg_H = reg_L;
-                break; // ld h,l
-            case 0x66:
-                reg_H = ram.readByte(getHL());
-                break; // ld h,(hl)
-            case 0x67:
-                reg_H = reg_A;
-                break; // ld h,a
+            case 0x60 -> reg_H = reg_B;
+            // ld h,b
+            case 0x61 -> reg_H = reg_C;
+            // ld h,c
+            case 0x62 -> reg_H = reg_D;
+            // ld h,d
+            case 0x63 -> reg_H = reg_E;
+            // ld h,e
+            case 0x64 -> {
+            }  /* reg_H = reg_H; */
+            // ld h,h
+            case 0x65 -> reg_H = reg_L;
+            // ld h,l
+            case 0x66 -> reg_H = ram.readByte(getHL());
+            // ld h,(hl)
+            case 0x67 -> reg_H = reg_A;
+            // ld h,a
             // LD L,*
-            case 0x68:
-                reg_L = reg_B;
-                break; // ld l,b
-            case 0x69:
-                reg_L = reg_C;
-                break; // ld l,c
-            case 0x6A:
-                reg_L = reg_D;
-                break; // ld l,d
-            case 0x6B:
-                reg_L = reg_E;
-                break; // ld l,e
-            case 0x6C:
-                reg_L = reg_H;
-                break; // ld l,h
-            case 0x6D: /* reg_L = reg_L; */
-                break; // ld l,l
-            case 0x6E:
-                reg_L = ram.readByte(getHL());
-                break; // ld l,(hl)
-            case 0x6F:
-                reg_L = reg_A;
-                break; // ld l,a
+            case 0x68 -> reg_L = reg_B;
+            // ld l,b
+            case 0x69 -> reg_L = reg_C;
+            // ld l,c
+            case 0x6A -> reg_L = reg_D;
+            // ld l,d
+            case 0x6B -> reg_L = reg_E;
+            // ld l,e
+            case 0x6C -> reg_L = reg_H;
+            // ld l,h
+            case 0x6D -> {
+            }  /* reg_L = reg_L; */
+            // ld l,l
+            case 0x6E -> reg_L = ram.readByte(getHL());
+            // ld l,(hl)
+            case 0x6F -> reg_L = reg_A;
+            // ld l,a
             // LD (HL),*
-            case 0x70:
-                ram.writeByte(getHL(), reg_B);
-                break; // ld (hl),b
-            case 0x71:
-                ram.writeByte(getHL(), reg_C);
-                break; // ld (hl),c
-            case 0x72:
-                ram.writeByte(getHL(), reg_D);
-                break; // ld (hl),d
-            case 0x73:
-                ram.writeByte(getHL(), reg_E);
-                break; // ld (hl),e
-            case 0x74:
-                ram.writeByte(getHL(), reg_H);
-                break; // ld (hl),h
-            case 0x75:
-                ram.writeByte(getHL(), reg_L);
-                break; // ld (hl),l
-            case 0x76: {
+            case 0x70 -> ram.writeByte(getHL(), reg_B);
+            // ld (hl),b
+            case 0x71 -> ram.writeByte(getHL(), reg_C);
+            // ld (hl),c
+            case 0x72 -> ram.writeByte(getHL(), reg_D);
+            // ld (hl),d
+            case 0x73 -> ram.writeByte(getHL(), reg_E);
+            // ld (hl),e
+            case 0x74 -> ram.writeByte(getHL(), reg_H);
+            // ld (hl),h
+            case 0x75 -> ram.writeByte(getHL(), reg_L);
+            // ld (hl),l
+            case 0x76 -> {
                 decPC(); // execute it forever !
                 halt = true;
-                break;
             }
-            case 0x77:
-                ram.writeByte(getHL(), reg_A);
-                break; // ld (hl),a
+            case 0x77 -> ram.writeByte(getHL(), reg_A);
+            // ld (hl),a
             // LD A,*
-            case 0x78:
-                reg_A = reg_B;
-                break; // ld a,b
-            case 0x79:
-                reg_A = reg_C;
-                break; // ld a,c
-            case 0x7A:
-                reg_A = reg_D;
-                break; // ld a,d
-            case 0x7B:
-                reg_A = reg_E;
-                break; // ld a,e
-            case 0x7C:
-                reg_A = reg_H;
-                break; // ld a,h
-            case 0x7D:
-                reg_A = reg_L;
-                break; // ld a,l
-            case 0x7E:
-                reg_A = ram.readByte(getHL());
-                break; // ld a,(hl)
-            case 0x7F: /* reg_A = reg_A; */
-                break; // ld a,a
+            case 0x78 -> reg_A = reg_B;
+            // ld a,b
+            case 0x79 -> reg_A = reg_C;
+            // ld a,c
+            case 0x7A -> reg_A = reg_D;
+            // ld a,d
+            case 0x7B -> reg_A = reg_E;
+            // ld a,e
+            case 0x7C -> reg_A = reg_H;
+            // ld a,h
+            case 0x7D -> reg_A = reg_L;
+            // ld a,l
+            case 0x7E -> reg_A = ram.readByte(getHL());
+            // ld a,(hl)
+            case 0x7F -> {
+            }  /* reg_A = reg_A; */
+            // ld a,a
+            // add
+            case 0x80 -> ALU8BitAdd(reg_B);
+            case 0x81 -> ALU8BitAdd(reg_C);
+            case 0x82 -> ALU8BitAdd(reg_D);
+            case 0x83 -> ALU8BitAdd(reg_E);
+            case 0x84 -> ALU8BitAdd(reg_H);
+            case 0x85 -> ALU8BitAdd(reg_L);
+            case 0x86 -> ALU8BitAdd(ram.readByte(getHL()));
+            case 0x87 -> ALU8BitAdd(reg_A);
+            // adc
+            case 0x88 -> ALU8BitAdc(reg_B);
+            case 0x89 -> ALU8BitAdc(reg_C);
+            case 0x8A -> ALU8BitAdc(reg_D);
+            case 0x8B -> ALU8BitAdc(reg_E);
+            case 0x8C -> ALU8BitAdc(reg_H);
+            case 0x8D -> ALU8BitAdc(reg_L);
+            case 0x8E -> ALU8BitAdc(ram.readByte(getHL()));
+            case 0x8F -> ALU8BitAdc(reg_A);
+            // sub
+            case 0x90 -> ALU8BitSub(reg_B);
+            case 0x91 -> ALU8BitSub(reg_C);
+            case 0x92 -> ALU8BitSub(reg_D);
+            case 0x93 -> ALU8BitSub(reg_E);
+            case 0x94 -> ALU8BitSub(reg_H);
+            case 0x95 -> ALU8BitSub(reg_L);
+            case 0x96 -> ALU8BitSub(ram.readByte(getHL()));
+            case 0x97 -> ALU8BitSub(reg_A);
+            // sbc
+            case 0x98 -> ALU8BitSbc(reg_B);
+            case 0x99 -> ALU8BitSbc(reg_C);
+            case 0x9A -> ALU8BitSbc(reg_D);
+            case 0x9B -> ALU8BitSbc(reg_E);
+            case 0x9C -> ALU8BitSbc(reg_H);
+            case 0x9D -> ALU8BitSbc(reg_L);
+            case 0x9E -> ALU8BitSbc(ram.readByte(getHL()));
+            case 0x9F -> ALU8BitSbc(reg_A);
+            // and
+            case 0xA0 -> ALU8BitAnd(reg_B);
+            case 0xA1 -> ALU8BitAnd(reg_C);
+            case 0xA2 -> ALU8BitAnd(reg_D);
+            case 0xA3 -> ALU8BitAnd(reg_E);
+            case 0xA4 -> ALU8BitAnd(reg_H);
+            case 0xA5 -> ALU8BitAnd(reg_L);
+            case 0xA6 -> ALU8BitAnd(ram.readByte(getHL()));
+            case 0xA7 -> ALU8BitAnd(reg_A);
+            // xor
+            case 0xA8 -> ALU8BitXor(reg_B);
+            case 0xA9 -> ALU8BitXor(reg_C);
+            case 0xAA -> ALU8BitXor(reg_D);
+            case 0xAB -> ALU8BitXor(reg_E);
+            case 0xAC -> ALU8BitXor(reg_H);
+            case 0xAD -> ALU8BitXor(reg_L);
+            case 0xAE -> ALU8BitXor(ram.readByte(getHL()));
+            case 0xAF -> ALU8BitXor(reg_A);
+            // or
+            case 0xB0 -> ALU8BitOr(reg_B);
+            case 0xB1 -> ALU8BitOr(reg_C);
+            case 0xB2 -> ALU8BitOr(reg_D);
+            case 0xB3 -> ALU8BitOr(reg_E);
+            case 0xB4 -> ALU8BitOr(reg_H);
+            case 0xB5 -> ALU8BitOr(reg_L);
+            case 0xB6 -> ALU8BitOr(ram.readByte(getHL()));
+            case 0xB7 -> ALU8BitOr(reg_A);
+            // cp
+            case 0xB8 -> ALU8BitCp(reg_B);
+            case 0xB9 -> ALU8BitCp(reg_C);
+            case 0xBA -> ALU8BitCp(reg_D);
+            case 0xBB -> ALU8BitCp(reg_E);
+            case 0xBC -> ALU8BitCp(reg_H);
+            case 0xBD -> ALU8BitCp(reg_L);
+            case 0xBE -> ALU8BitCp(ram.readByte(getHL()));
+            case 0xBF -> ALU8BitCp(reg_A);
             //
-            case 0x80: {
-                ALU8BitAdd(reg_B);
-                break;
-            }
-            case 0x81: {
-                ALU8BitAdd(reg_C);
-                break;
-            }
-            case 0x82: {
-                ALU8BitAdd(reg_D);
-                break;
-            }
-            case 0x83: {
-                ALU8BitAdd(reg_E);
-                break;
-            }
-            case 0x84: {
-                ALU8BitAdd(reg_H);
-                break;
-            }
-            case 0x85: {
-                ALU8BitAdd(reg_L);
-                break;
-            }
-            case 0x86: {
-                ALU8BitAdd(ram.readByte(getHL()));
-                break;
-            }
-            case 0x87: {
-                ALU8BitAdd(reg_A);
-                break;
-            }
-            case 0x88: {
-                ALU8BitAdc(reg_B);
-                break;
-            }
-            case 0x89: {
-                ALU8BitAdc(reg_C);
-                break;
-            }
-            case 0x8A: {
-                ALU8BitAdc(reg_D);
-                break;
-            }
-            case 0x8B: {
-                ALU8BitAdc(reg_E);
-                break;
-            }
-            case 0x8C: {
-                ALU8BitAdc(reg_H);
-                break;
-            }
-            case 0x8D: {
-                ALU8BitAdc(reg_L);
-                break;
-            }
-            case 0x8E: {
-                ALU8BitAdc(ram.readByte(getHL()));
-                break;
-            }
-            case 0x8F: {
-                ALU8BitAdc(reg_A);
-                break;
-            }
-            //
-            case 0x90: {
-                ALU8BitSub(reg_B);
-                break;
-            }
-            case 0x91: {
-                ALU8BitSub(reg_C);
-                break;
-            }
-            case 0x92: {
-                ALU8BitSub(reg_D);
-                break;
-            }
-            case 0x93: {
-                ALU8BitSub(reg_E);
-                break;
-            }
-            case 0x94: {
-                ALU8BitSub(reg_H);
-                break;
-            }
-            case 0x95: {
-                ALU8BitSub(reg_L);
-                break;
-            }
-            case 0x96: {
-                ALU8BitSub(ram.readByte(getHL()));
-                break;
-            }
-            case 0x97: {
-                ALU8BitSub(reg_A);
-                break;
-            }
-            case 0x98: {
-                ALU8BitSbc(reg_B);
-                break;
-            }
-            case 0x99: {
-                ALU8BitSbc(reg_C);
-                break;
-            }
-            case 0x9A: {
-                ALU8BitSbc(reg_D);
-                break;
-            }
-            case 0x9B: {
-                ALU8BitSbc(reg_E);
-                break;
-            }
-            case 0x9C: {
-                ALU8BitSbc(reg_H);
-                break;
-            }
-            case 0x9D: {
-                ALU8BitSbc(reg_L);
-                break;
-            }
-            case 0x9E: {
-                ALU8BitSbc(ram.readByte(getHL()));
-                break;
-            }
-            case 0x9F: {
-                ALU8BitSbc(reg_A);
-                break;
-            }
-            //
-            case 0xA0: {
-                ALU8BitAnd(reg_B);
-                break;
-            }
-            case 0xA1: {
-                ALU8BitAnd(reg_C);
-                break;
-            }
-            case 0xA2: {
-                ALU8BitAnd(reg_D);
-                break;
-            }
-            case 0xA3: {
-                ALU8BitAnd(reg_E);
-                break;
-            }
-            case 0xA4: {
-                ALU8BitAnd(reg_H);
-                break;
-            }
-            case 0xA5: {
-                ALU8BitAnd(reg_L);
-                break;
-            }
-            case 0xA6: {
-                ALU8BitAnd(ram.readByte(getHL()));
-                break;
-            }
-            case 0xA7: {
-                ALU8BitAnd(reg_A);
-                break;
-            }
-            case 0xA8: {
-                ALU8BitXor(reg_B);
-                break;
-            }
-            case 0xA9: {
-                ALU8BitXor(reg_C);
-                break;
-            }
-            case 0xAA: {
-                ALU8BitXor(reg_D);
-                break;
-            }
-            case 0xAB: {
-                ALU8BitXor(reg_E);
-                break;
-            }
-            case 0xAC: {
-                ALU8BitXor(reg_H);
-                break;
-            }
-            case 0xAD: {
-                ALU8BitXor(reg_L);
-                break;
-            }
-            case 0xAE: {
-                ALU8BitXor(ram.readByte(getHL()));
-                break;
-            }
-            case 0xAF: {
-                ALU8BitXor(reg_A);
-                break;
-            }
-            //
-            case 0xB0: {
-                ALU8BitOr(reg_B);
-                break;
-            }
-            case 0xB1: {
-                ALU8BitOr(reg_C);
-                break;
-            }
-            case 0xB2: {
-                ALU8BitOr(reg_D);
-                break;
-            }
-            case 0xB3: {
-                ALU8BitOr(reg_E);
-                break;
-            }
-            case 0xB4: {
-                ALU8BitOr(reg_H);
-                break;
-            }
-            case 0xB5: {
-                ALU8BitOr(reg_L);
-                break;
-            }
-            case 0xB6: {
-                ALU8BitOr(ram.readByte(getHL()));
-                break;
-            }
-            case 0xB7: {
-                ALU8BitOr(reg_A);
-                break;
-            }
-            case 0xB8: {
-                ALU8BitCp(reg_B);
-                break;
-            }
-            case 0xB9: {
-                ALU8BitCp(reg_C);
-                break;
-            }
-            case 0xBA: {
-                ALU8BitCp(reg_D);
-                break;
-            }
-            case 0xBB: {
-                ALU8BitCp(reg_E);
-                break;
-            }
-            case 0xBC: {
-                ALU8BitCp(reg_H);
-                break;
-            }
-            case 0xBD: {
-                ALU8BitCp(reg_L);
-                break;
-            }
-            case 0xBE: {
-                ALU8BitCp(ram.readByte(getHL()));
-                break;
-            }
-            case 0xBF: {
-                ALU8BitCp(reg_A);
-                break;
-            }
-            //
-            case 0xC0: {
-                ret(!getZ());
-                break;
-            }
-            case 0xC1: {
+            case 0xC0 -> ret(!getZ());
+            case 0xC1 -> {
                 setBC(ram.readWord(reg_SP));
                 inc2SP();
-                break;
             }
-            case 0xC2: {
-                jp(!getZ());
-                break;
-            }
-            case 0xC3: {
-                jp();
-                break;
-            }
-            case 0xC4: {
-                call(!getZ());
-                break;
-            }
-            case 0xC5: {
+            case 0xC2 -> jp(!getZ());
+            case 0xC3 -> jp();
+            case 0xC4 -> call(!getZ());
+            case 0xC5 -> {
                 dec2SP();
                 ram.writeWord(reg_SP, getBC());
-                break;
             }
-            case 0xC6: {
+            case 0xC6 -> {
                 ALU8BitAdd(ram.readByte(reg_PC));
                 incPC();
-                break;
             }
-            case 0xc7: {
-                rst(0);
-                break;
-            }
-            case 0xC8: {
-                ret(getZ());
-                break;
-            }
-            case 0xC9: {
-                ret();
-                break;
-            }
-            case 0xCA: {
-                jp(getZ());
-                break;
-            }
-            case 0xCB: {
-                extendedCB();
-                break;
-            }
-            case 0xCC: {
-                call(getZ());
-                break;
-            }
-            case 0xCD: {
-                call();
-                break;
-            }
-            case 0xCE: {
+            case 0xc7 -> rst(0);
+            case 0xC8 -> ret(getZ());
+            case 0xC9 -> ret();
+            case 0xCA -> jp(getZ());
+            case 0xCB -> extendedCB();
+            case 0xCC -> call(getZ());
+            case 0xCD -> call();
+            case 0xCE -> {
                 ALU8BitAdc(ram.readByte(reg_PC));
                 incPC();
-                break;
             }
-            case 0xCF: {
-                rst(1);
-                break;
-            }
+            case 0xCF -> rst(1);
             //
-            case 0xD0: {
-                ret(!getC());
-                break;
-            }
-            case 0xD1: {
+            case 0xD0 -> ret(!getC());
+            case 0xD1 -> {
                 setDE(ram.readWord(reg_SP));
                 inc2SP();
-                break;
             }
-            case 0xD2: {
-                jp(!getC());
-                break;
-            }
-            case 0xD3: {
-                outNA();
-                break;
-            }
-            case 0xD4: {
-                call(!getC());
-                break;
-            }
-            case 0xD5: {
+            case 0xD2 -> jp(!getC());
+            case 0xD3 -> outNA();
+            case 0xD4 -> call(!getC());
+            case 0xD5 -> {
                 dec2SP();
                 ram.writeWord(reg_SP, getDE());
-                break;
             }
-            case 0xD6: {
+            case 0xD6 -> {
                 ALU8BitSub(ram.readByte(reg_PC));
                 incPC();
-                break;
             }
-            case 0xD7: {
-                rst(2);
-                break;
-            }
-            case 0xD8: {
-                ret(getC());
-                break;
-            }
-            case 0xD9: {
-                EXX();
-                break;
-            }
-            case 0xDA: {
-                jp(getC());
-                break;
-            }
-            case 0xDB: {
-                inAN();
-                break;
-            }
-            case 0xDC: {
-                call(getC());
-                break;
-            }
-            case 0xDD: {
-                extendedDD();
-                break;
-            }
-            case 0xDE: {
+            case 0xD7 -> rst(2);
+            case 0xD8 -> ret(getC());
+            case 0xD9 -> EXX();
+            case 0xDA -> jp(getC());
+            case 0xDB -> inAN();
+            case 0xDC -> call(getC());
+            case 0xDD -> extendedDD();
+            case 0xDE -> {
                 ALU8BitSbc(ram.readByte(reg_PC));
                 incPC();
-                break;
             }
-            case 0xDF: {
-                rst(3);
-                break;
-            }
+            case 0xDF -> rst(3);
             //
-            case 0xE0: {
-                ret(!getPV());
-                break;
-            }
-            case 0xE1: {
+            case 0xE0 -> ret(!getPV());
+            case 0xE1 -> {
                 setHL(ram.readWord(reg_SP));
                 inc2SP();
-                break;
             }
-            case 0xE2: {
-                jp(!getPV());
-                break;
-            }
-            case 0xE3: {
-                EXSPHL();
-                break;
-            }
-            case 0xE4: {
-                call(!getPV());
-                break;
-            }
-            case 0xE5: {
+            case 0xE2 -> jp(!getPV());
+            case 0xE3 -> EXSPHL();
+            case 0xE4 -> call(!getPV());
+            case 0xE5 -> {
                 dec2SP();
                 ram.writeWord(reg_SP, getHL());
-                break;
             }
-            case 0xE6: {
+            case 0xE6 -> {
                 ALU8BitAnd(ram.readByte(reg_PC));
                 incPC();
-                break;
             }
-            case 0xE7: {
-                rst(4);
-                break;
-            }
-            case 0xE8: {
-                ret(getPV());
-                break;
-            }
-            case 0xE9: {
-                reg_PC = getHL();
-                break;
-            }
-            case 0xEA: {
-                jp(getPV());
-                break;
-            }
-            case 0xEB: {
-                EXDEHL();
-                break;
-            }
-            case 0xEC: {
-                call(getPV());
-                break;
-            }
-            case 0xED: {
-                extendedED();
-                break;
-            }
-            case 0xEE: {
+            case 0xE7 -> rst(4);
+            case 0xE8 -> ret(getPV());
+            case 0xE9 -> reg_PC = getHL();
+            case 0xEA -> jp(getPV());
+            case 0xEB -> EXDEHL();
+            case 0xEC -> call(getPV());
+            case 0xED -> extendedED();
+            case 0xEE -> {
                 ALU8BitXor(ram.readByte(reg_PC));
                 incPC();
-                break;
             }
-            case 0xEF: {
-                rst(5);
-                break;
-            }
+            case 0xEF -> rst(5);
             //
-            case 0xF0: {
-                ret(!getS());
-                break;
-            }
-            case 0xF1: {
+            case 0xF0 -> ret(!getS());
+            case 0xF1 -> {
                 int temp = ram.readWord(reg_SP);
                 inc2SP();
                 reg_F = (temp & lsb);
                 reg_A = ((temp & msb) >> 8);
-                break;
             }
-            case 0xF2: {
-                jp(!getS());
-                break;
-            }
-            case 0xF3: {
-                DI();
-                break;
-            }
-            case 0xF4: {
-                call(!getS());
-                break;
-            }
-            case 0xF5: {
+            case 0xF2 -> jp(!getS());
+            case 0xF3 -> DI();
+            case 0xF4 -> call(!getS());
+            case 0xF5 -> {
                 dec2SP();
                 ram.writeWord(reg_SP, (reg_A << 8) | reg_F);
-                break;
             }
-            case 0xF6: {
+            case 0xF6 -> {
                 ALU8BitOr(ram.readByte(reg_PC));
                 incPC();
-                break;
             }
-            case 0xF7: {
-                rst(6);
-                break;
-            }
-            case 0xF8: {
-                ret(getS());
-                break;
-            }
-            case 0xF9: {
-                reg_SP = getHL();
-                break;
-            }
-            case 0xFA: {
-                jp(getS());
-                break;
-            }
-            case 0xFB: {
-                EI();
-                break;
-            }
-            case 0xFC: {
-                call(getS());
-                break;
-            }
-            case 0xFD: {
-                extendedFD();
-                break;
-            }
-            case 0xFE: {
+            case 0xF7 -> rst(6);
+            case 0xF8 -> ret(getS());
+            case 0xF9 -> reg_SP = getHL();
+            case 0xFA -> jp(getS());
+            case 0xFB -> EI();
+            case 0xFC -> call(getS());
+            case 0xFD -> extendedFD();
+            case 0xFE -> {
                 ALU8BitCp(ram.readByte(reg_PC));
                 incPC();
-                break;
             }
-            default: {
-                rst(7);
-                break;
-            }
+            case 0xFF -> rst(7);
         }
     }
 
@@ -1369,1053 +760,286 @@ public class Z80Core implements ICPUData {
      *
      * *****************************************************************************
      */
+    @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "Bytes can only be 0..255")
     private void extendedCB() {
         instruction = ram.readByte(reg_PC);
         incPC();
         tStates = tStates + OPCODE_CB_STATES[instruction];
         // decode stage
         switch (instruction) {
-            case 0x00: {
-                reg_B = shiftGenericRLC(reg_B);
-                break;
-            }
-            case 0x01: {
-                reg_C = shiftGenericRLC(reg_C);
-                break;
-            }
-            case 0x02: {
-                reg_D = shiftGenericRLC(reg_D);
-                break;
-            }
-            case 0x03: {
-                reg_E = shiftGenericRLC(reg_E);
-                break;
-            }
-            case 0x04: {
-                reg_H = shiftGenericRLC(reg_H);
-                break;
-            }
-            case 0x05: {
-                reg_L = shiftGenericRLC(reg_L);
-                break;
-            }
-            case 0x06: {
-                ram.writeByte(getHL(), shiftGenericRLC(ram.readByte(getHL())));
-                break;
-            }
-            case 0x07: {
-                reg_A = shiftGenericRLC(reg_A);
-                break;
-            }
-            case 0x08: {
-                reg_B = shiftGenericRRC(reg_B);
-                break;
-            }
-            case 0x09: {
-                reg_C = shiftGenericRRC(reg_C);
-                break;
-            }
-            case 0x0A: {
-                reg_D = shiftGenericRRC(reg_D);
-                break;
-            }
-            case 0x0B: {
-                reg_E = shiftGenericRRC(reg_E);
-                break;
-            }
-            case 0x0C: {
-                reg_H = shiftGenericRRC(reg_H);
-                break;
-            }
-            case 0x0D: {
-                reg_L = shiftGenericRRC(reg_L);
-                break;
-            }
-            case 0x0E: {
-                ram.writeByte(getHL(), shiftGenericRRC(ram.readByte(getHL())));
-                break;
-            }
-            case 0x0F: {
-                reg_A = shiftGenericRRC(reg_A);
-                break;
-            }
+            case 0x00 -> reg_B = shiftGenericRLC(reg_B);
+            case 0x01 -> reg_C = shiftGenericRLC(reg_C);
+            case 0x02 -> reg_D = shiftGenericRLC(reg_D);
+            case 0x03 -> reg_E = shiftGenericRLC(reg_E);
+            case 0x04 -> reg_H = shiftGenericRLC(reg_H);
+            case 0x05 -> reg_L = shiftGenericRLC(reg_L);
+            case 0x06 -> ram.writeByte(getHL(), shiftGenericRLC(ram.readByte(getHL())));
+            case 0x07 -> reg_A = shiftGenericRLC(reg_A);
+            case 0x08 -> reg_B = shiftGenericRRC(reg_B);
+            case 0x09 -> reg_C = shiftGenericRRC(reg_C);
+            case 0x0A -> reg_D = shiftGenericRRC(reg_D);
+            case 0x0B -> reg_E = shiftGenericRRC(reg_E);
+            case 0x0C -> reg_H = shiftGenericRRC(reg_H);
+            case 0x0D -> reg_L = shiftGenericRRC(reg_L);
+            case 0x0E -> ram.writeByte(getHL(), shiftGenericRRC(ram.readByte(getHL())));
+            case 0x0F -> reg_A = shiftGenericRRC(reg_A);
             //
-            case 0x10: {
-                reg_B = shiftGenericRL(reg_B);
-                break;
-            }
-            case 0x11: {
-                reg_C = shiftGenericRL(reg_C);
-                break;
-            }
-            case 0x12: {
-                reg_D = shiftGenericRL(reg_D);
-                break;
-            }
-            case 0x13: {
-                reg_E = shiftGenericRL(reg_E);
-                break;
-            }
-            case 0x14: {
-                reg_H = shiftGenericRL(reg_H);
-                break;
-            }
-            case 0x15: {
-                reg_L = shiftGenericRL(reg_L);
-                break;
-            }
-            case 0x16: {
-                ram.writeByte(getHL(), shiftGenericRL(ram.readByte(getHL())));
-                break;
-            }
-            case 0x17: {
-                reg_A = shiftGenericRL(reg_A);
-                break;
-            }
-            case 0x18: {
-                reg_B = shiftGenericRR(reg_B);
-                break;
-            }
-            case 0x19: {
-                reg_C = shiftGenericRR(reg_C);
-                break;
-            }
-            case 0x1A: {
-                reg_D = shiftGenericRR(reg_D);
-                break;
-            }
-            case 0x1B: {
-                reg_E = shiftGenericRR(reg_E);
-                break;
-            }
-            case 0x1C: {
-                reg_H = shiftGenericRR(reg_H);
-                break;
-            }
-            case 0x1D: {
-                reg_L = shiftGenericRR(reg_L);
-                break;
-            }
-            case 0x1E: {
-                ram.writeByte(getHL(), shiftGenericRR(ram.readByte(getHL())));
-                break;
-            }
-            case 0x1F: {
-                reg_A = shiftGenericRR(reg_A);
-                break;
-            }
+            case 0x10 -> reg_B = shiftGenericRL(reg_B);
+            case 0x11 -> reg_C = shiftGenericRL(reg_C);
+            case 0x12 -> reg_D = shiftGenericRL(reg_D);
+            case 0x13 -> reg_E = shiftGenericRL(reg_E);
+            case 0x14 -> reg_H = shiftGenericRL(reg_H);
+            case 0x15 -> reg_L = shiftGenericRL(reg_L);
+            case 0x16 -> ram.writeByte(getHL(), shiftGenericRL(ram.readByte(getHL())));
+            case 0x17 -> reg_A = shiftGenericRL(reg_A);
+            case 0x18 -> reg_B = shiftGenericRR(reg_B);
+            case 0x19 -> reg_C = shiftGenericRR(reg_C);
+            case 0x1A -> reg_D = shiftGenericRR(reg_D);
+            case 0x1B -> reg_E = shiftGenericRR(reg_E);
+            case 0x1C -> reg_H = shiftGenericRR(reg_H);
+            case 0x1D -> reg_L = shiftGenericRR(reg_L);
+            case 0x1E -> ram.writeByte(getHL(), shiftGenericRR(ram.readByte(getHL())));
+            case 0x1F -> reg_A = shiftGenericRR(reg_A);
             //
-            case 0x20: {
-                reg_B = shiftGenericSLA(reg_B);
-                break;
-            }
-            case 0x21: {
-                reg_C = shiftGenericSLA(reg_C);
-                break;
-            }
-            case 0x22: {
-                reg_D = shiftGenericSLA(reg_D);
-                break;
-            }
-            case 0x23: {
-                reg_E = shiftGenericSLA(reg_E);
-                break;
-            }
-            case 0x24: {
-                reg_H = shiftGenericSLA(reg_H);
-                break;
-            }
-            case 0x25: {
-                reg_L = shiftGenericSLA(reg_L);
-                break;
-            }
-            case 0x26: {
-                ram.writeByte(getHL(), shiftGenericSLA(ram.readByte(getHL())));
-                break;
-            }
-            case 0x27: {
-                reg_A = shiftGenericSLA(reg_A);
-                break;
-            }
-            case 0x28: {
-                reg_B = shiftGenericSRA(reg_B);
-                break;
-            }
-            case 0x29: {
-                reg_C = shiftGenericSRA(reg_C);
-                break;
-            }
-            case 0x2A: {
-                reg_D = shiftGenericSRA(reg_D);
-                break;
-            }
-            case 0x2B: {
-                reg_E = shiftGenericSRA(reg_E);
-                break;
-            }
-            case 0x2C: {
-                reg_H = shiftGenericSRA(reg_H);
-                break;
-            }
-            case 0x2D: {
-                reg_L = shiftGenericSRA(reg_L);
-                break;
-            }
-            case 0x2E: {
-                ram.writeByte(getHL(), shiftGenericSRA(ram.readByte(getHL())));
-                break;
-            }
-            case 0x2F: {
-                reg_A = shiftGenericSRA(reg_A);
-                break;
-            }
+            case 0x20 -> reg_B = shiftGenericSLA(reg_B);
+            case 0x21 -> reg_C = shiftGenericSLA(reg_C);
+            case 0x22 -> reg_D = shiftGenericSLA(reg_D);
+            case 0x23 -> reg_E = shiftGenericSLA(reg_E);
+            case 0x24 -> reg_H = shiftGenericSLA(reg_H);
+            case 0x25 -> reg_L = shiftGenericSLA(reg_L);
+            case 0x26 -> ram.writeByte(getHL(), shiftGenericSLA(ram.readByte(getHL())));
+            case 0x27 -> reg_A = shiftGenericSLA(reg_A);
+            case 0x28 -> reg_B = shiftGenericSRA(reg_B);
+            case 0x29 -> reg_C = shiftGenericSRA(reg_C);
+            case 0x2A -> reg_D = shiftGenericSRA(reg_D);
+            case 0x2B -> reg_E = shiftGenericSRA(reg_E);
+            case 0x2C -> reg_H = shiftGenericSRA(reg_H);
+            case 0x2D -> reg_L = shiftGenericSRA(reg_L);
+            case 0x2E -> ram.writeByte(getHL(), shiftGenericSRA(ram.readByte(getHL())));
+            case 0x2F -> reg_A = shiftGenericSRA(reg_A);
             //
             // Undocumented SLL [0x30 to 0x37]. Instruction faulty, feeds in 1 to bit 0
-            case 0x30: {
-                reg_B = shiftGenericSLL(reg_B);
-                break;
-            }
-            case 0x31: {
-                reg_C = shiftGenericSLL(reg_C);
-                break;
-            }
-            case 0x32: {
-                reg_D = shiftGenericSLL(reg_D);
-                break;
-            }
-            case 0x33: {
-                reg_E = shiftGenericSLL(reg_E);
-                break;
-            }
-            case 0x34: {
-                reg_H = shiftGenericSLL(reg_H);
-                break;
-            }
-            case 0x35: {
-                reg_L = shiftGenericSLL(reg_L);
-                break;
-            }
-            case 0x36: {
-                ram.writeByte(getHL(), shiftGenericSLL(ram.readByte(getHL())));
-                break;
-            }
-            case 0x37: {
-                reg_A = shiftGenericSLL(reg_A);
-                break;
-            }
+            case 0x30 -> reg_B = shiftGenericSLL(reg_B);
+            case 0x31 -> reg_C = shiftGenericSLL(reg_C);
+            case 0x32 -> reg_D = shiftGenericSLL(reg_D);
+            case 0x33 -> reg_E = shiftGenericSLL(reg_E);
+            case 0x34 -> reg_H = shiftGenericSLL(reg_H);
+            case 0x35 -> reg_L = shiftGenericSLL(reg_L);
+            case 0x36 -> ram.writeByte(getHL(), shiftGenericSLL(ram.readByte(getHL())));
+            case 0x37 -> reg_A = shiftGenericSLL(reg_A);
             //
-            case 0x38: {
-                reg_B = shiftGenericSRL(reg_B);
-                break;
-            }
-            case 0x39: {
-                reg_C = shiftGenericSRL(reg_C);
-                break;
-            }
-            case 0x3A: {
-                reg_D = shiftGenericSRL(reg_D);
-                break;
-            }
-            case 0x3B: {
-                reg_E = shiftGenericSRL(reg_E);
-                break;
-            }
-            case 0x3C: {
-                reg_H = shiftGenericSRL(reg_H);
-                break;
-            }
-            case 0x3D: {
-                reg_L = shiftGenericSRL(reg_L);
-                break;
-            }
-            case 0x3E: {
-                ram.writeByte(getHL(), shiftGenericSRL(ram.readByte(getHL())));
-                break;
-            }
-            case 0x3F: {
-                reg_A = shiftGenericSRL(reg_A);
-                break;
-            }
+            case 0x38 -> reg_B = shiftGenericSRL(reg_B);
+            case 0x39 -> reg_C = shiftGenericSRL(reg_C);
+            case 0x3A -> reg_D = shiftGenericSRL(reg_D);
+            case 0x3B -> reg_E = shiftGenericSRL(reg_E);
+            case 0x3C -> reg_H = shiftGenericSRL(reg_H);
+            case 0x3D -> reg_L = shiftGenericSRL(reg_L);
+            case 0x3E -> ram.writeByte(getHL(), shiftGenericSRL(ram.readByte(getHL())));
+            case 0x3F -> reg_A = shiftGenericSRL(reg_A);
             //
-            case 0x40: {
-                testBit(reg_B, 0);
-                break;
-            }
-            case 0x41: {
-                testBit(reg_C, 0);
-                break;
-            }
-            case 0x42: {
-                testBit(reg_D, 0);
-                break;
-            }
-            case 0x43: {
-                testBit(reg_E, 0);
-                break;
-            }
-            case 0x44: {
-                testBit(reg_H, 0);
-                break;
-            }
-            case 0x45: {
-                testBit(reg_L, 0);
-                break;
-            }
-            case 0x46: {
-                testBitInMemory(0);
-                break;
-            }
-            case 0x47: {
-                testBit(reg_A, 0);
-                break;
-            }
-            case 0x48: {
-                testBit(reg_B, 1);
-                break;
-            }
-            case 0x49: {
-                testBit(reg_C, 1);
-                break;
-            }
-            case 0x4A: {
-                testBit(reg_D, 1);
-                break;
-            }
-            case 0x4B: {
-                testBit(reg_E, 1);
-                break;
-            }
-            case 0x4C: {
-                testBit(reg_H, 1);
-                break;
-            }
-            case 0x4D: {
-                testBit(reg_L, 1);
-                break;
-            }
-            case 0x4E: {
-                testBitInMemory(1);
-                break;
-            }
-            case 0x4F: {
-                testBit(reg_A, 1);
-                break;
-            }
+            case 0x40 -> testBit(reg_B, 0);
+            case 0x41 -> testBit(reg_C, 0);
+            case 0x42 -> testBit(reg_D, 0);
+            case 0x43 -> testBit(reg_E, 0);
+            case 0x44 -> testBit(reg_H, 0);
+            case 0x45 -> testBit(reg_L, 0);
+            case 0x46 -> testBitInMemory(0);
+            case 0x47 -> testBit(reg_A, 0);
+            case 0x48 -> testBit(reg_B, 1);
+            case 0x49 -> testBit(reg_C, 1);
+            case 0x4A -> testBit(reg_D, 1);
+            case 0x4B -> testBit(reg_E, 1);
+            case 0x4C -> testBit(reg_H, 1);
+            case 0x4D -> testBit(reg_L, 1);
+            case 0x4E -> testBitInMemory(1);
+            case 0x4F -> testBit(reg_A, 1);
             //
-            case 0x50: {
-                testBit(reg_B, 2);
-                break;
-            }
-            case 0x51: {
-                testBit(reg_C, 2);
-                break;
-            }
-            case 0x52: {
-                testBit(reg_D, 2);
-                break;
-            }
-            case 0x53: {
-                testBit(reg_E, 2);
-                break;
-            }
-            case 0x54: {
-                testBit(reg_H, 2);
-                break;
-            }
-            case 0x55: {
-                testBit(reg_L, 2);
-                break;
-            }
-            case 0x56: {
-                testBitInMemory(2);
-                break;
-            }
-            case 0x57: {
-                testBit(reg_A, 2);
-                break;
-            }
-            case 0x58: {
-                testBit(reg_B, 3);
-                break;
-            }
-            case 0x59: {
-                testBit(reg_C, 3);
-                break;
-            }
-            case 0x5A: {
-                testBit(reg_D, 3);
-                break;
-            }
-            case 0x5B: {
-                testBit(reg_E, 3);
-                break;
-            }
-            case 0x5C: {
-                testBit(reg_H, 3);
-                break;
-            }
-            case 0x5D: {
-                testBit(reg_L, 3);
-                break;
-            }
-            case 0x5E: {
-                testBitInMemory(3);
-                break;
-            }
-            case 0x5F: {
-                testBit(reg_A, 3);
-                break;
-            }
+            case 0x50 -> testBit(reg_B, 2);
+            case 0x51 -> testBit(reg_C, 2);
+            case 0x52 -> testBit(reg_D, 2);
+            case 0x53 -> testBit(reg_E, 2);
+            case 0x54 -> testBit(reg_H, 2);
+            case 0x55 -> testBit(reg_L, 2);
+            case 0x56 -> testBitInMemory(2);
+            case 0x57 -> testBit(reg_A, 2);
+            case 0x58 -> testBit(reg_B, 3);
+            case 0x59 -> testBit(reg_C, 3);
+            case 0x5A -> testBit(reg_D, 3);
+            case 0x5B -> testBit(reg_E, 3);
+            case 0x5C -> testBit(reg_H, 3);
+            case 0x5D -> testBit(reg_L, 3);
+            case 0x5E -> testBitInMemory(3);
+            case 0x5F -> testBit(reg_A, 3);
             //
-            case 0x60: {
-                testBit(reg_B, 4);
-                break;
-            }
-            case 0x61: {
-                testBit(reg_C, 4);
-                break;
-            }
-            case 0x62: {
-                testBit(reg_D, 4);
-                break;
-            }
-            case 0x63: {
-                testBit(reg_E, 4);
-                break;
-            }
-            case 0x64: {
-                testBit(reg_H, 4);
-                break;
-            }
-            case 0x65: {
-                testBit(reg_L, 4);
-                break;
-            }
-            case 0x66: {
-                testBitInMemory(4);
-                break;
-            }
-            case 0x67: {
-                testBit(reg_A, 4);
-                break;
-            }
-            case 0x68: {
-                testBit(reg_B, 5);
-                break;
-            }
-            case 0x69: {
-                testBit(reg_C, 5);
-                break;
-            }
-            case 0x6A: {
-                testBit(reg_D, 5);
-                break;
-            }
-            case 0x6B: {
-                testBit(reg_E, 5);
-                break;
-            }
-            case 0x6C: {
-                testBit(reg_H, 5);
-                break;
-            }
-            case 0x6D: {
-                testBit(reg_L, 5);
-                break;
-            }
-            case 0x6E: {
-                testBitInMemory(5);
-                break;
-            }
-            case 0x6F: {
-                testBit(reg_A, 5);
-                break;
-            }
+            case 0x60 -> testBit(reg_B, 4);
+            case 0x61 -> testBit(reg_C, 4);
+            case 0x62 -> testBit(reg_D, 4);
+            case 0x63 -> testBit(reg_E, 4);
+            case 0x64 -> testBit(reg_H, 4);
+            case 0x65 -> testBit(reg_L, 4);
+            case 0x66 -> testBitInMemory(4);
+            case 0x67 -> testBit(reg_A, 4);
+            case 0x68 -> testBit(reg_B, 5);
+            case 0x69 -> testBit(reg_C, 5);
+            case 0x6A -> testBit(reg_D, 5);
+            case 0x6B -> testBit(reg_E, 5);
+            case 0x6C -> testBit(reg_H, 5);
+            case 0x6D -> testBit(reg_L, 5);
+            case 0x6E -> testBitInMemory(5);
+            case 0x6F -> testBit(reg_A, 5);
             //
-            case 0x70: {
-                testBit(reg_B, 6);
-                break;
-            }
-            case 0x71: {
-                testBit(reg_C, 6);
-                break;
-            }
-            case 0x72: {
-                testBit(reg_D, 6);
-                break;
-            }
-            case 0x73: {
-                testBit(reg_E, 6);
-                break;
-            }
-            case 0x74: {
-                testBit(reg_H, 6);
-                break;
-            }
-            case 0x75: {
-                testBit(reg_L, 6);
-                break;
-            }
-            case 0x76: {
-                testBitInMemory(6);
-                break;
-            }
-            case 0x77: {
-                testBit(reg_A, 6);
-                break;
-            }
-            case 0x78: {
-                testBit(reg_B, 7);
-                break;
-            }
-            case 0x79: {
-                testBit(reg_C, 7);
-                break;
-            }
-            case 0x7A: {
-                testBit(reg_D, 7);
-                break;
-            }
-            case 0x7B: {
-                testBit(reg_E, 7);
-                break;
-            }
-            case 0x7C: {
-                testBit(reg_H, 7);
-                break;
-            }
-            case 0x7D: {
-                testBit(reg_L, 7);
-                break;
-            }
-            case 0x7E: {
-                testBitInMemory(7);
-                break;
-            }
-            case 0x7F: {
-                testBit(reg_A, 7);
-                break;
-            }
+            case 0x70 -> testBit(reg_B, 6);
+            case 0x71 -> testBit(reg_C, 6);
+            case 0x72 -> testBit(reg_D, 6);
+            case 0x73 -> testBit(reg_E, 6);
+            case 0x74 -> testBit(reg_H, 6);
+            case 0x75 -> testBit(reg_L, 6);
+            case 0x76 -> testBitInMemory(6);
+            case 0x77 -> testBit(reg_A, 6);
+            case 0x78 -> testBit(reg_B, 7);
+            case 0x79 -> testBit(reg_C, 7);
+            case 0x7A -> testBit(reg_D, 7);
+            case 0x7B -> testBit(reg_E, 7);
+            case 0x7C -> testBit(reg_H, 7);
+            case 0x7D -> testBit(reg_L, 7);
+            case 0x7E -> testBitInMemory(7);
+            case 0x7F -> testBit(reg_A, 7);
             //
-            case 0x80: {
-                reg_B = reg_B & resetBit0;
-                break;
-            }
-            case 0x81: {
-                reg_C = reg_C & resetBit0;
-                break;
-            }
-            case 0x82: {
-                reg_D = reg_D & resetBit0;
-                break;
-            }
-            case 0x83: {
-                reg_E = reg_E & resetBit0;
-                break;
-            }
-            case 0x84: {
-                reg_H = reg_H & resetBit0;
-                break;
-            }
-            case 0x85: {
-                reg_L = reg_L & resetBit0;
-                break;
-            }
-            case 0x86: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit0);
-                break;
-            }
-            case 0x87: {
-                reg_A = reg_A & resetBit0;
-                break;
-            }
-            case 0x88: {
-                reg_B = reg_B & resetBit1;
-                break;
-            }
-            case 0x89: {
-                reg_C = reg_C & resetBit1;
-                break;
-            }
-            case 0x8A: {
-                reg_D = reg_D & resetBit1;
-                break;
-            }
-            case 0x8B: {
-                reg_E = reg_E & resetBit1;
-                break;
-            }
-            case 0x8C: {
-                reg_H = reg_H & resetBit1;
-                break;
-            }
-            case 0x8D: {
-                reg_L = reg_L & resetBit1;
-                break;
-            }
-            case 0x8E: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit1);
-                break;
-            }
-            case 0x8F: {
-                reg_A = reg_A & resetBit1;
-                break;
-            }
+            case 0x80 -> reg_B = reg_B & resetBit0;
+            case 0x81 -> reg_C = reg_C & resetBit0;
+            case 0x82 -> reg_D = reg_D & resetBit0;
+            case 0x83 -> reg_E = reg_E & resetBit0;
+            case 0x84 -> reg_H = reg_H & resetBit0;
+            case 0x85 -> reg_L = reg_L & resetBit0;
+            case 0x86 -> ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit0);
+            case 0x87 -> reg_A = reg_A & resetBit0;
+            case 0x88 -> reg_B = reg_B & resetBit1;
+            case 0x89 -> reg_C = reg_C & resetBit1;
+            case 0x8A -> reg_D = reg_D & resetBit1;
+            case 0x8B -> reg_E = reg_E & resetBit1;
+            case 0x8C -> reg_H = reg_H & resetBit1;
+            case 0x8D -> reg_L = reg_L & resetBit1;
+            case 0x8E -> ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit1);
+            case 0x8F -> reg_A = reg_A & resetBit1;
             //
-            case 0x90: {
-                reg_B = reg_B & resetBit2;
-                break;
-            }
-            case 0x91: {
-                reg_C = reg_C & resetBit2;
-                break;
-            }
-            case 0x92: {
-                reg_D = reg_D & resetBit2;
-                break;
-            }
-            case 0x93: {
-                reg_E = reg_E & resetBit2;
-                break;
-            }
-            case 0x94: {
-                reg_H = reg_H & resetBit2;
-                break;
-            }
-            case 0x95: {
-                reg_L = reg_L & resetBit2;
-                break;
-            }
-            case 0x96: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit2);
-                break;
-            }
-            case 0x97: {
-                reg_A = reg_A & resetBit2;
-                break;
-            }
-            case 0x98: {
-                reg_B = reg_B & resetBit3;
-                break;
-            }
-            case 0x99: {
-                reg_C = reg_C & resetBit3;
-                break;
-            }
-            case 0x9A: {
-                reg_D = reg_D & resetBit3;
-                break;
-            }
-            case 0x9B: {
-                reg_E = reg_E & resetBit3;
-                break;
-            }
-            case 0x9C: {
-                reg_H = reg_H & resetBit3;
-                break;
-            }
-            case 0x9D: {
-                reg_L = reg_L & resetBit3;
-                break;
-            }
-            case 0x9E: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit3);
-                break;
-            }
-            case 0x9F: {
-                reg_A = reg_A & resetBit3;
-                break;
-            }
+            case 0x90 -> reg_B = reg_B & resetBit2;
+            case 0x91 -> reg_C = reg_C & resetBit2;
+            case 0x92 -> reg_D = reg_D & resetBit2;
+            case 0x93 -> reg_E = reg_E & resetBit2;
+            case 0x94 -> reg_H = reg_H & resetBit2;
+            case 0x95 -> reg_L = reg_L & resetBit2;
+            case 0x96 -> ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit2);
+            case 0x97 -> reg_A = reg_A & resetBit2;
+            case 0x98 -> reg_B = reg_B & resetBit3;
+            case 0x99 -> reg_C = reg_C & resetBit3;
+            case 0x9A -> reg_D = reg_D & resetBit3;
+            case 0x9B -> reg_E = reg_E & resetBit3;
+            case 0x9C -> reg_H = reg_H & resetBit3;
+            case 0x9D -> reg_L = reg_L & resetBit3;
+            case 0x9E -> ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit3);
+            case 0x9F -> reg_A = reg_A & resetBit3;
             //
-            case 0xA0: {
-                reg_B = reg_B & resetBit4;
-                break;
-            }
-            case 0xA1: {
-                reg_C = reg_C & resetBit4;
-                break;
-            }
-            case 0xA2: {
-                reg_D = reg_D & resetBit4;
-                break;
-            }
-            case 0xA3: {
-                reg_E = reg_E & resetBit4;
-                break;
-            }
-            case 0xA4: {
-                reg_H = reg_H & resetBit4;
-                break;
-            }
-            case 0xA5: {
-                reg_L = reg_L & resetBit4;
-                break;
-            }
-            case 0xA6: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit4);
-                break;
-            }
-            case 0xA7: {
-                reg_A = reg_A & resetBit4;
-                break;
-            }
-            case 0xA8: {
-                reg_B = reg_B & resetBit5;
-                break;
-            }
-            case 0xA9: {
-                reg_C = reg_C & resetBit5;
-                break;
-            }
-            case 0xAA: {
-                reg_D = reg_D & resetBit5;
-                break;
-            }
-            case 0xAB: {
-                reg_E = reg_E & resetBit5;
-                break;
-            }
-            case 0xAC: {
-                reg_H = reg_H & resetBit5;
-                break;
-            }
-            case 0xAD: {
-                reg_L = reg_L & resetBit5;
-                break;
-            }
-            case 0xAE: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit5);
-                break;
-            }
-            case 0xAF: {
-                reg_A = reg_A & resetBit5;
-                break;
-            }
+            case 0xA0 -> reg_B = reg_B & resetBit4;
+            case 0xA1 -> reg_C = reg_C & resetBit4;
+            case 0xA2 -> reg_D = reg_D & resetBit4;
+            case 0xA3 -> reg_E = reg_E & resetBit4;
+            case 0xA4 -> reg_H = reg_H & resetBit4;
+            case 0xA5 -> reg_L = reg_L & resetBit4;
+            case 0xA6 -> ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit4);
+            case 0xA7 -> reg_A = reg_A & resetBit4;
+            case 0xA8 -> reg_B = reg_B & resetBit5;
+            case 0xA9 -> reg_C = reg_C & resetBit5;
+            case 0xAA -> reg_D = reg_D & resetBit5;
+            case 0xAB -> reg_E = reg_E & resetBit5;
+            case 0xAC -> reg_H = reg_H & resetBit5;
+            case 0xAD -> reg_L = reg_L & resetBit5;
+            case 0xAE -> ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit5);
+            case 0xAF -> reg_A = reg_A & resetBit5;
             //
-            case 0xB0: {
-                reg_B = reg_B & resetBit6;
-                break;
-            }
-            case 0xB1: {
-                reg_C = reg_C & resetBit6;
-                break;
-            }
-            case 0xB2: {
-                reg_D = reg_D & resetBit6;
-                break;
-            }
-            case 0xB3: {
-                reg_E = reg_E & resetBit6;
-                break;
-            }
-            case 0xB4: {
-                reg_H = reg_H & resetBit6;
-                break;
-            }
-            case 0xB5: {
-                reg_L = reg_L & resetBit6;
-                break;
-            }
-            case 0xB6: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit6);
-                break;
-            }
-            case 0xB7: {
-                reg_A = reg_A & resetBit6;
-                break;
-            }
-            case 0xB8: {
-                reg_B = reg_B & resetBit7;
-                break;
-            }
-            case 0xB9: {
-                reg_C = reg_C & resetBit7;
-                break;
-            }
-            case 0xBA: {
-                reg_D = reg_D & resetBit7;
-                break;
-            }
-            case 0xBB: {
-                reg_E = reg_E & resetBit7;
-                break;
-            }
-            case 0xBC: {
-                reg_H = reg_H & resetBit7;
-                break;
-            }
-            case 0xBD: {
-                reg_L = reg_L & resetBit7;
-                break;
-            }
-            case 0xBE: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit7);
-                break;
-            }
-            case 0xBF: {
-                reg_A = reg_A & resetBit7;
-                break;
-            }
+            case 0xB0 -> reg_B = reg_B & resetBit6;
+            case 0xB1 -> reg_C = reg_C & resetBit6;
+            case 0xB2 -> reg_D = reg_D & resetBit6;
+            case 0xB3 -> reg_E = reg_E & resetBit6;
+            case 0xB4 -> reg_H = reg_H & resetBit6;
+            case 0xB5 -> reg_L = reg_L & resetBit6;
+            case 0xB6 -> ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit6);
+            case 0xB7 -> reg_A = reg_A & resetBit6;
+            case 0xB8 -> reg_B = reg_B & resetBit7;
+            case 0xB9 -> reg_C = reg_C & resetBit7;
+            case 0xBA -> reg_D = reg_D & resetBit7;
+            case 0xBB -> reg_E = reg_E & resetBit7;
+            case 0xBC -> reg_H = reg_H & resetBit7;
+            case 0xBD -> reg_L = reg_L & resetBit7;
+            case 0xBE -> ram.writeByte(getHL(), ram.readByte(getHL()) & resetBit7);
+            case 0xBF -> reg_A = reg_A & resetBit7;
             //
-            case 0xC0: {
-                reg_B = reg_B | setBit0;
-                break;
-            }
-            case 0xC1: {
-                reg_C = reg_C | setBit0;
-                break;
-            }
-            case 0xC2: {
-                reg_D = reg_D | setBit0;
-                break;
-            }
-            case 0xC3: {
-                reg_E = reg_E | setBit0;
-                break;
-            }
-            case 0xC4: {
-                reg_H = reg_H | setBit0;
-                break;
-            }
-            case 0xC5: {
-                reg_L = reg_L | setBit0;
-                break;
-            }
-            case 0xC6: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) | setBit0);
-                break;
-            }
-            case 0xC7: {
-                reg_A = reg_A | setBit0;
-                break;
-            }
-            case 0xC8: {
-                reg_B = reg_B | setBit1;
-                break;
-            }
-            case 0xC9: {
-                reg_C = reg_C | setBit1;
-                break;
-            }
-            case 0xCA: {
-                reg_D = reg_D | setBit1;
-                break;
-            }
-            case 0xCB: {
-                reg_E = reg_E | setBit1;
-                break;
-            }
-            case 0xCC: {
-                reg_H = reg_H | setBit1;
-                break;
-            }
-            case 0xCD: {
-                reg_L = reg_L | setBit1;
-                break;
-            }
-            case 0xCE: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) | setBit1);
-                break;
-            }
-            case 0xCF: {
-                reg_A = reg_A | setBit1;
-                break;
-            }
+            case 0xC0 -> reg_B = reg_B | setBit0;
+            case 0xC1 -> reg_C = reg_C | setBit0;
+            case 0xC2 -> reg_D = reg_D | setBit0;
+            case 0xC3 -> reg_E = reg_E | setBit0;
+            case 0xC4 -> reg_H = reg_H | setBit0;
+            case 0xC5 -> reg_L = reg_L | setBit0;
+            case 0xC6 -> ram.writeByte(getHL(), ram.readByte(getHL()) | setBit0);
+            case 0xC7 -> reg_A = reg_A | setBit0;
+            case 0xC8 -> reg_B = reg_B | setBit1;
+            case 0xC9 -> reg_C = reg_C | setBit1;
+            case 0xCA -> reg_D = reg_D | setBit1;
+            case 0xCB -> reg_E = reg_E | setBit1;
+            case 0xCC -> reg_H = reg_H | setBit1;
+            case 0xCD -> reg_L = reg_L | setBit1;
+            case 0xCE -> ram.writeByte(getHL(), ram.readByte(getHL()) | setBit1);
+            case 0xCF -> reg_A = reg_A | setBit1;
             //
-            case 0xD0: {
-                reg_B = reg_B | setBit2;
-                break;
-            }
-            case 0xD1: {
-                reg_C = reg_C | setBit2;
-                break;
-            }
-            case 0xD2: {
-                reg_D = reg_D | setBit2;
-                break;
-            }
-            case 0xD3: {
-                reg_E = reg_E | setBit2;
-                break;
-            }
-            case 0xD4: {
-                reg_H = reg_H | setBit2;
-                break;
-            }
-            case 0xD5: {
-                reg_L = reg_L | setBit2;
-                break;
-            }
-            case 0xD6: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) | setBit2);
-                break;
-            }
-            case 0xD7: {
-                reg_A = reg_A | setBit2;
-                break;
-            }
-            case 0xD8: {
-                reg_B = reg_B | setBit3;
-                break;
-            }
-            case 0xD9: {
-                reg_C = reg_C | setBit3;
-                break;
-            }
-            case 0xDA: {
-                reg_D = reg_D | setBit3;
-                break;
-            }
-            case 0xDB: {
-                reg_E = reg_E | setBit3;
-                break;
-            }
-            case 0xDC: {
-                reg_H = reg_H | setBit3;
-                break;
-            }
-            case 0xDD: {
-                reg_L = reg_L | setBit3;
-                break;
-            }
-            case 0xDE: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) | setBit3);
-                break;
-            }
-            case 0xDF: {
-                reg_A = reg_A | setBit3;
-                break;
-            }
+            case 0xD0 -> reg_B = reg_B | setBit2;
+            case 0xD1 -> reg_C = reg_C | setBit2;
+            case 0xD2 -> reg_D = reg_D | setBit2;
+            case 0xD3 -> reg_E = reg_E | setBit2;
+            case 0xD4 -> reg_H = reg_H | setBit2;
+            case 0xD5 -> reg_L = reg_L | setBit2;
+            case 0xD6 -> ram.writeByte(getHL(), ram.readByte(getHL()) | setBit2);
+            case 0xD7 -> reg_A = reg_A | setBit2;
+            case 0xD8 -> reg_B = reg_B | setBit3;
+            case 0xD9 -> reg_C = reg_C | setBit3;
+            case 0xDA -> reg_D = reg_D | setBit3;
+            case 0xDB -> reg_E = reg_E | setBit3;
+            case 0xDC -> reg_H = reg_H | setBit3;
+            case 0xDD -> reg_L = reg_L | setBit3;
+            case 0xDE -> ram.writeByte(getHL(), ram.readByte(getHL()) | setBit3);
+            case 0xDF -> reg_A = reg_A | setBit3;
             //
-            case 0xE0: {
-                reg_B = reg_B | setBit4;
-                break;
-            }
-            case 0xE1: {
-                reg_C = reg_C | setBit4;
-                break;
-            }
-            case 0xE2: {
-                reg_D = reg_D | setBit4;
-                break;
-            }
-            case 0xE3: {
-                reg_E = reg_E | setBit4;
-                break;
-            }
-            case 0xE4: {
-                reg_H = reg_H | setBit4;
-                break;
-            }
-            case 0xE5: {
-                reg_L = reg_L | setBit4;
-                break;
-            }
-            case 0xE6: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) | setBit4);
-                break;
-            }
-            case 0xE7: {
-                reg_A = reg_A | setBit4;
-                break;
-            }
-            case 0xE8: {
-                reg_B = reg_B | setBit5;
-                break;
-            }
-            case 0xE9: {
-                reg_C = reg_C | setBit5;
-                break;
-            }
-            case 0xEA: {
-                reg_D = reg_D | setBit5;
-                break;
-            }
-            case 0xEB: {
-                reg_E = reg_E | setBit5;
-                break;
-            }
-            case 0xEC: {
-                reg_H = reg_H | setBit5;
-                break;
-            }
-            case 0xED: {
-                reg_L = reg_L | setBit5;
-                break;
-            }
-            case 0xEE: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) | setBit5);
-                break;
-            }
-            case 0xEF: {
-                reg_A = reg_A | setBit5;
-                break;
-            }
+            case 0xE0 -> reg_B = reg_B | setBit4;
+            case 0xE1 -> reg_C = reg_C | setBit4;
+            case 0xE2 -> reg_D = reg_D | setBit4;
+            case 0xE3 -> reg_E = reg_E | setBit4;
+            case 0xE4 -> reg_H = reg_H | setBit4;
+            case 0xE5 -> reg_L = reg_L | setBit4;
+            case 0xE6 -> ram.writeByte(getHL(), ram.readByte(getHL()) | setBit4);
+            case 0xE7 -> reg_A = reg_A | setBit4;
+            case 0xE8 -> reg_B = reg_B | setBit5;
+            case 0xE9 -> reg_C = reg_C | setBit5;
+            case 0xEA -> reg_D = reg_D | setBit5;
+            case 0xEB -> reg_E = reg_E | setBit5;
+            case 0xEC -> reg_H = reg_H | setBit5;
+            case 0xED -> reg_L = reg_L | setBit5;
+            case 0xEE -> ram.writeByte(getHL(), ram.readByte(getHL()) | setBit5);
+            case 0xEF -> reg_A = reg_A | setBit5;
             //
-            case 0xF0: {
-                reg_B = reg_B | setBit6;
-                break;
-            }
-            case 0xF1: {
-                reg_C = reg_C | setBit6;
-                break;
-            }
-            case 0xF2: {
-                reg_D = reg_D | setBit6;
-                break;
-            }
-            case 0xF3: {
-                reg_E = reg_E | setBit6;
-                break;
-            }
-            case 0xF4: {
-                reg_H = reg_H | setBit6;
-                break;
-            }
-            case 0xF5: {
-                reg_L = reg_L | setBit6;
-                break;
-            }
-            case 0xF6: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) | setBit6);
-                break;
-            }
-            case 0xF7: {
-                reg_A = reg_A | setBit6;
-                break;
-            }
-            case 0xF8: {
-                reg_B = reg_B | setBit7;
-                break;
-            }
-            case 0xF9: {
-                reg_C = reg_C | setBit7;
-                break;
-            }
-            case 0xFA: {
-                reg_D = reg_D | setBit7;
-                break;
-            }
-            case 0xFB: {
-                reg_E = reg_E | setBit7;
-                break;
-            }
-            case 0xFC: {
-                reg_H = reg_H | setBit7;
-                break;
-            }
-            case 0xFD: {
-                reg_L = reg_L | setBit7;
-                break;
-            }
-            case 0xFE: {
-                ram.writeByte(getHL(), ram.readByte(getHL()) | setBit7);
-                break;
-            }
-            default: {
-                reg_A = reg_A | setBit7;
-                break;
-            }
+            case 0xF0 -> reg_B = reg_B | setBit6;
+            case 0xF1 -> reg_C = reg_C | setBit6;
+            case 0xF2 -> reg_D = reg_D | setBit6;
+            case 0xF3 -> reg_E = reg_E | setBit6;
+            case 0xF4 -> reg_H = reg_H | setBit6;
+            case 0xF5 -> reg_L = reg_L | setBit6;
+            case 0xF6 -> ram.writeByte(getHL(), ram.readByte(getHL()) | setBit6);
+            case 0xF7 -> reg_A = reg_A | setBit6;
+            case 0xF8 -> reg_B = reg_B | setBit7;
+            case 0xF9 -> reg_C = reg_C | setBit7;
+            case 0xFA -> reg_D = reg_D | setBit7;
+            case 0xFB -> reg_E = reg_E | setBit7;
+            case 0xFC -> reg_H = reg_H | setBit7;
+            case 0xFD -> reg_L = reg_L | setBit7;
+            case 0xFE -> ram.writeByte(getHL(), ram.readByte(getHL()) | setBit7);
+            case 0xFF -> reg_A = reg_A | setBit7;
         }
     }
 
@@ -2427,483 +1051,112 @@ public class Z80Core implements ICPUData {
      * *****************************************************************************
      */
 
-    private void extendedED() throws ProcessorException {
+    private void extendedED() {
         instruction = ram.readByte(reg_PC);
         incPC();
         tStates = tStates + OPCODE_ED_STATES[instruction];
         if ((instruction < 0x40) || (instruction >= 0xC0)) {
-            throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            // A does nothing operation, similar to NOP but not interrupt capable
+            return;
         }
         switch (instruction) {
-            case 0x40: {
-                inC(regCodeB);
-                break;
-            }
-            case 0x41: {
-                outC(regCodeB);
-                break;
-            }
-            case 0x42: {
-                ALU16BitSBC(regCodeBC);
-                break;
-            }
-            case 0x43: {
-                LDnnnnRegInd16Bit(regCodeBC);
-                break;
-            }
-            case 0x44: {
-                NEG();
-                break;
-            }
-            case 0x45: {
-                retn();
-                break;
-            }
-            case 0x46: {
-                IM(0);
-                break;
-            }
-            case 0x47: {
-                LDIA();
-                break;
-            }
-            case 0x48: {
-                inC(regCodeC);
-                break;
-            }
-            case 0x49: {
-                outC(regCodeC);
-                break;
-            }
-            case 0x4A: {
-                ALU16BitADC(regCodeBC);
-                break;
-            }
-            case 0x4B: {
-                LDRegnnnnInd16Bit(regCodeBC);
-                break;
-            }
-            case 0x4C: {
-                NEG();
-                break;
-            }
-            case 0x4D: {
-                reti();
-                break;
-            }
-            case 0x4E: {
-                IM(0);
-                break;
-            }
-            case 0x4F: {
-                LDRA();
-                break;
-            }
+            case 0x40 -> inC(regCodeB);
+            case 0x41 -> outC(regCodeB);
+            case 0x42 -> ALU16BitSBC(regCodeBC);
+            case 0x43 -> LDnnnnRegInd16Bit(regCodeBC);
+            case 0x44 -> NEG();
+            case 0x45 -> retn();
+            case 0x46 -> IM(0);
+            case 0x47 -> LDIA();
+            case 0x48 -> inC(regCodeC);
+            case 0x49 -> outC(regCodeC);
+            case 0x4A -> ALU16BitADC(regCodeBC);
+            case 0x4B -> LDRegnnnnInd16Bit(regCodeBC);
+            case 0x4C -> NEG();
+            case 0x4D -> reti();
+            case 0x4E -> IM(0);
+            case 0x4F -> LDRA();
             //
-            case 0x50: {
-                inC(regCodeD);
-                break;
-            }
-            case 0x51: {
-                outC(regCodeD);
-                break;
-            }
-            case 0x52: {
-                ALU16BitSBC(regCodeDE);
-                break;
-            }
-            case 0x53: {
-                LDnnnnRegInd16Bit(regCodeDE);
-                break;
-            }
-            case 0x54: {
-                NEG();
-                break;
-            }
-            case 0x55: {
-                retn();
-                break;
-            }
-            case 0x56: {
-                IM(1);
-                break;
-            }
-            case 0x57: {
-                LDAI();
-                break;
-            }
-            case 0x58: {
-                inC(regCodeE);
-                break;
-            }
-            case 0x59: {
-                outC(regCodeE);
-                break;
-            }
-            case 0x5A: {
-                ALU16BitADC(regCodeDE);
-                break;
-            }
-            case 0x5B: {
-                LDRegnnnnInd16Bit(regCodeDE);
-                break;
-            }
-            case 0x5C: {
-                NEG();
-                break;
-            }
-            case 0x5D: {
-                retn();
-                break;
-            }
-            case 0x5E: {
-                IM(2);
-                break;
-            }
-            case 0x5F: {
-                LDAR();
-                break;
-            }
+            case 0x50 -> inC(regCodeD);
+            case 0x51 -> outC(regCodeD);
+            case 0x52 -> ALU16BitSBC(regCodeDE);
+            case 0x53 -> LDnnnnRegInd16Bit(regCodeDE);
+            case 0x54 -> NEG();
+            case 0x55 -> retn();
+            case 0x56 -> IM(1);
+            case 0x57 -> LDAI();
+            case 0x58 -> inC(regCodeE);
+            case 0x59 -> outC(regCodeE);
+            case 0x5A -> ALU16BitADC(regCodeDE);
+            case 0x5B -> LDRegnnnnInd16Bit(regCodeDE);
+            case 0x5C -> NEG();
+            case 0x5D -> retn();
+            case 0x5E -> IM(2);
+            case 0x5F -> LDAR();
             //
-            case 0x60: {
-                inC(regCodeH);
-                break;
-            }
-            case 0x61: {
-                outC(regCodeH);
-                break;
-            }
-            case 0x62: {
-                ALU16BitSBC(regCodeHL);
-                break;
-            }
-            case 0x63: {
-                LDnnnnRegInd16Bit(regCodeHL);
-                break;
-            }
-            case 0x64: {
-                NEG();
-                break;
-            }
-            case 0x65: {
-                retn();
-                break;
-            }
-            case 0x66: {
-                IM(1);
-                break;
-            }
-            case 0x67: {
-                RRD();
-                break;
-            }
-            case 0x68: {
-                inC(regCodeL);
-                break;
-            }
-            case 0x69: {
-                outC(regCodeL);
-                break;
-            }
-            case 0x6A: {
-                ALU16BitADC(regCodeHL);
-                break;
-            }
-            case 0x6B: {
-                LDRegnnnnInd16Bit(regCodeHL);
-                break;
-            }
-            case 0x6C: {
-                NEG();
-                break;
-            }
-            case 0x6D: {
-                retn();
-                break;
-            }
-            case 0x6E: {
-                IM(1);
-                break;
-            }
-            case 0x6F: {
-                RLD();
-                break;
-            }
+            case 0x60 -> inC(regCodeH);
+            case 0x61 -> outC(regCodeH);
+            case 0x62 -> ALU16BitSBC(regCodeHL);
+            case 0x63 -> LDnnnnRegInd16Bit(regCodeHL);
+            case 0x64 -> NEG();
+            case 0x65 -> retn();
+            case 0x66 -> IM(1);
+            case 0x67 -> RRD();
+            case 0x68 -> inC(regCodeL);
+            case 0x69 -> outC(regCodeL);
+            case 0x6A -> ALU16BitADC(regCodeHL);
+            case 0x6B -> LDRegnnnnInd16Bit(regCodeHL);
+            case 0x6C -> NEG();
+            case 0x6D -> retn();
+            case 0x6E -> IM(1);
+            case 0x6F -> RLD();
             //
-            case 0x70: {
-                inC(regCodeF);
-                break;
-            }
-            case 0x71: {
-                outC(regCodeF);
-                break;
-            }
-            case 0x72: {
-                ALU16BitSBC(regCodeSP);
-                break;
-            }
-            case 0x73: {
-                LDnnnnRegInd16Bit(regCodeSP);
-                break;
-            }
-            case 0x74: {
-                NEG();
-                break;
-            }
-            case 0x75: {
-                retn();
-                break;
-            }
-            case 0x76: {
-                IM(1);
-                break;
-            }
-            case 0x77: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x78: {
-                inC(regCodeA);
-                break;
-            }
-            case 0x79: {
-                outC(regCodeA);
-                break;
-            }
-            case 0x7A: {
-                ALU16BitADC(regCodeSP);
-                break;
-            }
-            case 0x7B: {
-                LDRegnnnnInd16Bit(regCodeSP);
-                break;
-            }
-            case 0x7C: {
-                NEG();
-                break;
-            }
-            case 0x7D: {
-                retn();
-                break;
-            }
-            case 0x7E: {
-                IM(2);
-                break;
-            }
-            case 0x7F: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            //
-            case 0x80: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x81: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x82: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x83: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x84: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x85: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x86: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x87: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x88: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x89: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x8A: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x8B: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x8C: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x8D: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x8E: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x8F: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            //
-            case 0x90: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x91: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x92: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x93: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x94: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x95: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x96: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x97: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x98: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x99: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x9A: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x9B: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x9C: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x9D: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x9E: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x9F: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            //
-            case 0xA0: {
-                LDI();
-                break;
-            }
-            case 0xA1: {
-                CPI();
-                break;
-            }
-            case 0xA2: {
-                INI();
-                break;
-            }
-            case 0xA3: {
-                OUTI();
-                break;
-            }
-            case 0xA4: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xA5: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xA6: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xA7: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xA8: {
-                LDD();
-                break;
-            }
-            case 0xA9: {
-                CPD();
-                break;
-            }
-            case 0xAA: {
-                IND();
-                break;
-            }
-            case 0xAB: {
-                OUTD();
-                break;
-            }
-            case 0xAC: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xAD: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xAE: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xAF: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            //
-            case 0xB0: {
-                LDIR();
-                break;
-            }
-            case 0xB1: {
-                CPIR();
-                break;
-            }
-            case 0xB2: {
-                INIR();
-                break;
-            }
-            case 0xB3: {
-                OTIR();
-                break;
-            }
-            case 0xB4: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xB5: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xB6: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xB7: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xB8: {
-                LDDR();
-                break;
-            }
-            case 0xB9: {
-                CPDR();
-                break;
-            }
-            case 0xBA: {
-                INDR();
-                break;
-            }
-            case 0xBB: {
-                OTDR();
-                break;
-            }
-            case 0xBC: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xBD: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xBE: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            default: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
+            case 0x70 -> inC(regCodeF);
+            case 0x71 -> outC(regCodeF);
+            case 0x72 -> ALU16BitSBC(regCodeSP);
+            case 0x73 -> LDnnnnRegInd16Bit(regCodeSP);
+            case 0x74 -> NEG();
+            case 0x75 -> retn();
+            case 0x76 -> IM(1);
+            case 0x77 -> {
+            } // NOP
+            case 0x78 -> inC(regCodeA);
+            case 0x79 -> outC(regCodeA);
+            case 0x7A -> ALU16BitADC(regCodeSP);
+            case 0x7B -> LDRegnnnnInd16Bit(regCodeSP);
+            case 0x7C -> NEG();
+            case 0x7D -> retn();
+            case 0x7E -> IM(2);
+            case 0x7F -> {
+            } // NOP
+            case 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F -> {
+            } // NOP
+            case 0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F -> {
+            } // NOP
+            case 0xA0 -> LDI();
+            case 0xA1 -> CPI();
+            case 0xA2 -> INI();
+            case 0xA3 -> OUTI();
+            case 0xA4, 0xA5, 0xA6, 0xA7 -> {
+            } // NOP
+            case 0xA8 -> LDD();
+            case 0xA9 -> CPD();
+            case 0xAA -> IND();
+            case 0xAB -> OUTD();
+            case 0xAC, 0xAD, 0xAE, 0xAF -> {
+            } // NOP
+            case 0xB0 -> LDIR();
+            case 0xB1 -> CPIR();
+            case 0xB2 -> INIR();
+            case 0xB3 -> OTIR();
+            case 0xB4, 0xB5, 0xB6, 0xB7 -> {
+            } // NOP
+            case 0xB8 -> LDDR();
+            case 0xB9 -> CPDR();
+            case 0xBA -> INDR();
+            case 0xBB -> OTDR();
+            case 0xBC, 0xBD, 0xBE, 0xBF -> {
+            } // NOP
         }
     }
 
@@ -2916,936 +1169,462 @@ public class Z80Core implements ICPUData {
      */
 
     /* IX register processing */
-    private void extendedDD() throws ProcessorException {
+    private void extendedDD() {
         reg_index = reg_IX;
         extendedDDFD();
         reg_IX = reg_index;
     }
 
     /* IY register processing */
-    private void extendedFD() throws ProcessorException {
+    private void extendedFD() {
         reg_index = reg_IY;
         extendedDDFD();
         reg_IY = reg_index;
     }
 
     /* generic index register processing */
-
-    private void extendedDDFD() throws ProcessorException {
+    @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "Bytes can only be 0..255")
+    private void extendedDDFD() {
         instruction = ram.readByte(reg_PC);
         incPC();
         tStates = tStates + OPCODE_DD_FD_STATES[instruction];
 
         // primary decode stage
         switch (instruction) {
-            case 0x00: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x01: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x02: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x03: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x04: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x05: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x06: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x07: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x08: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x09: {
-                reg_index = ALU16BitAddIndexed(getBC());
-                break;
-            }
-            case 0x0A: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x0B: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x0C: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x0D: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x0E: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x0F: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
+            case 0x00 -> {
+            } // null
+            case 0x01 -> {
+                setBC(ram.readWord(reg_PC));
+                inc2PC();
+            } // LD bc, nnnn
+            case 0x02 -> ram.writeByte(getBC(), reg_A); // LD (BC), A
+            case 0x03 -> setBC(ALU16BitInc(getBC())); // inc BC
+            case 0x04 -> reg_B = ALU8BitInc(reg_B); // inc b
+            case 0x05 -> reg_B = ALU8BitDec(reg_B); // dec b
+            case 0x06 -> {
+                reg_B = ram.readByte(reg_PC);
+                incPC();
+            } // ld b,nn
+            case 0x07 -> RLCA(); // rlca
+            case 0x08 -> EXAFAF(); // ex af,af'
+            case 0x09 -> reg_index = ALU16BitAddIndexed(getBC());
+            case 0x0A -> reg_A = ram.readByte(getBC()); // LD a, (bc)
+            case 0x0B -> setBC(ALU16BitDec(getBC())); // dec bc
+            case 0x0C -> reg_C = ALU8BitInc(reg_C); // inc c
+            case 0x0D -> reg_C = ALU8BitDec(reg_C); // dec c
+            case 0x0E -> {
+                reg_C = ram.readByte(reg_PC);
+                incPC();
+            } // ld c,n
+            case 0x0F -> RRCA(); // rrca
+            case 0x10 -> djnz(); // djnz
             //
-            case 0x10: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x11: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x12: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x13: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x14: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x15: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x16: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x17: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x18: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x19: {
-                reg_index = ALU16BitAddIndexed(getDE());
-                break;
-            }
-            case 0x1A: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x1B: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x1C: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x1D: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x1E: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x1F: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
+            case 0x11 -> {
+                setDE(ram.readWord(reg_PC));
+                inc2PC();
+            } // LD de, nnnn
+            case 0x12 -> ram.writeByte(getDE(), reg_A); // LD (de), A
+            case 0x13 -> setDE(ALU16BitInc(getDE())); // inc de
+            case 0x14 -> reg_D = ALU8BitInc(reg_D); // inc d
+            case 0x15 -> reg_D = ALU8BitDec(reg_D); // dec d
+            case 0x16 -> {
+                reg_D = ram.readByte(reg_PC);
+                incPC();
+            } // ld d,nn
+            case 0x17 -> RLA(); // rla
+            case 0x18 -> relativeJump(); // jr
+            case 0x19 -> reg_index = ALU16BitAddIndexed(getDE());
+            case 0x1A -> reg_A = ram.readByte(getDE()); // LD a, (de)
+            case 0x1B -> setDE(ALU16BitDec(getDE())); // dec de
+            case 0x1C -> reg_E = ALU8BitInc(reg_E); // inc e
+            case 0x1D -> reg_E = ALU8BitDec(reg_E); // dec e
+            case 0x1E -> {
+                reg_E = ram.readByte(reg_PC);
+                incPC();
+            } // ld e,n
+            case 0x1F -> RRA(); // rra
             //
-            case 0x20: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x21: {
+            case 0x20 -> {
+                if (!getZ()) {
+                    tStates = tStates + 12;
+                    relativeJump();
+                } else {
+                    incPC();
+                    tStates = tStates + 7;
+                }
+            } // jr nz
+            case 0x21 -> {
                 reg_index = ram.readWord(reg_PC);
                 inc2PC();
-                break;
             }
-            case 0x22: {
+            case 0x22 -> {
                 ram.writeWord(ram.readWord(reg_PC), reg_index);
                 inc2PC();
-                break;
             }
-            case 0x23: {
-                reg_index = ALU16BitInc(reg_index);
-                break;
-            }
-            case 0x24: {
+            case 0x23 -> reg_index = ALU16BitInc(reg_index);
+            case 0x24 -> {
                 int temp = reg_index >>> 8;
                 temp = ALU8BitInc(temp);
                 reg_index = (reg_index & 0x00FF) | (temp << 8);
-                break;
             } // inc IXh
-            case 0x25: {
+            case 0x25 -> {
                 int temp = reg_index >>> 8;
                 temp = ALU8BitDec(temp);
                 reg_index = (reg_index & 0x00FF) | (temp << 8);
-                break;
             } // dec IXh
-            case 0x26: {
+            case 0x26 -> {
                 int temp = ram.readByte(reg_PC) << 8;
                 reg_index = (reg_index & 0x00FF) | temp;
                 incPC();
-                break;
             } // ld IXh, nn
-            case 0x27: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x28: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x29: {
-                reg_index = ALU16BitAddIndexed(reg_index);
-                break;
-            }
-            case 0x2A: {
+            case 0x27 -> DAA(); // daa
+            case 0x28 -> {
+                if (getZ()) {
+                    tStates = tStates + 12;
+                    relativeJump();
+                } else {
+                    incPC();
+                    tStates = tStates + 7;
+                }
+            } // jr z
+            case 0x29 -> reg_index = ALU16BitAddIndexed(reg_index);
+            case 0x2A -> {
                 reg_index = ram.readWord(ram.readWord(reg_PC));
                 inc2PC();
-                break;
             }
-            case 0x2B: {
-                reg_index = ALU16BitDec(reg_index);
-                break;
-            }
-            case 0x2C: {
+            case 0x2B -> reg_index = ALU16BitDec(reg_index);
+            case 0x2C -> {
                 int temp = reg_index & 0x00FF;
                 temp = ALU8BitInc(temp);
                 reg_index = (reg_index & 0xFF00) | temp;
-                break;
             } // inc IXl
-            case 0x2D: {
+            case 0x2D -> {
                 int temp = reg_index & 0x00FF;
                 temp = ALU8BitDec(temp);
                 reg_index = (reg_index & 0xFF00) | temp;
-                break;
             } // dec IXl
-            case 0x2E: {
+            case 0x2E -> {
                 int temp = ram.readByte(reg_PC);
                 reg_index = (reg_index & 0xFF00) | temp;
                 incPC();
-                break;
             } // ld IXl, nn
-            case 0x2F: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
+            case 0x2F -> CPL(); // rra
             //
-            case 0x30: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x31: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x32: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x33: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x34: {
-                incIndex();
-                break;
-            }
-            case 0x35: {
-                decIndex();
-                break;
-            }
-            case 0x36: {
-                loadIndex8BitImmediate();
-                break;
-            }
-            case 0x37: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x38: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x39: {
-                reg_index = ALU16BitAddIndexed(reg_SP);
-                break;
-            }
-            case 0x3A: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x3B: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x3C: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x3D: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x3E: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x3F: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
+            case 0x30 -> {
+                if (!getC()) {
+                    tStates = tStates + 12;
+                    relativeJump();
+                } else {
+                    incPC();
+                    tStates = tStates + 7;
+                }
+            } // jr nc
+            case 0x31 -> {
+                reg_SP = ram.readWord(reg_PC);
+                inc2PC();
+            } // LD sp, nnnn
+            case 0x32 -> {
+                ram.writeByte(ram.readWord(reg_PC), reg_A);
+                inc2PC();
+            } // LD (nnnn), A
+            case 0x33 -> reg_SP = ALU16BitInc(reg_SP); // inc SP
+            case 0x34 -> incIndex();
+            case 0x35 -> decIndex();
+            case 0x36 -> loadIndex8BitImmediate();
+            case 0x37 -> SCF(); // scf
+            case 0x38 -> {
+                if (getC()) {
+                    tStates = tStates + 12;
+                    relativeJump();
+                } else {
+                    incPC();
+                    tStates = tStates + 7;
+                }
+            } // jr c
+            case 0x39 -> reg_index = ALU16BitAddIndexed(reg_SP);
+            case 0x3A -> {
+                reg_A = ram.readByte(ram.readWord(reg_PC));
+                inc2PC();
+            } // LD a, (nnnn)
+            case 0x3B -> reg_SP = ALU16BitDec(reg_SP); // dec sp
+            case 0x3C -> reg_A = ALU8BitInc(reg_A); // inc a
+            case 0x3D -> reg_A = ALU8BitDec(reg_A); // dec a
+            case 0x3E -> {
+                reg_A = ram.readByte(reg_PC);
+                incPC();
+            } // ld a,n
+            case 0x3F -> CCF(); // ccf
             //
-            case 0x40: { /* reg_B = reg_B; */
-                break;
+            case 0x40 -> { /* reg_B = reg_B; */
             } // ld b, b
-            case 0x41: {
-                reg_B = reg_C;
-                break;
-            } // ld b, c
-            case 0x42: {
-                reg_B = reg_D;
-                break;
-            } // ld b, d
-            case 0x43: {
-                reg_B = reg_E;
-                break;
-            } // ld b, e
-            case 0x44: {
-                reg_B = getIndexAddressUndocumented(regCodeIXH);
-                break;
-            } // ld b, IXh
-            case 0x45: {
-                reg_B = getIndexAddressUndocumented(regCodeIXL);
-                break;
-            } // ld b, IXl
-            case 0x46: {
-                reg_B = get8BitRegisterIndexed(regCodeM);
-                break;
-            } // ld b, (ix+dd)
-            case 0x47: {
-                reg_B = reg_A;
-                break;
-            } // ld b, a
-            case 0x48: {
-                reg_C = reg_B;
-                break;
-            } // ld c, b
-            case 0x49: { /* reg_C = reg_C; */
-                break;
+            case 0x41 -> reg_B = reg_C; // ld b, c
+            case 0x42 -> reg_B = reg_D; // ld b, d
+            case 0x43 -> reg_B = reg_E; // ld b, e
+            case 0x44 -> reg_B = getIndexAddressUndocumented(regCodeIXH); // ld b, IXh
+            case 0x45 -> reg_B = getIndexAddressUndocumented(regCodeIXL); // ld b, IXl
+            case 0x46 -> reg_B = get8BitRegisterIndexed(regCodeM); // ld b, (ix+dd)
+            case 0x47 -> reg_B = reg_A; // ld b, a
+            case 0x48 -> reg_C = reg_B; // ld c, b
+            case 0x49 -> { /* reg_C = reg_C; */
             } // ld c, c
-            case 0x4A: {
-                reg_C = reg_D;
-                break;
-            } // ld c, d
-            case 0x4B: {
-                reg_C = reg_E;
-                break;
-            } // ld c, e
-            case 0x4C: {
-                reg_C = getIndexAddressUndocumented(regCodeIXH);
-                break;
-            } // ld c, IXh
-            case 0x4D: {
-                reg_C = getIndexAddressUndocumented(regCodeIXL);
-                break;
-            } // ld c, IXl
-            case 0x4E: {
-                reg_C = get8BitRegisterIndexed(regCodeM);
-                break;
-            } // ld c, (ix+dd)
-            case 0x4F: {
-                reg_C = reg_A;
-                break;
-            } // ld c a
+            case 0x4A -> reg_C = reg_D; // ld c, d
+            case 0x4B -> reg_C = reg_E; // ld c, e
+            case 0x4C -> reg_C = getIndexAddressUndocumented(regCodeIXH); // ld c, IXh
+            case 0x4D -> reg_C = getIndexAddressUndocumented(regCodeIXL); // ld c, IXl
+            case 0x4E -> reg_C = get8BitRegisterIndexed(regCodeM); // ld c, (ix+dd)
+            case 0x4F -> reg_C = reg_A; // ld c a
             //
-            case 0x50: {
-                reg_D = reg_B;
-                break;
-            } // ld d, b
-            case 0x51: {
-                reg_D = reg_C;
-                break;
-            } // ld d, c
-            case 0x52: { /* reg_D = reg_D; */
-                break;
+            case 0x50 -> reg_D = reg_B; // ld d, b
+            case 0x51 -> reg_D = reg_C; // ld d, c
+            case 0x52 -> { /* reg_D = reg_D; */
             } // ld d, d
-            case 0x53: {
-                reg_D = reg_E;
-                break;
-            } // ld d, e
-            case 0x54: {
-                reg_D = getIndexAddressUndocumented(regCodeIXH);
-                break;
-            } // ld d, IXh
-            case 0x55: {
-                reg_D = getIndexAddressUndocumented(regCodeIXL);
-                break;
-            } // ld d, IXl
-            case 0x56: {
-                reg_D = get8BitRegisterIndexed(regCodeM);
-                break;
-            } // ld d, (ix+dd)
-            case 0x57: {
-                reg_D = reg_A;
-                break;
-            } // ld d, a
-            case 0x58: {
-                reg_E = reg_B;
-                break;
-            } // ld e, b
-            case 0x59: {
-                reg_E = reg_C;
-                break;
-            } // ld e, c
-            case 0x5A: {
-                reg_E = reg_D;
-                break;
-            } // ld e, d
-            case 0x5B: { /* reg_E = reg_E; */
-                break;
+            case 0x53 -> reg_D = reg_E; // ld d, e
+            case 0x54 -> reg_D = getIndexAddressUndocumented(regCodeIXH); // ld d, IXh
+            case 0x55 -> reg_D = getIndexAddressUndocumented(regCodeIXL); // ld d, IXl
+            case 0x56 -> reg_D = get8BitRegisterIndexed(regCodeM); // ld d, (ix+dd)
+            case 0x57 -> reg_D = reg_A; // ld d, a
+            case 0x58 -> reg_E = reg_B; // ld e, b
+            case 0x59 -> reg_E = reg_C; // ld e, c
+            case 0x5A -> reg_E = reg_D; // ld e, d
+            case 0x5B -> { /* reg_E = reg_E; */
             } // ld e, e
-            case 0x5C: {
-                reg_E = getIndexAddressUndocumented(regCodeIXH);
-                break;
-            } // ld e, IXh
-            case 0x5D: {
-                reg_E = getIndexAddressUndocumented(regCodeIXL);
-                break;
-            } // ld e, IXl
-            case 0x5E: {
-                reg_E = get8BitRegisterIndexed(regCodeM);
-                break;
-            } // ld e, (ix+dd)
-            case 0x5F: {
-                reg_E = reg_A;
-                break;
-            } // ld e a
+            case 0x5C -> reg_E = getIndexAddressUndocumented(regCodeIXH); // ld e, IXh
+            case 0x5D -> reg_E = getIndexAddressUndocumented(regCodeIXL); // ld e, IXl
+            case 0x5E -> reg_E = get8BitRegisterIndexed(regCodeM); // ld e, (ix+dd)
+            case 0x5F -> reg_E = reg_A; // ld e a
             //
-            case 0x60: {
-                setIndexAddressUndocumented(reg_B, regCodeIXH);
-                break;
-            } // ld ixh, b
-            case 0x61: {
-                setIndexAddressUndocumented(reg_C, regCodeIXH);
-                break;
-            } // ld ixh, c
-            case 0x62: {
-                setIndexAddressUndocumented(reg_D, regCodeIXH);
-                break;
-            } // ld ixh, d
-            case 0x63: {
-                setIndexAddressUndocumented(reg_E, regCodeIXH);
-                break;
-            } // ld ixh, e
-            case 0x64: {
-                setIndexAddressUndocumented(getIndexAddressUndocumented(regCodeIXH), regCodeIXH);
-                break;
-            } // ld ixh, IXh
-            case 0x65: {
-                setIndexAddressUndocumented(getIndexAddressUndocumented(regCodeIXL), regCodeIXH);
-                break;
-            } // ld ixh, IXl
-            case 0x66: {
-                reg_H = get8BitRegisterIndexed(regCodeM);
-                break;
-            } // ld h, (ix+dd)
-            case 0x67: {
-                setIndexAddressUndocumented(reg_A, regCodeIXH);
-                break;
-            } // ld ixh, a
-            case 0x68: {
-                setIndexAddressUndocumented(reg_B, regCodeIXL);
-                break;
-            } // ld ixl, b
-            case 0x69: {
-                setIndexAddressUndocumented(reg_C, regCodeIXL);
-                break;
-            } // ld ixl, c
-            case 0x6A: {
-                setIndexAddressUndocumented(reg_D, regCodeIXL);
-                break;
-            } // ld ixl, d
-            case 0x6B: {
-                setIndexAddressUndocumented(reg_E, regCodeIXL);
-                break;
-            } // ld ixl, e
-            case 0x6C: {
-                setIndexAddressUndocumented(getIndexAddressUndocumented(regCodeIXH), regCodeIXL);
-                break;
-            } // ld ixl, IXh
-            case 0x6D: {
-                setIndexAddressUndocumented(getIndexAddressUndocumented(regCodeIXL), regCodeIXL);
-                break;
-            } // ld ixl, IXl
-            case 0x6E: {
-                reg_L = get8BitRegisterIndexed(regCodeM);
-                break;
-            } // ld l, (ix+dd)
-            case 0x6F: {
-                setIndexAddressUndocumented(reg_A, regCodeIXL);
-                break;
-            } // ld ixl, a
+            case 0x60 -> setIndexAddressUndocumented(reg_B, regCodeIXH); // ld ixh, b
+            case 0x61 -> setIndexAddressUndocumented(reg_C, regCodeIXH); // ld ixh, c
+            case 0x62 -> setIndexAddressUndocumented(reg_D, regCodeIXH); // ld ixh, d
+            case 0x63 -> setIndexAddressUndocumented(reg_E, regCodeIXH); // ld ixh, e
+            case 0x64 ->
+                    setIndexAddressUndocumented(getIndexAddressUndocumented(regCodeIXH), regCodeIXH); // ld ixh, IXh
+            case 0x65 ->
+                    setIndexAddressUndocumented(getIndexAddressUndocumented(regCodeIXL), regCodeIXH); // ld ixh, IXl
+            case 0x66 -> reg_H = get8BitRegisterIndexed(regCodeM); // ld h, (ix+dd)
+            case 0x67 -> setIndexAddressUndocumented(reg_A, regCodeIXH); // ld ixh, a
+            case 0x68 -> setIndexAddressUndocumented(reg_B, regCodeIXL); // ld ixl, b
+            case 0x69 -> setIndexAddressUndocumented(reg_C, regCodeIXL); // ld ixl, c
+            case 0x6A -> setIndexAddressUndocumented(reg_D, regCodeIXL); // ld ixl, d
+            case 0x6B -> setIndexAddressUndocumented(reg_E, regCodeIXL); // ld ixl, e
+            case 0x6C ->
+                    setIndexAddressUndocumented(getIndexAddressUndocumented(regCodeIXH), regCodeIXL); // ld ixl, IXh
+            case 0x6D ->
+                    setIndexAddressUndocumented(getIndexAddressUndocumented(regCodeIXL), regCodeIXL); // ld ixl, IXl
+            case 0x6E -> reg_L = get8BitRegisterIndexed(regCodeM); // ld l, (ix+dd)
+            case 0x6F -> setIndexAddressUndocumented(reg_A, regCodeIXL); // ld ixl, a
             //
-            case 0x70: {
-                setIndexAddressUndocumented(reg_B, regCodeM);
-                break;
-            } // ld (ix+d), b
-            case 0x71: {
-                setIndexAddressUndocumented(reg_C, regCodeM);
-                break;
-            } // ld (ix+d), c
-            case 0x72: {
-                setIndexAddressUndocumented(reg_D, regCodeM);
-                break;
-            } // ld (ix+d), d
-            case 0x73: {
-                setIndexAddressUndocumented(reg_E, regCodeM);
-                break;
-            } // ld (ix+d), e
-            case 0x74: {
-                setIndexAddressUndocumented(get8BitRegisterIndexed(regCodeH), regCodeM);
-                break;
-            } // ld (ix+d), IXh
-            case 0x75: {
-                setIndexAddressUndocumented(get8BitRegisterIndexed(regCodeL), regCodeM);
-                break;
-            } // ld (ix+d), IXl
-            case 0x76: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            } // ld (IX),(IX)
-            case 0x77: {
-                setIndexAddressUndocumented(get8BitRegisterIndexed(regCodeA), regCodeM);
-                break;
-            } // ld (ix+d), a
-            case 0x78: {
-                reg_A = reg_B;
-                break;
-            } // ld a, b
-            case 0x79: {
-                reg_A = reg_C;
-                break;
-            } // ld a, c
-            case 0x7A: {
-                reg_A = reg_D;
-                break;
-            } // ld a, d
-            case 0x7B: {
-                reg_A = reg_E;
-                break;
-            } // ld a, e
-            case 0x7C: {
-                reg_A = getIndexAddressUndocumented(regCodeIXH);
-                break;
-            } // ld a, IXh
-            case 0x7D: {
-                reg_A = getIndexAddressUndocumented(regCodeIXL);
-                break;
-            } // ld a, IXl
-            case 0x7E: {
-                reg_A = get8BitRegisterIndexed(regCodeM);
-                break;
-            } // ld a, (ix+dd)
-            case 0x7F: { /* reg_A = reg_A; */
-                break;
+            case 0x70 -> setIndexAddressUndocumented(reg_B, regCodeM); // ld (ix+d), b
+            case 0x71 -> setIndexAddressUndocumented(reg_C, regCodeM); // ld (ix+d), c
+            case 0x72 -> setIndexAddressUndocumented(reg_D, regCodeM); // ld (ix+d), d
+            case 0x73 -> setIndexAddressUndocumented(reg_E, regCodeM); // ld (ix+d), e
+            case 0x74 -> setIndexAddressUndocumented(get8BitRegisterIndexed(regCodeH), regCodeM); // ld (ix+d), IXh
+            case 0x75 -> setIndexAddressUndocumented(get8BitRegisterIndexed(regCodeL), regCodeM); // ld (ix+d), IXl
+            case 0x76 -> {
+                decPC(); // execute it forever !
+                halt = true;
+            }
+            case 0x77 -> setIndexAddressUndocumented(get8BitRegisterIndexed(regCodeA), regCodeM); // ld (ix+d), a
+            case 0x78 -> reg_A = reg_B; // ld a, b
+            case 0x79 -> reg_A = reg_C; // ld a, c
+            case 0x7A -> reg_A = reg_D; // ld a, d
+            case 0x7B -> reg_A = reg_E; // ld a, e
+            case 0x7C -> reg_A = getIndexAddressUndocumented(regCodeIXH); // ld a, IXh
+            case 0x7D -> reg_A = getIndexAddressUndocumented(regCodeIXL); // ld a, IXl
+            case 0x7E -> reg_A = get8BitRegisterIndexed(regCodeM); // ld a, (ix+dd)
+            case 0x7F -> { /* reg_A = reg_A; */
             } // ld a,a
+            // add
+            case 0x80 -> ALU8BitAdd(reg_B);
+            case 0x81 -> ALU8BitAdd(reg_C);
+            case 0x82 -> ALU8BitAdd(reg_D);
+            case 0x83 -> ALU8BitAdd(reg_E);
+            case 0x84 -> ALU8BitAdd((reg_index & 0xFF00) >>> 8); // IXh
+            case 0x85 -> ALU8BitAdd(reg_index & 0x00FF); // IXy
+            case 0x86 -> ALU8BitAdd(getIndexAddressUndocumented(regCodeM)); // CP (IX+dd)
+            case 0x87 -> ALU8BitAdd(reg_A);
+            // adc
+            case 0x88 -> ALU8BitAdc(reg_B);
+            case 0x89 -> ALU8BitAdc(reg_C);
+            case 0x8A -> ALU8BitAdc(reg_D);
+            case 0x8B -> ALU8BitAdc(reg_E);
+            case 0x8C -> ALU8BitAdc((reg_index & 0xFF00) >>> 8); // IXh
+            case 0x8D -> ALU8BitAdc(reg_index & 0x00FF); // IXy
+            case 0x8E -> ALU8BitAdc(getIndexAddressUndocumented(regCodeM)); // CP (IX+dd)
+            case 0x8F -> ALU8BitAdc(reg_A);
+            // sub
+            case 0x90 -> ALU8BitSub(reg_B);
+            case 0x91 -> ALU8BitSub(reg_C);
+            case 0x92 -> ALU8BitSub(reg_D);
+            case 0x93 -> ALU8BitSub(reg_E);
+            case 0x94 -> ALU8BitSub((reg_index & 0xFF00) >>> 8); // IXh
+            case 0x95 -> ALU8BitSub(reg_index & 0x00FF); // IXy
+            case 0x96 -> ALU8BitSub(getIndexAddressUndocumented(regCodeM)); // CP (IX+dd)
+            case 0x97 -> ALU8BitSub(reg_A);
+            // sbc
+            case 0x98 -> ALU8BitSbc(reg_B);
+            case 0x99 -> ALU8BitSbc(reg_C);
+            case 0x9A -> ALU8BitSbc(reg_D);
+            case 0x9B -> ALU8BitSbc(reg_E);
+            case 0x9C -> ALU8BitSbc((reg_index & 0xFF00) >>> 8); // IXh
+            case 0x9D -> ALU8BitSbc(reg_index & 0x00FF); // IXy
+            case 0x9E -> ALU8BitSbc(getIndexAddressUndocumented(regCodeM)); // CP (IX+dd)
+            case 0x9F -> ALU8BitSbc(reg_A);
+            // and
+            case 0xA0 -> ALU8BitAnd(reg_B);
+            case 0xA1 -> ALU8BitAnd(reg_C);
+            case 0xA2 -> ALU8BitAnd(reg_D);
+            case 0xA3 -> ALU8BitAnd(reg_E);
+            case 0xA4 -> ALU8BitAnd((reg_index & 0xFF00) >>> 8); // IXh
+            case 0xA5 -> ALU8BitAnd(reg_index & 0x00FF); // IXy
+            case 0xA6 -> ALU8BitAnd(getIndexAddressUndocumented(regCodeM)); // CP (IX+dd)
+            case 0xA7 -> ALU8BitAnd(reg_A);
+            // xor
+            case 0xA8 -> ALU8BitXor(reg_B);
+            case 0xA9 -> ALU8BitXor(reg_C);
+            case 0xAA -> ALU8BitXor(reg_D);
+            case 0xAB -> ALU8BitXor(reg_E);
+            case 0xAC -> ALU8BitXor((reg_index & 0xFF00) >>> 8); // IXh
+            case 0xAD -> ALU8BitXor(reg_index & 0x00FF); // IXy
+            case 0xAE -> ALU8BitXor(getIndexAddressUndocumented(regCodeM)); // CP (IX+dd)
+            case 0xAF -> ALU8BitXor(reg_A);
+            // or
+            case 0xB0 -> ALU8BitOr(reg_B);
+            case 0xB1 -> ALU8BitOr(reg_C);
+            case 0xB2 -> ALU8BitOr(reg_D);
+            case 0xB3 -> ALU8BitOr(reg_E);
+            case 0xB4 -> ALU8BitOr((reg_index & 0xFF00) >>> 8); // IXh
+            case 0xB5 -> ALU8BitOr(reg_index & 0x00FF); // IXy
+            case 0xB6 -> ALU8BitOr(getIndexAddressUndocumented(regCodeM)); // CP (IX+dd)
+            case 0xB7 -> ALU8BitOr(reg_A);
+            // cp
+            case 0xB8 -> ALU8BitCp(reg_B);
+            case 0xB9 -> ALU8BitCp(reg_C);
+            case 0xBA -> ALU8BitCp(reg_D);
+            case 0xBB -> ALU8BitCp(reg_E);
+            case 0xBC -> ALU8BitCp((reg_index & 0xFF00) >>> 8); // IXh
+            case 0xBD -> ALU8BitCp(reg_index & 0x00FF); // IXy
+            case 0xBE -> ALU8BitCp(getIndexAddressUndocumented(regCodeM)); // CP (IX+dd)
+            case 0xBF -> ALU8BitCp(reg_A);
             //
-            case 0x80: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xC0 -> ret(!getZ());
+            case 0xC1 -> {
+                setBC(ram.readWord(reg_SP));
+                inc2SP();
             }
-            case 0x81: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xC2 -> jp(!getZ());
+            case 0xC3 -> jp();
+            case 0xC4 -> call(!getZ());
+            case 0xC5 -> {
+                dec2SP();
+                ram.writeWord(reg_SP, getBC());
             }
-            case 0x82: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xC6 -> {
+                ALU8BitAdd(ram.readByte(reg_PC));
+                incPC();
             }
-            case 0x83: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xc7 -> rst(0);
+            case 0xC8 -> ret(getZ());
+            case 0xC9 -> ret();
+            case 0xCA -> jp(getZ());
+            case 0xCB -> extendedIndexCB();
+            case 0xCC -> call(getZ());
+            case 0xCD -> call();
+            case 0xCE -> {
+                ALU8BitAdc(ram.readByte(reg_PC));
+                incPC();
             }
-            case 0x84: {
-                ALU8BitAdd((reg_index & 0xFF00) >>> 8);
-                break;
-            } // IXh
-            case 0x85: {
-                ALU8BitAdd(reg_index & 0x00FF);
-                break;
-            } // IXy
-            case 0x86: {
-                ALU8BitAdd(getIndexAddressUndocumented(regCodeM));
-                break;
-            } // CP (IX+dd)
-            case 0x87: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x88: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x89: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x8A: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x8B: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x8C: {
-                ALU8BitAdc((reg_index & 0xFF00) >>> 8);
-                break;
-            } // IXh
-            case 0x8D: {
-                ALU8BitAdc(reg_index & 0x00FF);
-                break;
-            } // IXy
-            case 0x8E: {
-                ALU8BitAdc(getIndexAddressUndocumented(regCodeM));
-                break;
-            } // CP (IX+dd)
-            case 0x8F: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
+            case 0xCF -> rst(1);
             //
-            case 0x90: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xD0 -> ret(!getC());
+            case 0xD1 -> {
+                setDE(ram.readWord(reg_SP));
+                inc2SP();
             }
-            case 0x91: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xD2 -> jp(!getC());
+            case 0xD3 -> outNA();
+            case 0xD4 -> call(!getC());
+            case 0xD5 -> {
+                dec2SP();
+                ram.writeWord(reg_SP, getDE());
             }
-            case 0x92: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xD6 -> {
+                ALU8BitSub(ram.readByte(reg_PC));
+                incPC();
             }
-            case 0x93: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xD7 -> rst(2);
+            case 0xD8 -> ret(getC());
+            case 0xD9 -> EXX();
+            case 0xDA -> jp(getC());
+            case 0xDB -> inAN();
+            case 0xDC -> call(getC());
+            case 0xDD -> extendedDD();
+            case 0xDE -> {
+                ALU8BitSbc(ram.readByte(reg_PC));
+                incPC();
             }
-            case 0x94: {
-                ALU8BitSub((reg_index & 0xFF00) >>> 8);
-                break;
-            } // IXh
-            case 0x95: {
-                ALU8BitSub(reg_index & 0x00FF);
-                break;
-            } // IXy
-            case 0x96: {
-                ALU8BitSub(getIndexAddressUndocumented(regCodeM));
-                break;
-            } // CP (IX+dd)
-            case 0x97: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x98: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x99: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x9A: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x9B: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0x9C: {
-                ALU8BitSbc((reg_index & 0xFF00) >>> 8);
-                break;
-            } // IXh
-            case 0x9D: {
-                ALU8BitSbc(reg_index & 0x00FF);
-                break;
-            } // IXy
-            case 0x9E: {
-                ALU8BitSbc(getIndexAddressUndocumented(regCodeM));
-                break;
-            } // CP (IX+dd)
-            case 0x9F: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
+            case 0xDF -> rst(3);
             //
-            case 0xA0: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xA1: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xA2: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xA3: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xA4: {
-                ALU8BitAnd((reg_index & 0xFF00) >>> 8);
-                break;
-            } // IXh
-            case 0xA5: {
-                ALU8BitAnd(reg_index & 0x00FF);
-                break;
-            } // IXy
-            case 0xA6: {
-                ALU8BitAnd(getIndexAddressUndocumented(regCodeM));
-                break;
-            } // CP (IX+dd)
-            case 0xA7: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xA8: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xA9: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xAA: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xAB: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xAC: {
-                ALU8BitXor((reg_index & 0xFF00) >>> 8);
-                break;
-            } // IXh
-            case 0xAD: {
-                ALU8BitXor(reg_index & 0x00FF);
-                break;
-            } // IXy
-            case 0xAE: {
-                ALU8BitXor(getIndexAddressUndocumented(regCodeM));
-                break;
-            } // CP (IX+dd)
-            case 0xAF: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            //
-            case 0xB0: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xB1: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xB2: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xB3: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xB4: {
-                ALU8BitOr((reg_index & 0xFF00) >>> 8);
-                break;
-            } // IXh
-            case 0xB5: {
-                ALU8BitOr(reg_index & 0x00FF);
-                break;
-            } // IXy
-            case 0xB6: {
-                ALU8BitOr(getIndexAddressUndocumented(regCodeM));
-                break;
-            } // CP (IX+dd)
-            case 0xB7: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xB8: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xB9: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xBA: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xBB: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xBC: {
-                ALU8BitCp((reg_index & 0xFF00) >>> 8);
-                break;
-            } // IXh
-            case 0xBD: {
-                ALU8BitCp(reg_index & 0x00FF);
-                break;
-            } // IXy
-            case 0xBE: {
-                ALU8BitCp(getIndexAddressUndocumented(regCodeM));
-                break;
-            } // CP (IX+dd)
-            case 0xBF: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            //
-            case 0xC0: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xC1: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xC2: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xC3: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xC4: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xC5: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xC6: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xC7: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xC8: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xC9: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xCA: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xCB: {
-                extendedIndexCB();
-                break;
-            }
-            case 0xCC: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xCD: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xCE: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xCF: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            //
-            case 0xD0: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xD1: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xD2: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xD3: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xD4: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xD5: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xD6: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xD7: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xD8: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xD9: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xDA: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xDB: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xDC: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xDD: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xDE: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xDF: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            //
-            case 0xE0: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xE1: {
+            case 0xE0 -> ret(!getPV());
+            case 0xE1 -> {
                 reg_index = ram.readWord(reg_SP);
                 inc2SP();
-                break;
             } // pop ix
-            case 0xE2: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xE3: {
-                EXSPIndex();
-                break;
-            } // ex (sp),ix
-            case 0xE4: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xE5: {
+            case 0xE2 -> jp(!getPV());
+            case 0xE3 -> EXSPIndex(); // ex (sp),ix
+            case 0xE4 -> call(!getPV());
+            case 0xE5 -> {
                 dec2SP();
                 ram.writeWord(reg_SP, reg_index);
-                break;
             } // push ix
-            case 0xE6: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xE6 -> {
+                ALU8BitAnd(ram.readByte(reg_PC));
+                incPC();
             }
-            case 0xE7: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xE7 -> rst(4);
+            case 0xE8 -> ret(getPV());
+            case 0xE9 -> reg_PC = reg_index; // jp (ix)
+            case 0xEA -> jp(getPV());
+            case 0xEB -> EXDEHL();
+            case 0xEC -> call(getPV());
+            case 0xED -> extendedED();
+            case 0xEE -> {
+                ALU8BitXor(ram.readByte(reg_PC));
+                incPC();
             }
-            case 0xE8: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xE9: {
-                reg_PC = reg_index;
-                break;
-            } // jp (ix)
-            case 0xEA: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xEB: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xEC: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xED: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xEE: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xEF: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
+            case 0xEF -> rst(5);
             //
-            case 0xF0: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xF0 -> ret(!getS());
+            case 0xF1 -> {
+                int temp = ram.readWord(reg_SP);
+                inc2SP();
+                reg_F = (temp & lsb);
+                reg_A = ((temp & msb) >> 8);
             }
-            case 0xF1: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xF2 -> jp(!getS());
+            case 0xF3 -> DI();
+            case 0xF4 -> call(!getS());
+            case 0xF5 -> {
+                dec2SP();
+                ram.writeWord(reg_SP, (reg_A << 8) | reg_F);
             }
-            case 0xF2: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xF6 -> {
+                ALU8BitOr(ram.readByte(reg_PC));
+                incPC();
             }
-            case 0xF3: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
+            case 0xF7 -> rst(6);
+            case 0xF8 -> ret(getS());
+            case 0xF9 -> reg_SP = reg_index; // ld sp,ix
+            case 0xFA -> jp(getS());
+            case 0xFB -> EI();
+            case 0xFC -> call(getS());
+            case 0xFD -> extendedFD();
+            case 0xFE -> {
+                ALU8BitCp(ram.readByte(reg_PC));
+                incPC();
             }
-            case 0xF4: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xF5: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xF6: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xF7: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xF8: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xF9: {
-                reg_SP = reg_index;
-                break;
-            } // ld sp,ix
-            case 0xFA: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xFB: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xFC: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xFD: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            case 0xFE: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            }
-            default: {
-                throw new ProcessorException(ProcessorException.COMPUTER_UNIMPLEMENTED_OPCODE);
-            } //
+            case 0xFF -> rst(7);
         }
-
     }
 
     /*
@@ -3855,1050 +1634,47 @@ public class Z80Core implements ICPUData {
      *
      * *****************************************************************************
      */
+    @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "Bytes can only be 0..255")
     private void extendedIndexCB() {
         instruction = ram.readByte(reg_PC + 1); // fudge for DD CB dd ii
         tStates = tStates + OPCODE_INDEXED_CB_STATES[instruction];
-
+        //
         switch (instruction) {
-            case 0x00: {
-                shiftRLCIndexed();
-                break;
-            }
-            case 0x01: {
-                shiftRLCIndexed();
-                break;
-            }
-            case 0x02: {
-                shiftRLCIndexed();
-                break;
-            }
-            case 0x03: {
-                shiftRLCIndexed();
-                break;
-            }
-            case 0x04: {
-                shiftRLCIndexed();
-                break;
-            }
-            case 0x05: {
-                shiftRLCIndexed();
-                break;
-            }
-            case 0x06: {
-                shiftRLCIndexed();
-                break;
-            }
-            case 0x07: {
-                shiftRLCIndexed();
-                break;
-            }
-            case 0x08: {
-                shiftRRCIndexed();
-                break;
-            }
-            case 0x09: {
-                shiftRRCIndexed();
-                break;
-            }
-            case 0x0A: {
-                shiftRRCIndexed();
-                break;
-            }
-            case 0x0B: {
-                shiftRRCIndexed();
-                break;
-            }
-            case 0x0C: {
-                shiftRRCIndexed();
-                break;
-            }
-            case 0x0D: {
-                shiftRRCIndexed();
-                break;
-            }
-            case 0x0E: {
-                shiftRRCIndexed();
-                break;
-            }
-            case 0x0F: {
-                shiftRRCIndexed();
-                break;
-            }
+            case 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 -> shiftRLCIndexed();
+            case 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F -> shiftRRCIndexed();
+            case 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17 -> shiftRLIndexed();
+            case 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F -> shiftRRIndexed();
+            case 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27 -> shiftSLAIndexed();
+            case 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F -> shiftSRAIndexed();
+            case 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37 -> shiftSLLIndexed();
+            case 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F -> shiftSRLIndexed();
             //
-            case 0x10: {
-                shiftRLIndexed();
-                break;
-            }
-            case 0x11: {
-                shiftRLIndexed();
-                break;
-            }
-            case 0x12: {
-                shiftRLIndexed();
-                break;
-            }
-            case 0x13: {
-                shiftRLIndexed();
-                break;
-            }
-            case 0x14: {
-                shiftRLIndexed();
-                break;
-            }
-            case 0x15: {
-                shiftRLIndexed();
-                break;
-            }
-            case 0x16: {
-                shiftRLIndexed();
-                break;
-            }
-            case 0x17: {
-                shiftRLIndexed();
-                break;
-            }
-            case 0x18: {
-                shiftRRIndexed();
-                break;
-            }
-            case 0x19: {
-                shiftRRIndexed();
-                break;
-            }
-            case 0x1A: {
-                shiftRRIndexed();
-                break;
-            }
-            case 0x1B: {
-                shiftRRIndexed();
-                break;
-            }
-            case 0x1C: {
-                shiftRRIndexed();
-                break;
-            }
-            case 0x1D: {
-                shiftRRIndexed();
-                break;
-            }
-            case 0x1E: {
-                shiftRRIndexed();
-                break;
-            }
-            case 0x1F: {
-                shiftRRIndexed();
-                break;
-            }
+            case 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47 -> testIndexBit(0);
+            case 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F -> testIndexBit(1);
+            case 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57 -> testIndexBit(2);
+            case 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F -> testIndexBit(3);
+            case 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67 -> testIndexBit(4);
+            case 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F -> testIndexBit(5);
+            case 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77 -> testIndexBit(6);
+            case 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F -> testIndexBit(7);
             //
-            case 0x20: {
-                shiftSLAIndexed();
-                break;
-            }
-            case 0x21: {
-                shiftSLAIndexed();
-                break;
-            }
-            case 0x22: {
-                shiftSLAIndexed();
-                break;
-            }
-            case 0x23: {
-                shiftSLAIndexed();
-                break;
-            }
-            case 0x24: {
-                shiftSLAIndexed();
-                break;
-            }
-            case 0x25: {
-                shiftSLAIndexed();
-                break;
-            }
-            case 0x26: {
-                shiftSLAIndexed();
-                break;
-            }
-            case 0x27: {
-                shiftSLAIndexed();
-                break;
-            }
-            case 0x28: {
-                shiftSRAIndexed();
-                break;
-            }
-            case 0x29: {
-                shiftSRAIndexed();
-                break;
-            }
-            case 0x2A: {
-                shiftSRAIndexed();
-                break;
-            }
-            case 0x2B: {
-                shiftSRAIndexed();
-                break;
-            }
-            case 0x2C: {
-                shiftSRAIndexed();
-                break;
-            }
-            case 0x2D: {
-                shiftSRAIndexed();
-                break;
-            }
-            case 0x2E: {
-                shiftSRAIndexed();
-                break;
-            }
-            case 0x2F: {
-                shiftSRAIndexed();
-                break;
-            }
+            case 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87 -> bitIndexReset(0);
+            case 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F -> bitIndexReset(1);
+            case 0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97 -> bitIndexReset(2);
+            case 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F -> bitIndexReset(3);
+            case 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7 -> bitIndexReset(4);
+            case 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF -> bitIndexReset(5);
+            case 0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7 -> bitIndexReset(6);
+            case 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF -> bitIndexReset(7);
             //
-            case 0x30: {
-                shiftSLLIndexed();
-                break;
-            }
-            case 0x31: {
-                shiftSLLIndexed();
-                break;
-            }
-            case 0x32: {
-                shiftSLLIndexed();
-                break;
-            }
-            case 0x33: {
-                shiftSLLIndexed();
-                break;
-            }
-            case 0x34: {
-                shiftSLLIndexed();
-                break;
-            }
-            case 0x35: {
-                shiftSLLIndexed();
-                break;
-            }
-            case 0x36: {
-                shiftSLLIndexed();
-                break;
-            }
-            case 0x37: {
-                shiftSLLIndexed();
-                break;
-            }
-            case 0x38: {
-                shiftSRLIndexed();
-                break;
-            }
-            case 0x39: {
-                shiftSRLIndexed();
-                break;
-            }
-            case 0x3A: {
-                shiftSRLIndexed();
-                break;
-            }
-            case 0x3B: {
-                shiftSRLIndexed();
-                break;
-            }
-            case 0x3C: {
-                shiftSRLIndexed();
-                break;
-            }
-            case 0x3D: {
-                shiftSRLIndexed();
-                break;
-            }
-            case 0x3E: {
-                shiftSRLIndexed();
-                break;
-            }
-            case 0x3F: {
-                shiftSRLIndexed();
-                break;
-            }
-            //
-            case 0x40: {
-                testIndexBit(0);
-                break;
-            }
-            case 0x41: {
-                testIndexBit(0);
-                break;
-            }
-            case 0x42: {
-                testIndexBit(0);
-                break;
-            }
-            case 0x43: {
-                testIndexBit(0);
-                break;
-            }
-            case 0x44: {
-                testIndexBit(0);
-                break;
-            }
-            case 0x45: {
-                testIndexBit(0);
-                break;
-            }
-            case 0x46: {
-                testIndexBit(0);
-                break;
-            }
-            case 0x47: {
-                testIndexBit(0);
-                break;
-            }
-            case 0x48: {
-                testIndexBit(1);
-                break;
-            }
-            case 0x49: {
-                testIndexBit(1);
-                break;
-            }
-            case 0x4A: {
-                testIndexBit(1);
-                break;
-            }
-            case 0x4B: {
-                testIndexBit(1);
-                break;
-            }
-            case 0x4C: {
-                testIndexBit(1);
-                break;
-            }
-            case 0x4D: {
-                testIndexBit(1);
-                break;
-            }
-            case 0x4E: {
-                testIndexBit(1);
-                break;
-            }
-            case 0x4F: {
-                testIndexBit(1);
-                break;
-            }
-            //
-            case 0x50: {
-                testIndexBit(2);
-                break;
-            }
-            case 0x51: {
-                testIndexBit(2);
-                break;
-            }
-            case 0x52: {
-                testIndexBit(2);
-                break;
-            }
-            case 0x53: {
-                testIndexBit(2);
-                break;
-            }
-            case 0x54: {
-                testIndexBit(2);
-                break;
-            }
-            case 0x55: {
-                testIndexBit(2);
-                break;
-            }
-            case 0x56: {
-                testIndexBit(2);
-                break;
-            }
-            case 0x57: {
-                testIndexBit(2);
-                break;
-            }
-            case 0x58: {
-                testIndexBit(3);
-                break;
-            }
-            case 0x59: {
-                testIndexBit(3);
-                break;
-            }
-            case 0x5A: {
-                testIndexBit(3);
-                break;
-            }
-            case 0x5B: {
-                testIndexBit(3);
-                break;
-            }
-            case 0x5C: {
-                testIndexBit(3);
-                break;
-            }
-            case 0x5D: {
-                testIndexBit(3);
-                break;
-            }
-            case 0x5E: {
-                testIndexBit(3);
-                break;
-            }
-            case 0x5F: {
-                testIndexBit(3);
-                break;
-            }
-            //
-            case 0x60: {
-                testIndexBit(4);
-                break;
-            }
-            case 0x61: {
-                testIndexBit(4);
-                break;
-            }
-            case 0x62: {
-                testIndexBit(4);
-                break;
-            }
-            case 0x63: {
-                testIndexBit(4);
-                break;
-            }
-            case 0x64: {
-                testIndexBit(4);
-                break;
-            }
-            case 0x65: {
-                testIndexBit(4);
-                break;
-            }
-            case 0x66: {
-                testIndexBit(4);
-                break;
-            }
-            case 0x67: {
-                testIndexBit(4);
-                break;
-            }
-            case 0x68: {
-                testIndexBit(5);
-                break;
-            }
-            case 0x69: {
-                testIndexBit(5);
-                break;
-            }
-            case 0x6A: {
-                testIndexBit(5);
-                break;
-            }
-            case 0x6B: {
-                testIndexBit(5);
-                break;
-            }
-            case 0x6C: {
-                testIndexBit(5);
-                break;
-            }
-            case 0x6D: {
-                testIndexBit(5);
-                break;
-            }
-            case 0x6E: {
-                testIndexBit(5);
-                break;
-            }
-            case 0x6F: {
-                testIndexBit(5);
-                break;
-            }
-            //
-            case 0x70: {
-                testIndexBit(6);
-                break;
-            }
-            case 0x71: {
-                testIndexBit(6);
-                break;
-            }
-            case 0x72: {
-                testIndexBit(6);
-                break;
-            }
-            case 0x73: {
-                testIndexBit(6);
-                break;
-            }
-            case 0x74: {
-                testIndexBit(6);
-                break;
-            }
-            case 0x75: {
-                testIndexBit(6);
-                break;
-            }
-            case 0x76: {
-                testIndexBit(6);
-                break;
-            }
-            case 0x77: {
-                testIndexBit(6);
-                break;
-            }
-            case 0x78: {
-                testIndexBit(7);
-                break;
-            }
-            case 0x79: {
-                testIndexBit(7);
-                break;
-            }
-            case 0x7A: {
-                testIndexBit(7);
-                break;
-            }
-            case 0x7B: {
-                testIndexBit(7);
-                break;
-            }
-            case 0x7C: {
-                testIndexBit(7);
-                break;
-            }
-            case 0x7D: {
-                testIndexBit(7);
-                break;
-            }
-            case 0x7E: {
-                testIndexBit(7);
-                break;
-            }
-            case 0x7F: {
-                testIndexBit(7);
-                break;
-            }
-            //
-            case 0x80: {
-                bitIndexReset(0);
-                break;
-            }
-            case 0x81: {
-                bitIndexReset(0);
-                break;
-            }
-            case 0x82: {
-                bitIndexReset(0);
-                break;
-            }
-            case 0x83: {
-                bitIndexReset(0);
-                break;
-            }
-            case 0x84: {
-                bitIndexReset(0);
-                break;
-            }
-            case 0x85: {
-                bitIndexReset(0);
-                break;
-            }
-            case 0x86: {
-                bitIndexReset(0);
-                break;
-            }
-            case 0x87: {
-                bitIndexReset(0);
-                break;
-            }
-            case 0x88: {
-                bitIndexReset(1);
-                break;
-            }
-            case 0x89: {
-                bitIndexReset(1);
-                break;
-            }
-            case 0x8A: {
-                bitIndexReset(1);
-                break;
-            }
-            case 0x8B: {
-                bitIndexReset(1);
-                break;
-            }
-            case 0x8C: {
-                bitIndexReset(1);
-                break;
-            }
-            case 0x8D: {
-                bitIndexReset(1);
-                break;
-            }
-            case 0x8E: {
-                bitIndexReset(1);
-                break;
-            }
-            case 0x8F: {
-                bitIndexReset(1);
-                break;
-            }
-            //
-            case 0x90: {
-                bitIndexReset(2);
-                break;
-            }
-            case 0x91: {
-                bitIndexReset(2);
-                break;
-            }
-            case 0x92: {
-                bitIndexReset(2);
-                break;
-            }
-            case 0x93: {
-                bitIndexReset(2);
-                break;
-            }
-            case 0x94: {
-                bitIndexReset(2);
-                break;
-            }
-            case 0x95: {
-                bitIndexReset(2);
-                break;
-            }
-            case 0x96: {
-                bitIndexReset(2);
-                break;
-            }
-            case 0x97: {
-                bitIndexReset(2);
-                break;
-            }
-            case 0x98: {
-                bitIndexReset(3);
-                break;
-            }
-            case 0x99: {
-                bitIndexReset(3);
-                break;
-            }
-            case 0x9A: {
-                bitIndexReset(3);
-                break;
-            }
-            case 0x9B: {
-                bitIndexReset(3);
-                break;
-            }
-            case 0x9C: {
-                bitIndexReset(3);
-                break;
-            }
-            case 0x9D: {
-                bitIndexReset(3);
-                break;
-            }
-            case 0x9E: {
-                bitIndexReset(3);
-                break;
-            }
-            case 0x9F: {
-                bitIndexReset(3);
-                break;
-            }
-            //
-            case 0xA0: {
-                bitIndexReset(4);
-                break;
-            }
-            case 0xA1: {
-                bitIndexReset(4);
-                break;
-            }
-            case 0xA2: {
-                bitIndexReset(4);
-                break;
-            }
-            case 0xA3: {
-                bitIndexReset(4);
-                break;
-            }
-            case 0xA4: {
-                bitIndexReset(4);
-                break;
-            }
-            case 0xA5: {
-                bitIndexReset(4);
-                break;
-            }
-            case 0xA6: {
-                bitIndexReset(4);
-                break;
-            }
-            case 0xA7: {
-                bitIndexReset(4);
-                break;
-            }
-            case 0xA8: {
-                bitIndexReset(5);
-                break;
-            }
-            case 0xA9: {
-                bitIndexReset(5);
-                break;
-            }
-            case 0xAA: {
-                bitIndexReset(5);
-                break;
-            }
-            case 0xAB: {
-                bitIndexReset(5);
-                break;
-            }
-            case 0xAC: {
-                bitIndexReset(5);
-                break;
-            }
-            case 0xAD: {
-                bitIndexReset(5);
-                break;
-            }
-            case 0xAE: {
-                bitIndexReset(5);
-                break;
-            }
-            case 0xAF: {
-                bitIndexReset(5);
-                break;
-            }
-            //
-            case 0xB0: {
-                bitIndexReset(6);
-                break;
-            }
-            case 0xB1: {
-                bitIndexReset(6);
-                break;
-            }
-            case 0xB2: {
-                bitIndexReset(6);
-                break;
-            }
-            case 0xB3: {
-                bitIndexReset(6);
-                break;
-            }
-            case 0xB4: {
-                bitIndexReset(6);
-                break;
-            }
-            case 0xB5: {
-                bitIndexReset(6);
-                break;
-            }
-            case 0xB6: {
-                bitIndexReset(6);
-                break;
-            }
-            case 0xB7: {
-                bitIndexReset(6);
-                break;
-            }
-            case 0xB8: {
-                bitIndexReset(7);
-                break;
-            }
-            case 0xB9: {
-                bitIndexReset(7);
-                break;
-            }
-            case 0xBA: {
-                bitIndexReset(7);
-                break;
-            }
-            case 0xBB: {
-                bitIndexReset(7);
-                break;
-            }
-            case 0xBC: {
-                bitIndexReset(7);
-                break;
-            }
-            case 0xBD: {
-                bitIndexReset(7);
-                break;
-            }
-            case 0xBE: {
-                bitIndexReset(7);
-                break;
-            }
-            case 0xBF: {
-                bitIndexReset(7);
-                break;
-            }
-            //
-            case 0xC0: {
-                bitIndexSet(0);
-                break;
-            }
-            case 0xC1: {
-                bitIndexSet(0);
-                break;
-            }
-            case 0xC2: {
-                bitIndexSet(0);
-                break;
-            }
-            case 0xC3: {
-                bitIndexSet(0);
-                break;
-            }
-            case 0xC4: {
-                bitIndexSet(0);
-                break;
-            }
-            case 0xC5: {
-                bitIndexSet(0);
-                break;
-            }
-            case 0xC6: {
-                bitIndexSet(0);
-                break;
-            }
-            case 0xC7: {
-                bitIndexSet(0);
-                break;
-            }
-            case 0xC8: {
-                bitIndexSet(1);
-                break;
-            }
-            case 0xC9: {
-                bitIndexSet(1);
-                break;
-            }
-            case 0xCA: {
-                bitIndexSet(1);
-                break;
-            }
-            case 0xCB: {
-                bitIndexSet(1);
-                break;
-            }
-            case 0xCC: {
-                bitIndexSet(1);
-                break;
-            }
-            case 0xCD: {
-                bitIndexSet(1);
-                break;
-            }
-            case 0xCE: {
-                bitIndexSet(1);
-                break;
-            }
-            case 0xCF: {
-                bitIndexSet(1);
-                break;
-            }
-            //
-            case 0xD0: {
-                bitIndexSet(2);
-                break;
-            }
-            case 0xD1: {
-                bitIndexSet(2);
-                break;
-            }
-            case 0xD2: {
-                bitIndexSet(2);
-                break;
-            }
-            case 0xD3: {
-                bitIndexSet(2);
-                break;
-            }
-            case 0xD4: {
-                bitIndexSet(2);
-                break;
-            }
-            case 0xD5: {
-                bitIndexSet(2);
-                break;
-            }
-            case 0xD6: {
-                bitIndexSet(2);
-                break;
-            }
-            case 0xD7: {
-                bitIndexSet(2);
-                break;
-            }
-            case 0xD8: {
-                bitIndexSet(3);
-                break;
-            }
-            case 0xD9: {
-                bitIndexSet(3);
-                break;
-            }
-            case 0xDA: {
-                bitIndexSet(3);
-                break;
-            }
-            case 0xDB: {
-                bitIndexSet(3);
-                break;
-            }
-            case 0xDC: {
-                bitIndexSet(3);
-                break;
-            }
-            case 0xDD: {
-                bitIndexSet(3);
-                break;
-            }
-            case 0xDE: {
-                bitIndexSet(3);
-                break;
-            }
-            case 0xDF: {
-                bitIndexSet(3);
-                break;
-            }
-            //
-            case 0xE0: {
-                bitIndexSet(4);
-                break;
-            }
-            case 0xE1: {
-                bitIndexSet(4);
-                break;
-            }
-            case 0xE2: {
-                bitIndexSet(4);
-                break;
-            }
-            case 0xE3: {
-                bitIndexSet(4);
-                break;
-            }
-            case 0xE4: {
-                bitIndexSet(4);
-                break;
-            }
-            case 0xE5: {
-                bitIndexSet(4);
-                break;
-            }
-            case 0xE6: {
-                bitIndexSet(4);
-                break;
-            }
-            case 0xE7: {
-                bitIndexSet(4);
-                break;
-            }
-            case 0xE8: {
-                bitIndexSet(5);
-                break;
-            }
-            case 0xE9: {
-                bitIndexSet(5);
-                break;
-            }
-            case 0xEA: {
-                bitIndexSet(5);
-                break;
-            }
-            case 0xEB: {
-                bitIndexSet(5);
-                break;
-            }
-            case 0xEC: {
-                bitIndexSet(5);
-                break;
-            }
-            case 0xED: {
-                bitIndexSet(5);
-                break;
-            }
-            case 0xEE: {
-                bitIndexSet(5);
-                break;
-            }
-            case 0xEF: {
-                bitIndexSet(5);
-                break;
-            }
-            //
-            case 0xF0: {
-                bitIndexSet(6);
-                break;
-            }
-            case 0xF1: {
-                bitIndexSet(6);
-                break;
-            }
-            case 0xF2: {
-                bitIndexSet(6);
-                break;
-            }
-            case 0xF3: {
-                bitIndexSet(6);
-                break;
-            }
-            case 0xF4: {
-                bitIndexSet(6);
-                break;
-            }
-            case 0xF5: {
-                bitIndexSet(6);
-                break;
-            }
-            case 0xF6: {
-                bitIndexSet(6);
-                break;
-            }
-            case 0xF7: {
-                bitIndexSet(6);
-                break;
-            }
-            case 0xF8: {
-                bitIndexSet(7);
-                break;
-            }
-            case 0xF9: {
-                bitIndexSet(7);
-                break;
-            }
-            case 0xFA: {
-                bitIndexSet(7);
-                break;
-            }
-            case 0xFB: {
-                bitIndexSet(7);
-                break;
-            }
-            case 0xFC: {
-                bitIndexSet(7);
-                break;
-            }
-            case 0xFD: {
-                bitIndexSet(7);
-                break;
-            }
-            case 0xFE: {
-                bitIndexSet(7);
-                break;
-            }
-            default: {
-                bitIndexSet(7);
-                break;
-            }
+            case 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7 -> bitIndexSet(0);
+            case 0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF -> bitIndexSet(1);
+            case 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7 -> bitIndexSet(2);
+            case 0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF -> bitIndexSet(3);
+            case 0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7 -> bitIndexSet(4);
+            case 0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF -> bitIndexSet(5);
+            case 0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7 -> bitIndexSet(6);
+            case 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF -> bitIndexSet(7);
         }
         incPC();
     }
@@ -4907,52 +1683,35 @@ public class Z80Core implements ICPUData {
      * return an 8 bit register based on its code 000 -> 111
      */
     private int get8BitRegisterForIO(int reg) {
-        switch (reg) {
-            case 0: {
-                return reg_B;
-            } // B
-            case 1: {
-                return reg_C;
-            } // C
-            case 2: {
-                return reg_D;
-            } // D
-            case 3: {
-                return reg_E;
-            } // E
-            case 4: {
-                return reg_H;
-            } // H
-            case 5: {
-                return reg_L;
-            } // L
-            case 7: {
-                return reg_A;
-            } // F
-            default: {
-                return 0;
-            }
-        }
+        return switch (reg) {
+            case 0 -> reg_B;
+            // B
+            case 1 -> reg_C;
+            // C
+            case 2 -> reg_D;
+            // D
+            case 3 -> reg_E;
+            // E
+            case 4 -> reg_H;
+            // H
+            case 5 -> reg_L;
+            // L
+            case 7 -> reg_A;
+            // F
+            default -> 0;
+        };
     }
 
     /*
      * return a 16 bit register based on its code 00 -> 11
      */
     private int get16BitRegister(int reg) {
-        switch (reg) {
-            case 0: {
-                return getBC();
-            }
-            case 1: {
-                return getDE();
-            }
-            case 2: {
-                return getHL();
-            }
-            default: {
-                return reg_SP;
-            }
-        }
+        return switch (reg) {
+            case 0 -> getBC();
+            case 1 -> getDE();
+            case 2 -> getHL();
+            default -> reg_SP;
+        };
     }
 
     /*
@@ -4960,22 +1719,10 @@ public class Z80Core implements ICPUData {
      */
     private void set16BitRegister(int value, int reg) {
         switch (reg) {
-            case 0: {
-                setBC(value);
-                break;
-            }
-            case 1: {
-                setDE(value);
-                break;
-            }
-            case 2: {
-                setHL(value);
-                break;
-            }
-            default: {
-                reg_SP = value;
-                break;
-            }
+            case 0 -> setBC(value);
+            case 1 -> setDE(value);
+            case 2 -> setHL(value);
+            default -> reg_SP = value;
         }
     }
 
@@ -5021,9 +1768,9 @@ public class Z80Core implements ICPUData {
 
     /* half carry flag control */
     private void setHalfCarryFlagAdd(int left, int right, int carry) {
-        left = left & 0x000f;
-        right = right & 0x000f;
-        setH((right + left + carry) > 0x0f);
+        left = left & 0x000F;
+        right = right & 0x000F;
+        setH((right + left + carry) > 0x0F);
     }
 
     /* half carry flag control */
@@ -5048,16 +1795,11 @@ public class Z80Core implements ICPUData {
     }
 
     /* half carry flag control */
-    /*
-     * private void setHalfCarryFlagSub16(int left, int right, int carry) { left = left & 0x0FFF; right = right &
-     * 0x0FFF; setH ( left < (right+carry) ); }
-     */
+
     /* 2's compliment overflow flag control */
     private void setOverflowFlagAdd(int left, int right, int carry) {
-        if (left > 127)
-            left = left - 256;
-        if (right > 127)
-            right = right - 256;
+        if (left > 127) left = left - 256;
+        if (right > 127) right = right - 256;
         left = left + right + carry;
         setPV((left < -128) || (left > 127));
     }
@@ -5069,20 +1811,16 @@ public class Z80Core implements ICPUData {
 
     /* 2's compliment overflow flag control */
     private void setOverflowFlagAdd16(int left, int right, int carry) {
-        if (left > 32767)
-            left = left - 65536;
-        if (right > 32767)
-            right = right - 65536;
+        if (left > 32767) left = left - 65536;
+        if (right > 32767) right = right - 65536;
         left = left + right + carry;
         setPV((left < -32768) || (left > 32767));
     }
 
     /* 2's compliment overflow flag control */
     private void setOverflowFlagSub(int left, int right, int carry) {
-        if (left > 127)
-            left = left - 256;
-        if (right > 127)
-            right = right - 256;
+        if (left > 127) left = left - 256;
+        if (right > 127) right = right - 256;
         left = left - right - carry;
         setPV((left < -128) || (left > 127));
     }
@@ -5094,10 +1832,8 @@ public class Z80Core implements ICPUData {
 
     /* 2's compliment overflow flag control */
     private void setOverflowFlagSub16(int left, int right, int carry) {
-        if (left > 32767)
-            left = left - 65536;
-        if (right > 32767)
-            right = right - 65536;
+        if (left > 32767) left = left - 65536;
+        if (right > 32767) right = right - 65536;
         left = left - right - carry;
         setPV((left < -32768) || (left > 32767));
     }
@@ -5105,13 +1841,12 @@ public class Z80Core implements ICPUData {
     /* 8 bit ADD */
     private void ALU8BitAdd(int value) {
         int local_reg_A = reg_A;
-
         setHalfCarryFlagAdd(local_reg_A, value);
         setOverflowFlagAdd(local_reg_A, value);
         local_reg_A = local_reg_A + value;
         setS((local_reg_A & 0x0080) != 0);
-        setC((local_reg_A & 0xff00) != 0);
-        local_reg_A = local_reg_A & 0x00ff;
+        setC((local_reg_A & 0xFF00) != 0);
+        local_reg_A = local_reg_A & 0x00FF;
         setZ(local_reg_A == 0);
         resetN();
         reg_A = local_reg_A;
@@ -5122,17 +1857,14 @@ public class Z80Core implements ICPUData {
     private void ALU8BitAdc(int value) {
         int local_reg_A = reg_A;
         int carry;
-
-        if (getC())
-            carry = 1;
-        else
-            carry = 0;
+        if (getC()) carry = 1;
+        else carry = 0;
         setHalfCarryFlagAdd(local_reg_A, value, carry);
         setOverflowFlagAdd(local_reg_A, value, carry);
         local_reg_A = local_reg_A + value + carry;
         setS((local_reg_A & 0x0080) != 0);
-        setC((local_reg_A & 0xff00) != 0);
-        local_reg_A = local_reg_A & 0x00ff;
+        setC((local_reg_A & 0xFF00) != 0);
+        local_reg_A = local_reg_A & 0x00FF;
         setZ(local_reg_A == 0);
         resetN();
         reg_A = local_reg_A;
@@ -5146,8 +1878,8 @@ public class Z80Core implements ICPUData {
         setOverflowFlagSub(local_reg_A, value);
         local_reg_A = local_reg_A - value;
         setS((local_reg_A & 0x0080) != 0);
-        setC((local_reg_A & 0xff00) != 0);
-        local_reg_A = local_reg_A & 0x00ff;
+        setC((local_reg_A & 0xFF00) != 0);
+        local_reg_A = local_reg_A & 0x00FF;
         setZ(local_reg_A == 0);
         setN();
         reg_A = local_reg_A;
@@ -5158,17 +1890,14 @@ public class Z80Core implements ICPUData {
     private void ALU8BitSbc(int value) {
         int local_reg_A = reg_A;
         int carry;
-
-        if (getC())
-            carry = 1;
-        else
-            carry = 0;
+        if (getC()) carry = 1;
+        else carry = 0;
         setHalfCarryFlagSub(local_reg_A, value, carry);
         setOverflowFlagSub(local_reg_A, value, carry);
         local_reg_A = local_reg_A - value - carry;
         setS((local_reg_A & 0x0080) != 0);
-        setC((local_reg_A & 0xff00) != 0);
-        local_reg_A = local_reg_A & 0x00ff;
+        setC((local_reg_A & 0xFF00) != 0);
+        local_reg_A = local_reg_A & 0x00FF;
         setZ(local_reg_A == 0);
         setN();
         reg_A = local_reg_A;
@@ -5216,22 +1945,18 @@ public class Z80Core implements ICPUData {
         set5((b & flag_5) != 0);
         setZ(ans == 0);
         setC((wans & 0x100) != 0);
-        setH((((a & 0x0f) - (b & 0x0f)) & flag_H) != 0);
+        setH((((a & 0x0F) - (b & 0x0F)) & flag_H) != 0);
         setPV(((a ^ b) & (a ^ ans) & 0x80) != 0);
     }
 
     /* 8 bit INC */
     private int ALU8BitInc(int value) {
-        if (getC())
-            reg_F = 0x01;
-        else
-            reg_F = 0x00;
         setHalfCarryFlagAdd(value, 1);
         // setOverflowFlagAdd(value, 1);
         setPV(value == 0x7F);
         value++;
         setS((value & 0x0080) != 0);
-        value = value & 0x00ff;
+        value = value & 0x00FF;
         setZ(value == 0);
         resetN();
         setUnusedFlags(value);
@@ -5240,16 +1965,12 @@ public class Z80Core implements ICPUData {
 
     /* 8 bit DEC */
     private int ALU8BitDec(int value) {
-        if (getC())
-            reg_F = 0x01;
-        else
-            reg_F = 0x00;
         setHalfCarryFlagSub(value, 1);
         // setOverflowFlagSub(value, 1);
         setPV(value == 0x80);
         value--;
         setS((value & 0x0080) != 0);
-        value = value & 0x00ff;
+        value = value & 0x00FF;
         setZ(value == 0);
         setN();
         setUnusedFlags(value);
@@ -5274,19 +1995,13 @@ public class Z80Core implements ICPUData {
         resetN(); // N = 0;
         //
         int temp = (getHL() & 0x0FFF) + (value & 0x0FFF);
-        if ((temp & 0xF000) != 0)
-            setH();
-        else
-            resetH();
+        if ((temp & 0xF000) != 0) setH();
+        else resetH();
         // temp = result >> 8;
-        if ((result & 0x0800) != 0)
-            set3();
-        else
-            reset3();
-        if ((result & 0x2000) != 0)
-            set5();
-        else
-            reset5();
+        if ((result & 0x0800) != 0) set3();
+        else reset3();
+        if ((result & 0x2000) != 0) set5();
+        else reset5();
         //
         if (result > lsw) // overflow ?
         {
@@ -5303,19 +2018,13 @@ public class Z80Core implements ICPUData {
         int result = reg_index + value; // ADD IX,rr
         resetN(); // N = 0;
         int temp = (reg_index & 0x0FFF) + (value & 0x0FFF);
-        if ((temp & 0xF000) != 0)
-            setH();
-        else
-            resetH();
+        if ((temp & 0xF000) != 0) setH();
+        else resetH();
         // temp = result >> 8;
-        if ((result & 0x0800) != 0)
-            set3();
-        else
-            reset3();
-        if ((result & 0x2000) != 0)
-            set5();
-        else
-            reset5();
+        if ((result & 0x0800) != 0) set3();
+        else reset3();
+        if ((result & 0x2000) != 0) set5();
+        else reset5();
         //
         if (result > lsw) // overflow ?
         {
@@ -5341,10 +2050,8 @@ public class Z80Core implements ICPUData {
         setC(lans > 0xFFFF);
         // setPV( ((a ^ b) & (a ^ ans) & 0x8000)!=0 );
         setOverflowFlagAdd16(a, b, c);
-        if ((((a & 0x0fff) + (b & 0x0fff) + c) & 0x1000) != 0)
-            setH();
-        else
-            resetH();
+        if ((((a & 0x0Fff) + (b & 0x0Fff) + c) & 0x1000) != 0) setH();
+        else resetH();
         resetN();
         setHL(ans);
     }
@@ -5363,10 +2070,8 @@ public class Z80Core implements ICPUData {
         setC(lans < 0);
         // setPV( ((a ^ b) & (a ^ ans) & 0x8000)!=0 );
         setOverflowFlagSub16(a, b, c);
-        if ((((a & 0x0fff) - (b & 0x0fff) - c) & 0x1000) != 0)
-            setH();
-        else
-            resetH();
+        if ((((a & 0x0Fff) - (b & 0x0Fff) - c) & 0x1000) != 0) setH();
+        else resetH();
         setN();
         setHL(ans);
     }
@@ -5376,7 +2081,6 @@ public class Z80Core implements ICPUData {
      */
     private void EXAFAF() {
         int temp;
-
         temp = reg_A;
         reg_A = reg_A_ALT;
         reg_A_ALT = temp;
@@ -5420,10 +2124,8 @@ public class Z80Core implements ICPUData {
     }
 
     private void setS(boolean b) {
-        if (b)
-            setS();
-        else
-            resetS();
+        if (b) setS();
+        else resetS();
     }
 
     private boolean getZ() {
@@ -5431,10 +2133,8 @@ public class Z80Core implements ICPUData {
     }
 
     private void setZ(boolean b) {
-        if (b)
-            setZ();
-        else
-            resetZ();
+        if (b) setZ();
+        else resetZ();
     }
 
     private boolean getH() {
@@ -5442,10 +2142,8 @@ public class Z80Core implements ICPUData {
     }
 
     private void setH(boolean b) {
-        if (b)
-            setH();
-        else
-            resetH();
+        if (b) setH();
+        else resetH();
     }
 
     private boolean getPV() {
@@ -5453,10 +2151,8 @@ public class Z80Core implements ICPUData {
     }
 
     private void setPV(boolean b) {
-        if (b)
-            setPV();
-        else
-            resetPV();
+        if (b) setPV();
+        else resetPV();
     }
 
     private boolean getN() {
@@ -5469,10 +2165,8 @@ public class Z80Core implements ICPUData {
 
     // private void setN(boolean b) { if (b) setN(); else resetN(); }
     private void setC(boolean b) {
-        if (b)
-            setC();
-        else
-            resetC();
+        if (b) setC();
+        else resetC();
     }
 
     private void setS() {
@@ -5508,17 +2202,13 @@ public class Z80Core implements ICPUData {
     }
 
     private void set5(boolean b) {
-        if (b)
-            set5();
-        else
-            reset5();
+        if (b) set5();
+        else reset5();
     }
 
     private void set3(boolean b) {
-        if (b)
-            set3();
-        else
-            reset3();
+        if (b) set3();
+        else reset3();
     }
 
     private void setUnusedFlags(int value) {
@@ -5627,8 +2317,7 @@ public class Z80Core implements ICPUData {
         if (carry) {
             setC();
             reg_A = (reg_A | 0x0001);
-        } else
-            resetC();
+        } else resetC();
         resetH();
         resetN();
         setUnusedFlags(reg_A);
@@ -5636,14 +2325,10 @@ public class Z80Core implements ICPUData {
 
     private void RLA() {
         boolean carry = (reg_A & 0x0080) != 0;
-
         reg_A = ((reg_A << 1) & 0x00FF);
-        if (getC())
-            reg_A = reg_A | 0x01;
-        if (carry)
-            setC();
-        else
-            resetC();
+        if (getC()) reg_A = reg_A | 0x01;
+        if (carry) setC();
+        else resetC();
         resetH();
         resetN();
         setUnusedFlags(reg_A);
@@ -5651,13 +2336,11 @@ public class Z80Core implements ICPUData {
 
     private void RRCA() {
         boolean carry = (reg_A & 0x0001) != 0;
-
         reg_A = (reg_A >> 1);
         if (carry) {
             setC();
             reg_A = (reg_A | 0x0080);
-        } else
-            resetC();
+        } else resetC();
         resetH();
         resetN();
         setUnusedFlags(reg_A);
@@ -5665,14 +2348,10 @@ public class Z80Core implements ICPUData {
 
     private void RRA() {
         boolean carry = (reg_A & 0x01) != 0;
-
         reg_A = (reg_A >> 1);
-        if (getC())
-            reg_A = (reg_A | 0x0080);
-        if (carry)
-            setC();
-        else
-            resetC();
+        if (getC()) reg_A = (reg_A | 0x0080);
+        if (carry) setC();
+        else resetC();
         resetH();
         resetN();
         setUnusedFlags(reg_A);
@@ -5685,26 +2364,20 @@ public class Z80Core implements ICPUData {
         setUnusedFlags(reg_A);
     }
 
-    private void NEG() {
+    private void NEG() { // ToDo - improve
         setHalfCarryFlagSub(0, reg_A, 0);
-        // if ((value & 0x0f) == 0x00) setH(); else resetH();
+        // if ((value & 0x0F) == 0x00) setH(); else resetH();
         setOverflowFlagSub(0, reg_A, 0);
         // if (value == 0x80) setPV(); else resetPV();
         reg_A = -reg_A;
-        if ((reg_A & 0xFF00) != 0)
-            setC();
-        else
-            resetC();
+        if ((reg_A & 0xFF00) != 0) setC();
+        else resetC();
         setN();
         reg_A = reg_A & 0x00FF;
-        if (reg_A == 0)
-            setZ();
-        else
-            resetZ();
-        if ((reg_A & 0x0080) != 0)
-            setS();
-        else
-            resetS();
+        if (reg_A == 0) setZ();
+        else resetZ();
+        if ((reg_A & 0x0080) != 0) setS();
+        else resetS();
         setUnusedFlags(reg_A);
     }
 
@@ -5716,10 +2389,8 @@ public class Z80Core implements ICPUData {
     }
 
     private void CCF() {
-        if (getC())
-            setH();
-        else
-            resetH();
+        if (getC()) setH();
+        else resetH();
         flipC();
         resetN();
         setUnusedFlags(reg_A);
@@ -5732,10 +2403,10 @@ public class Z80Core implements ICPUData {
         int ans = reg_A;
         int incr = 0;
         boolean carry = getC();
-        if ((getH()) || ((ans & 0x0f) > 0x09)) {
+        if ((getH()) || ((ans & 0x0F) > 0x09)) {
             incr = 0x06;
         }
-        if (carry || (ans > 0x9f) || ((ans > 0x8f) && ((ans & 0x0f) > 0x09))) {
+        if (carry || (ans > 0x9f) || ((ans > 0x8f) && ((ans & 0x0F) > 0x09))) {
             incr |= 0x60;
         }
         if (ans > 0x99) {
@@ -5746,12 +2417,9 @@ public class Z80Core implements ICPUData {
         } else {
             ALU8BitAdd(incr); // add_a(incr);
         }
-        ans = reg_A;
-        if (carry)
-            setC();
-        else
-            resetC(); // setC( carry );
-        setPV(PARITY_TABLE[ans]); // setPV( PARITY_TABLE[ ans ] );
+        if (carry) setC();
+        else resetC();
+        setPV(PARITY_TABLE[reg_A]); // setPV( PARITY_TABLE[ ans ] );
     }
 
     private int shiftGenericRLC(int temp) {
@@ -5759,17 +2427,12 @@ public class Z80Core implements ICPUData {
         if ((temp & 0x0FF00) != 0) {
             setC();
             temp = temp | 0x01;
-        } else
-            resetC();
+        } else resetC();
         // standard flag updates
-        if ((temp & flag_S) == 0)
-            resetS();
-        else
-            setS();
-        if ((temp & 0x00FF) == 0)
-            setZ();
-        else
-            resetZ();
+        if ((temp & flag_S) == 0) resetS();
+        else setS();
+        if ((temp & 0x00FF) == 0) setZ();
+        else resetZ();
         resetH();
         resetN();
         // put value back
@@ -5792,19 +2455,14 @@ public class Z80Core implements ICPUData {
     private int shiftGenericRL(int temp) {
         // do shift operation
         temp = temp << 1;
-        if (getC())
-            temp = temp | 0x01;
+        if (getC()) temp = temp | 0x01;
         // standard flag updates
         setS((temp & 0x0080) != 0);
-        if ((temp & 0x0FF00) == 0)
-            resetC();
-        else
-            setC();
+        if ((temp & 0x0FF00) == 0) resetC();
+        else setC();
         temp = temp & lsb;
-        if ((temp & 0x00FF) == 0)
-            setZ();
-        else
-            resetZ();
+        if ((temp & 0x00FF) == 0) setZ();
+        else resetZ();
         setPV(PARITY_TABLE[temp]);
         resetH();
         resetN();
@@ -5823,14 +2481,11 @@ public class Z80Core implements ICPUData {
         // do shift operation
         setC((temp & 0x0001) != 0);
         temp = temp >> 1;
-        if (getC())
-            temp = temp | 0x80;
+        if (getC()) temp = temp | 0x80;
         // standard flag updates
         setS((temp & 0x0080) != 0);
-        if (temp == 0)
-            setZ();
-        else
-            resetZ();
+        if (temp == 0) setZ();
+        else resetZ();
         resetH();
         setPV(PARITY_TABLE[temp]);
         resetN();
@@ -5851,14 +2506,11 @@ public class Z80Core implements ICPUData {
         tempC = getC();
         setC((temp & 0x0001) != 0);
         temp = temp >> 1;
-        if (tempC)
-            temp = temp | 0x80;
+        if (tempC) temp = temp | 0x80;
         // standard flag updates
         setS((temp & 0x0080) != 0);
-        if (temp == 0)
-            setZ();
-        else
-            resetZ();
+        if (temp == 0) setZ();
+        else resetZ();
         resetH();
         setPV(PARITY_TABLE[temp]);
         resetN();
@@ -5878,15 +2530,11 @@ public class Z80Core implements ICPUData {
         temp = temp << 1;
         // standard flag updates
         setS((temp & 0x0080) != 0);
-        if ((temp & 0x00FF) == 0)
-            setZ();
-        else
-            resetZ();
+        if ((temp & 0x00FF) == 0) setZ();
+        else resetZ();
         resetH();
-        if ((temp & 0x0FF00) != 0)
-            setC();
-        else
-            resetC();
+        if ((temp & 0x0FF00) != 0) setC();
+        else resetC();
         temp = temp & 0x00FF;
         setPV(PARITY_TABLE[temp]);
         resetN();
@@ -5902,7 +2550,7 @@ public class Z80Core implements ICPUData {
     }
 
     /**
-     * Note: This implements the broken (and undocumented) SLL instructions. Faulty as it feeds in a zero into bit 0
+     * Note: This implements the broken (and undocumented) SLL instructions. Faulty as it feeds in a one into bit 0
      *
      * @param temp Register value
      * @return Incorrect SLL value
@@ -5914,10 +2562,8 @@ public class Z80Core implements ICPUData {
         setS((temp & 0x0080) != 0);
         resetZ();
         resetH();
-        if ((temp & 0x0FF00) != 0)
-            setC();
-        else
-            resetC();
+        if ((temp & 0x0FF00) != 0) setC();
+        else resetC();
         temp = temp & 0x00FF;
         setPV(PARITY_TABLE[temp]);
         resetN();
@@ -5943,10 +2589,8 @@ public class Z80Core implements ICPUData {
             setS();
         }
         // standard flag updates
-        if (temp == 0)
-            setZ();
-        else
-            resetZ();
+        if (temp == 0) setZ();
+        else resetZ();
         resetH();
         setPV(PARITY_TABLE[temp]);
         resetN();
@@ -5994,10 +2638,8 @@ public class Z80Core implements ICPUData {
         //
         ram.writeByte(getHL(), temp);
         // standard flag updates
-        if ((reg_A & 0x80) == 0)
-            resetS();
-        else
-            setS();
+        if ((reg_A & 0x80) == 0) resetS();
+        else setS();
         setZ(reg_A == 0);
         resetH();
         setPV(PARITY_TABLE[reg_A]);
@@ -6018,14 +2660,10 @@ public class Z80Core implements ICPUData {
         //
         ram.writeByte(getHL(), temp);
         // standard flag updates
-        if ((reg_A & 0x80) == 0)
-            resetS();
-        else
-            setS();
-        if (reg_A == 0)
-            setZ();
-        else
-            resetZ();
+        if ((reg_A & 0x80) == 0) resetS();
+        else setS();
+        if (reg_A == 0) setZ();
+        else resetZ();
         resetH();
         setPV(PARITY_TABLE[reg_A]);
         resetN();
@@ -6038,8 +2676,7 @@ public class Z80Core implements ICPUData {
     private void relativeJump() {
         reg_R++;
         int offset = ram.readByte(reg_PC);
-        if (offset > 0x007F)
-            offset = offset - 0x0100;
+        if (offset > 0x007F) offset = offset - 0x0100;
         reg_PC++;
         reg_PC = (reg_PC + offset) & MAX_ADDRESS;
     }
@@ -6059,10 +2696,8 @@ public class Z80Core implements ICPUData {
 
     private void jp(boolean cc) {
         tStates = tStates + 10;
-        if (cc)
-            reg_PC = ram.readWord(reg_PC);
-        else
-            inc2PC();
+        if (cc) reg_PC = ram.readWord(reg_PC);
+        else inc2PC();
     }
 
     private void jp() {
@@ -6120,38 +2755,14 @@ public class Z80Core implements ICPUData {
         dec2SP();
         ram.writeWord(reg_SP, reg_PC);
         switch (code) {
-            case 0: {
-                reg_PC = 0x0000;
-                break;
-            }
-            case 1: {
-                reg_PC = 0x0008;
-                break;
-            }
-            case 2: {
-                reg_PC = 0x0010;
-                break;
-            }
-            case 3: {
-                reg_PC = 0x0018;
-                break;
-            }
-            case 4: {
-                reg_PC = 0x0020;
-                break;
-            }
-            case 5: {
-                reg_PC = 0x0028;
-                break;
-            }
-            case 6: {
-                reg_PC = 0x0030;
-                break;
-            }
-            default: {
-                reg_PC = 0x0038;
-                break;
-            }
+            case 0 -> reg_PC = 0x0000;
+            case 1 -> reg_PC = 0x0008;
+            case 2 -> reg_PC = 0x0010;
+            case 3 -> reg_PC = 0x0018;
+            case 4 -> reg_PC = 0x0020;
+            case 5 -> reg_PC = 0x0028;
+            case 6 -> reg_PC = 0x0030;
+            default -> reg_PC = 0x0038;
         }
     }
 
@@ -6191,51 +2802,23 @@ public class Z80Core implements ICPUData {
         int temp = io.IORead(getBC());
         // set8BitRegister( temp, reg );
         switch (reg) {
-            case 0: {
-                reg_B = temp;
-                break;
-            } // B
-            case 1: {
-                reg_C = temp;
-                break;
-            } // C
-            case 2: {
-                reg_D = temp;
-                break;
-            } // D
-            case 3: {
-                reg_E = temp;
-                break;
-            } // E
-            case 4: {
-                reg_H = temp;
-                break;
-            } // H
-            case 5: {
-                reg_L = temp;
-                break;
-            } // L
-            case 7: {
-                reg_A = temp;
-                break;
-            } // A
-            case 6: {
+            case 0 -> reg_B = temp; // B
+            case 1 -> reg_C = temp; // C
+            case 2 -> reg_D = temp; // D
+            case 3 -> reg_E = temp; // E
+            case 4 -> reg_H = temp; // H
+            case 5 -> reg_L = temp; // L
+            case 7 -> reg_A = temp; // A
+            case 6 -> {
                 // Does nothing, just affects flags
-                break;
             }
         }
-        if ((temp & 0x0080) == 0)
-            resetS();
-        else
-            setS();
-        if (temp == 0)
-            setZ();
-        else
-            resetZ();
-        if (PARITY_TABLE[temp])
-            setPV();
-        else
-            resetPV();
+        if ((temp & 0x0080) == 0) resetS();
+        else setS();
+        if (temp == 0) setZ();
+        else resetZ();
+        if (PARITY_TABLE[temp]) setPV();
+        else resetPV();
         resetN();
         resetH();
     }
@@ -6249,49 +2832,28 @@ public class Z80Core implements ICPUData {
      * bit manipulation
      */
 
-    private void testBit(int value, int bit) {
+    private void testBit(int v, int bit) {
         //
         resetS();
-        set3((value & 0x08) != 0);
-        set5((value & 0x20) != 0);
+        set3((v & 0x08) != 0);
+        set5((v & 0x20) != 0);
 
-        switch (bit) {
-            case 0: {
-                value = value & setBit0;
-                break;
+        v = switch (bit) {
+            case 0 -> v & setBit0;
+            case 1 -> v & setBit1;
+            case 2 -> v & setBit2;
+            case 3 -> v & setBit3;
+            case 4 -> v & setBit4;
+            case 5 -> v & setBit5;
+            case 6 -> v & setBit6;
+            default -> {
+                var result = v & setBit7;
+                setS(result != 0);
+                yield result;
             }
-            case 1: {
-                value = value & setBit1;
-                break;
-            }
-            case 2: {
-                value = value & setBit2;
-                break;
-            }
-            case 3: {
-                value = value & setBit3;
-                break;
-            }
-            case 4: {
-                value = value & setBit4;
-                break;
-            }
-            case 5: {
-                value = value & setBit5;
-                break;
-            }
-            case 6: {
-                value = value & setBit6;
-                break;
-            }
-            default: {
-                value = value & setBit7;
-                setS(value != 0);
-                break;
-            }
-        }
-        setZ(0 == value);
-        setPV(0 == value);
+        };
+        setZ(0 == v);
+        setPV(0 == v);
         resetN();
         setH();
     }
@@ -6300,44 +2862,22 @@ public class Z80Core implements ICPUData {
         testBitGeneric(bit, ram.readByte(getHL()));
     }
 
-    private void testBitGeneric(int bit, int value) {
-        int v = value;
+    private void testBitGeneric(int bit, int v) {
         resetS();
-        switch (bit) {
-            case 0: {
-                v = v & setBit0;
-                break;
+        v = switch (bit) {
+            case 0 -> v & setBit0;
+            case 1 -> v & setBit1;
+            case 2 -> v & setBit2;
+            case 3 -> v & setBit3;
+            case 4 -> v & setBit4;
+            case 5 -> v & setBit5;
+            case 6 -> v & setBit6;
+            default -> {
+                var result = v & setBit7;
+                setS(result != 0);
+                yield result;
             }
-            case 1: {
-                v = v & setBit1;
-                break;
-            }
-            case 2: {
-                v = v & setBit2;
-                break;
-            }
-            case 3: {
-                v = v & setBit3;
-                break;
-            }
-            case 4: {
-                v = v & setBit4;
-                break;
-            }
-            case 5: {
-                v = v & setBit5;
-                break;
-            }
-            case 6: {
-                v = v & setBit6;
-                break;
-            }
-            default: {
-                v = v & setBit7;
-                setS(v != 0);
-                break;
-            }
-        }
+        };
         setZ(0 == v);
         setPV(0 == v);
         resetN();
@@ -6350,25 +2890,19 @@ public class Z80Core implements ICPUData {
     /* loads */
     private void LDI() {
         reg_R++;
-        int flags = reg_F;
         int value = ram.readByte(getHL());
         ram.writeByte(getDE(), value);
         setDE(ALU16BitInc(getDE()));
         setHL(ALU16BitInc(getHL()));
         setBC(ALU16BitDec(getBC()));
-        reg_F = flags;
         resetH();
         resetN();
         setPV(getBC() != 0);
         int temp = value + reg_A;
-        if ((temp & 0x02) == 0)
-            reset5();
-        else
-            set5();
-        if ((temp & 0x08) == 0)
-            reset3();
-        else
-            set3();
+        if ((temp & 0x02) == 0) reset5();
+        else set5();
+        if ((temp & 0x08) == 0) reset3();
+        else set3();
     }
 
     private void LDIR() {
@@ -6392,14 +2926,10 @@ public class Z80Core implements ICPUData {
         resetN();
         setPV(getBC() != 0);
         int temp = reg_A + value;
-        if ((temp & 0x02) == 0)
-            reset5();
-        else
-            set5();
-        if ((temp & 0x08) == 0)
-            reset3();
-        else
-            set3();
+        if ((temp & 0x02) == 0) reset5();
+        else set5();
+        if ((temp & 0x08) == 0) reset3();
+        else set3();
     }
 
     private void LDDR() {
@@ -6421,35 +2951,23 @@ public class Z80Core implements ICPUData {
         setHL(ALU16BitInc(getHL()));
         setBC(ALU16BitDec(getBC()));
         //
-        if ((result & 0x80) == 0)
-            resetS();
-        else
-            setS();
-        if (result == 0)
-            setZ();
-        else
-            resetZ();
+        setS((result & 0x80) != 0);
+        setZ(result == 0);
         setHalfCarryFlagSub(reg_A, value);
         setPV(getBC() != 0);
         setN();
         //
-        if (getH())
-            result--;
-        if ((result & 0x00002) == 0)
-            reset5();
-        else
-            set5();
-        if ((result & 0x00008) == 0)
-            reset3();
-        else
-            set3();
+        if (getH()) result--;
+        if ((result & 0x00002) == 0) reset5();
+        else set5();
+        if ((result & 0x00008) == 0) reset3();
+        else set3();
     }
 
     private void CPIR() {
         tStates = tStates + 21;
         CPI();
-        if (!getZ() && (getBC() != 0))
-            dec2PC();
+        if (!getZ() && (getBC() != 0)) dec2PC();
     }
 
     private void CPD() {
@@ -6459,35 +2977,23 @@ public class Z80Core implements ICPUData {
         setHL(ALU16BitDec(getHL()));
         setBC(ALU16BitDec(getBC()));
         //
-        if ((result & 0x80) == 0)
-            resetS();
-        else
-            setS();
-        if (result == 0)
-            setZ();
-        else
-            resetZ();
+        setS((result & 0x80) != 0);
+        setZ(result == 0);
         setHalfCarryFlagSub(reg_A, value);
         setPV(getBC() != 0);
         setN();
         //
-        if (getH())
-            result--;
-        if ((result & 0x02) == 0)
-            reset5();
-        else
-            set5();
-        if ((result & 0x08) == 0)
-            reset3();
-        else
-            set3();
+        if (getH()) result--;
+        if ((result & 0x02) == 0) reset5();
+        else set5();
+        if ((result & 0x08) == 0) reset3();
+        else set3();
     }
 
     private void CPDR() {
         tStates = tStates + 21;
         CPD();
-        if (!getZ() && (getBC() != 0))
-            dec2PC();
+        if (!getZ() && (getBC() != 0)) dec2PC();
     }
 
     /* block IO */
@@ -6502,8 +3008,7 @@ public class Z80Core implements ICPUData {
     private void INIR() {
         tStates = tStates + 21;
         INI();
-        if (!getZ())
-            dec2PC();
+        if (!getZ()) dec2PC();
     }
 
     private void IND() {
@@ -6517,8 +3022,7 @@ public class Z80Core implements ICPUData {
     private void INDR() {
         tStates = tStates + 21;
         IND();
-        if (!getZ())
-            dec2PC();
+        if (!getZ()) dec2PC();
     }
 
     private void OUTI() {
@@ -6533,8 +3037,7 @@ public class Z80Core implements ICPUData {
     private void OTIR() {
         tStates = tStates + 21;
         OUTI();
-        if (!getZ())
-            dec2PC();
+        if (!getZ()) dec2PC();
     }
 
     private void OUTD() {
@@ -6549,8 +3052,7 @@ public class Z80Core implements ICPUData {
     private void OTDR() {
         tStates = tStates + 21;
         OUTD();
-        if (!getZ())
-            dec2PC();
+        if (!getZ()) dec2PC();
     }
 
     /*
@@ -6627,10 +3129,8 @@ public class Z80Core implements ICPUData {
         reg_R++;
         int index = ram.readByte(reg_PC);
         incPC();
-        if (index > 0x007f)
-            return (index - 256);
-        else
-            return index;
+        if (index > 0x007F) return (index - 256);
+        else return index;
     }
 
     private int getIndexAddress() {
@@ -6642,13 +3142,13 @@ public class Z80Core implements ICPUData {
      */
     private int getIndexAddressUndocumented(int reg) {
         switch (reg) {
-            case 4: {
+            case 4 -> {
                 return ((reg_index & msb) >> 8);
             } // IXH
-            case 5: {
+            case 5 -> {
                 return (reg_index & lsb);
             } // IXL
-            default: {
+            default -> {
                 reg_R++;
                 return ram.readByte((reg_index + getIndexOffset()) & lsw);
             } // (index+dd)
@@ -6660,20 +3160,15 @@ public class Z80Core implements ICPUData {
      */
     private void setIndexAddressUndocumented(int value, int reg) {
         switch (reg) {
-            case 4: {
+            case 4 -> {
                 reg_index = reg_index & lsb;
                 reg_index = reg_index | (value << 8);
-                break;
             } // IXH
-            case 5: {
+            case 5 -> {
                 reg_index = reg_index & msb;
                 reg_index = reg_index | value;
-                break;
             } // IXL
-            default: {
-                ram.writeByte((getIndexAddress()), value);
-                break;
-            } // (index+dd)
+            default -> ram.writeByte((getIndexAddress()), value); // (index+dd)
         }
     }
 
@@ -6682,16 +3177,16 @@ public class Z80Core implements ICPUData {
      */
     private int get8BitRegisterIndexed(int reg) {
         switch (reg) {
-            case 4: {
+            case 4 -> {
                 return reg_H;
             } // H
-            case 5: {
+            case 5 -> {
                 return reg_L;
             } // L
-            case 7: {
+            case 7 -> {
                 return reg_A;
             } // A
-            default: {
+            default -> {
                 reg_R++;
                 return ram.readByte(getIndexAddress());
             } // (index+dd)
@@ -6736,38 +3231,16 @@ public class Z80Core implements ICPUData {
         reg_R++;
         int address = getIndexAddress();
         int temp = ram.readByte(address);
-        switch (bit) {
-            case 0: {
-                temp = temp | setBit0;
-                break;
-            }
-            case 1: {
-                temp = temp | setBit1;
-                break;
-            }
-            case 2: {
-                temp = temp | setBit2;
-                break;
-            }
-            case 3: {
-                temp = temp | setBit3;
-                break;
-            }
-            case 4: {
-                temp = temp | setBit4;
-                break;
-            }
-            case 5: {
-                temp = temp | setBit5;
-                break;
-            }
-            case 6: {
-                temp = temp | setBit6;
-                break;
-            }
-            default:
-                temp = temp | setBit7;
-        }
+        temp = switch (bit) {
+            case 0 -> temp | setBit0;
+            case 1 -> temp | setBit1;
+            case 2 -> temp | setBit2;
+            case 3 -> temp | setBit3;
+            case 4 -> temp | setBit4;
+            case 5 -> temp | setBit5;
+            case 6 -> temp | setBit6;
+            default -> temp | setBit7;
+        };
         ram.writeByte(address, temp);
     }
 
@@ -6775,38 +3248,16 @@ public class Z80Core implements ICPUData {
         reg_R++;
         int address = getIndexAddress();
         int temp = ram.readByte(address);
-        switch (bit) {
-            case 0: {
-                temp = temp & resetBit0;
-                break;
-            }
-            case 1: {
-                temp = temp & resetBit1;
-                break;
-            }
-            case 2: {
-                temp = temp & resetBit2;
-                break;
-            }
-            case 3: {
-                temp = temp & resetBit3;
-                break;
-            }
-            case 4: {
-                temp = temp & resetBit4;
-                break;
-            }
-            case 5: {
-                temp = temp & resetBit5;
-                break;
-            }
-            case 6: {
-                temp = temp & resetBit6;
-                break;
-            }
-            default:
-                temp = temp & resetBit7;
-        }
+        temp = switch (bit) {
+            case 0 -> temp & resetBit0;
+            case 1 -> temp & resetBit1;
+            case 2 -> temp & resetBit2;
+            case 3 -> temp & resetBit3;
+            case 4 -> temp & resetBit4;
+            case 5 -> temp & resetBit5;
+            case 6 -> temp & resetBit6;
+            default -> temp & resetBit7;
+        };
         ram.writeByte(address, temp);
     }
 
@@ -6825,7 +3276,7 @@ public class Z80Core implements ICPUData {
      * @return major revision number
      */
     public String getMajorVersion() {
-        return "1";
+        return "4";
     }
 
     /**
@@ -6834,7 +3285,7 @@ public class Z80Core implements ICPUData {
      * @return minor revision number
      */
     public String getMinorVersion() {
-        return "2";
+        return "0";
     }
 
     /**

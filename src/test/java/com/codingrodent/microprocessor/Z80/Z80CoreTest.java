@@ -14,13 +14,10 @@
  */
 package com.codingrodent.microprocessor.Z80;
 
-import com.codingrodent.microprocessor.ProcessorException;
-import com.codingrodent.microprocessor.support.Z80IO;
-import com.codingrodent.microprocessor.support.Z80Memory;
+import com.codingrodent.microprocessor.support.*;
 import org.junit.jupiter.api.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Z80CoreTest {
     private Z80Core z80;
@@ -54,7 +51,6 @@ public class Z80CoreTest {
         z80Memory.writeByte(loc++, 0xED); // lddr
         z80Memory.writeByte(loc++, 0xB8); //
         z80Memory.writeByte(loc, 0x76); // halt
-
         //
         // Ok, run the program
         while (!z80.getHalt()) {
@@ -63,7 +59,7 @@ public class Z80CoreTest {
                 if (z80.blockMoveInProgress()) {
                     fail("block moves now internalized for performance - should never get here");
                 }
-            } catch (ProcessorException e) {
+            } catch (Exception e) {
                 System.out.println("Hardware crash, oops! " + e.getMessage());
             }
         }
@@ -567,11 +563,11 @@ public class Z80CoreTest {
         assertEquals(0x00, z80.getRegisterValue(CPUConstants.RegisterNames.I));
         assertEquals(0x00, z80.getRegisterValue(CPUConstants.RegisterNames.R));
         //
-        assertEquals(z80.getMajorVersion(), "1");
-        assertEquals(z80.getMinorVersion(), "2");
+        assertEquals(z80.getMajorVersion(), "4");
+        assertEquals(z80.getMinorVersion(), "0");
         assertEquals(z80.getPatchVersion(), "0");
         assertEquals(z80.getName(), "Z80A_NMOS");
-        assertEquals(z80.toString(), "Z80A_NMOS Revision 1.2.0");
+        assertEquals(z80.toString(), "Z80A_NMOS Revision 4.0.0");
     }
 
     private void run(int address) { //
@@ -581,7 +577,7 @@ public class Z80CoreTest {
             try {
                 // System.out.println(utilities.getWord(z80.getRegisterValue(RegisterNames.PC)));
                 z80.executeOneInstruction();
-            } catch (ProcessorException e) {
+            } catch (Exception e) {
                 System.out.println("Hardware crash, oops! " + e.getMessage());
             }
         }

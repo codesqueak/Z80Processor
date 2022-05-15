@@ -1,5 +1,5 @@
 /*
- *
+ * Copyright [yyyy] [name of copyright owner]
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,10 +34,8 @@ public interface ICPU {
     /**
      * Execute a single instruction at the present program counter (PC) then return. The internal state of the processor
      * is updated along with the T state count.
-     *
-     * @throws ProcessorException Thrown if an unexpected state arises
      */
-    void executeOneInstruction() throws ProcessorException;
+    void executeOneInstruction();
 
     /**
      * Return the number of T states since last reset

@@ -14,12 +14,10 @@
  */
 package com.codingrodent.microprocessor.Z80;
 
-import com.codingrodent.microprocessor.ProcessorException;
 import com.codingrodent.microprocessor.support.*;
 import org.junit.jupiter.api.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class Z80NasTest {
@@ -56,18 +54,18 @@ public class Z80NasTest {
         assertEquals(0, z80.getTStates());
         //
         // Ok, run the program
-        int c = 1000;
+//        int c = 0x2000;
         while (!z80.getHalt()) {
             try {
                 //       System.out.println(getRegs());
                 a++;
                 z80.executeOneInstruction();
-            } catch (ProcessorException e) {
+            } catch (Exception e) {
                 System.out.println("Hardware crash, oops! " + e.getMessage());
                 e.printStackTrace();
             }
-            c--;
-            //     if (c<0) break;
+//            c--;
+//                if (c<0) break;
         }
         assertTrue(z80.getTStates() > 0);
         z80.resetTStates();

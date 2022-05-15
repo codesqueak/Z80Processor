@@ -15,6 +15,7 @@
 package com.codingrodent.microprocessor.support;
 
 import com.codingrodent.microprocessor.IMemory;
+import com.codingrodent.microprocessor.Z80.Utilities;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -37,7 +38,7 @@ public class Z80Memory implements IMemory {
         memory[addr++] = 0x45; //
         memory[addr] = 0x00; //
 
-        addr = 0x45; // get it out of teh way of RST addresses
+        addr = 0x45; // get it out of the way of RST addresses
         memory[addr++] = 0x79; // ld a,c
         memory[addr++] = 0xFE; // cp a, 09
         memory[addr++] = 0x09; //
@@ -49,7 +50,7 @@ public class Z80Memory implements IMemory {
         memory[addr++] = 0xD3; // out (00), a
         memory[addr++] = 0x00; //
         memory[addr++] = 0xC9; // ret
-        // Outtput string BDOS 6
+        // Output string BDOS 6
         // addr 000F
         memory[addr++] = 0x1A; // ld a,(de)
         memory[addr++] = 0xFE; // cp a, '$'

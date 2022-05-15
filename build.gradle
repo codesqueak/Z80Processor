@@ -2,7 +2,6 @@ buildscript {
     repositories {
         mavenCentral()
         mavenLocal()
-        jcenter()
         maven {
             url "https://plugins.gradle.org/m2/"
         }
@@ -14,20 +13,20 @@ buildscript {
 }
 
 plugins {
-    id "com.github.spotbugs" version "4.5.1"
+    id "com.github.spotbugs" version "5.0.6"
     id 'java'
     id 'idea'
     id 'maven-publish'
     id 'jacoco'
 }
 
-apply plugin: 'maven'
+
 apply plugin: 'com.jfrog.artifactory'
 
 // set the java version
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 group = 'com.codingrodent.microprocessor'
@@ -111,7 +110,7 @@ repositories {
 }
 
 jacoco {
-    toolVersion = "0.8.5"
+    toolVersion = "0.8.7"
 }
 
 test {
@@ -137,7 +136,7 @@ jacocoTestReport {
 
 
 spotbugs {
-    toolVersion = '4.1.4'
+    toolVersion = '4.7.0'
     ignoreFailures = false
     effort = 'max'
 }
@@ -177,6 +176,8 @@ artifactory {
 // check.dependsOn jacocoTestReport
 
 dependencies {
+    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.0'
+    //
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.0'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.0'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
@@ -185,6 +186,6 @@ dependencies {
 
 
 wrapper {
-    gradleVersion = '6.7.1'
+    gradleVersion = '7.4.2'
     distributionType = Wrapper.DistributionType.BIN
 }

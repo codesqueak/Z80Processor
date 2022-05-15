@@ -14,11 +14,10 @@
  */
 package com.codingrodent.microprocessor.Z80;
 
-import com.codingrodent.microprocessor.ProcessorException;
-import com.codingrodent.microprocessor.support.Z80IO;
-import com.codingrodent.microprocessor.support.Z80Memory;
+import com.codingrodent.microprocessor.support.*;
 import org.junit.jupiter.api.*;
 
+import static com.codingrodent.microprocessor.Z80.CPUConstants.RegisterNames.R;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -224,7 +223,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x00, z80.getRegisterValue(CPUConstants.RegisterNames.R));
+        assertEquals(0x00, z80.getRegisterValue(R));
         //
         // LD R,A
         addr = 0xC000;
@@ -235,7 +234,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x34, z80.getRegisterValue(CPUConstants.RegisterNames.R));
+        assertEquals(0x34, z80.getRegisterValue(R));
     }
 
     /**
@@ -293,7 +292,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr++, 0xED); // LD R,A
         z80Memory.writeByte(addr++, 0x4F); //
         z80Memory.writeByte(addr++, 0x3E); // LD A
-        z80Memory.writeByte(addr++, 0x80); //
+        z80Memory.writeByte(addr++, 0x40); //
         z80Memory.writeByte(addr++, 0xED); // LD R,A
         z80Memory.writeByte(addr++, 0x4F); //
         z80Memory.writeByte(addr++, 0x3E); // LD A
@@ -303,8 +302,8 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x00, z80.getRegisterValue(CPUConstants.RegisterNames.A));
-        assertEquals(0x80, z80.getRegisterValue(CPUConstants.RegisterNames.R));
+        assertEquals(0x40, z80.getRegisterValue(CPUConstants.RegisterNames.A));
+        assertEquals(0x40, z80.getRegisterValue(R));
     }
 
     /**
@@ -799,7 +798,7 @@ public class Z80CoreTestED {
             try {
                 // System.out.println(utilities.getWord(z80.getRegisterValue(RegisterNames.PC)));
                 z80.executeOneInstruction();
-            } catch (ProcessorException e) {
+            } catch (Exception e) {
                 System.out.println("Hardware crash, oops! " + e.getMessage());
             }
         }
