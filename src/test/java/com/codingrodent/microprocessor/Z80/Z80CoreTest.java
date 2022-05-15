@@ -14,12 +14,10 @@
  */
 package com.codingrodent.microprocessor.Z80;
 
-import com.codingrodent.microprocessor.support.Z80IO;
-import com.codingrodent.microprocessor.support.Z80Memory;
+import com.codingrodent.microprocessor.support.*;
 import org.junit.jupiter.api.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Z80CoreTest {
     private Z80Core z80;

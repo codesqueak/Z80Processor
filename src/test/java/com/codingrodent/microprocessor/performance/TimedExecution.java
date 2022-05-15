@@ -15,8 +15,7 @@
 package com.codingrodent.microprocessor.performance;
 
 import com.codingrodent.microprocessor.Z80.Z80Core;
-import com.codingrodent.microprocessor.support.Z80IOEcho;
-import com.codingrodent.microprocessor.support.Z80Memory;
+import com.codingrodent.microprocessor.support.*;
 
 class TimedExecution {
 
