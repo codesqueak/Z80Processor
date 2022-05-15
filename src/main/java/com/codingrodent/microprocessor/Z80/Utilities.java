@@ -16,6 +16,9 @@ package com.codingrodent.microprocessor.Z80;
 
 import java.util.HexFormat;
 
+/**
+ * Various utility functions, mainly useful for debug
+ */
 public class Utilities {
     private final static String flagChar = "SZ5H3PNC";
     private final static HexFormat hexFormat = HexFormat.of().withUpperCase();
@@ -26,8 +29,12 @@ public class Utilities {
     private Utilities() {
     }
 
-    /*
-      turn a byte into two hex digits
+
+    /**
+     * Turn a byte into two hex digits
+     *
+     * @param value Integer in 0..255
+     * @return Hex string equivalent, 00..FF
      */
     public static String getByte(final int value) {
         char[] byteText = new char[2];
@@ -36,29 +43,41 @@ public class Utilities {
         return new String(byteText);
     }
 
-    /*
-      turn a word into four hex digits
+    /**
+     * Turn a word into four hex digits
+     *
+     * @param value integer in 0..65535 range
+     * @return hex representation 0000..FFFF
      */
     public static String getWord(final int value) {
         return getByte(value >>> 8) + getByte(value & 0x00FF);
     }
 
-    /*
-      convert a hex digit into an integer
+    /**
+     * Convert a hex digit into an integer
+     *
+     * @param hex Character 0..9, A..F
+     * @return Value 0..15
      */
     public static int getHexDigit(final char hex) {
         return HexFormat.fromHexDigit(hex);
     }
 
-    /*
-      convert a hex string into an integer
+    /**
+     * Convert a hex string into an integer
+     *
+     * @param hex Hex value
+     * @return Integer equivalent
      */
     public static int getHexValue(String hex) {
         return HexFormat.fromHexDigits(hex);
     }
 
-    /*
-    Generate a string representing the contents of the flag register
+    /**
+     * Generate a string representing the contents of the flag register
+     *
+     * @param value Flag regsiter value, 0x00 .. 0XFF
+     * @return String representing the set flag values for each bit, or space(s) where not set
      */
     public static String getFlags(final int value) {
         var pos = 0x80;

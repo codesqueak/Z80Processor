@@ -14,7 +14,11 @@
  */
 package com.codingrodent.microprocessor.Z80;
 
+/**
+ * Various constant data structures and types to support the CPU
+ */
 public class CPUConstants {
+
     // Pre-calculate parity table
     static final boolean[] PARITY_TABLE = new boolean[256];
     //
@@ -174,12 +178,6 @@ public class CPUConstants {
     }
 
     /**
-     * Stop construction
-     */
-    private CPUConstants() {
-    }
-
-    /**
      * All supported processor registers which can be accessed externally to the core
      */
     public enum RegisterNames {
@@ -248,6 +246,10 @@ public class CPUConstants {
          */
         R
     }
-    // final static int msw = 0xFFFF0000;
 
+    /*
+    Constructor - don't!
+   */
+    private CPUConstants() {
+    }
 }

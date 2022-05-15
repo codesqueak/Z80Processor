@@ -231,6 +231,7 @@ public class Z80Core implements ICPUData {
      *
      * @param opcode Instruction byte
      */
+    @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "Bytes can only be 0..255")
     private void decodeOneByteInstruction(int opcode) {
         tStates = tStates + OPCODE_T_STATES[opcode];
         switch (opcode) {
@@ -732,6 +733,7 @@ public class Z80Core implements ICPUData {
      *
      * *****************************************************************************
      */
+    @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "Bytes can only be 0..255")
     private void extendedCB() {
         instruction = ram.readByte(reg_PC);
         incPC();
@@ -1154,7 +1156,7 @@ public class Z80Core implements ICPUData {
     }
 
     /* generic index register processing */
-
+    @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "Bytes can only be 0..255")
     private void extendedDDFD() {
         instruction = ram.readByte(reg_PC);
         incPC();
@@ -1605,6 +1607,7 @@ public class Z80Core implements ICPUData {
      *
      * *****************************************************************************
      */
+    @SuppressFBWarnings(value = "SF_SWITCH_NO_DEFAULT", justification = "Bytes can only be 0..255")
     private void extendedIndexCB() {
         instruction = ram.readByte(reg_PC + 1); // fudge for DD CB dd ii
         tStates = tStates + OPCODE_INDEXED_CB_STATES[instruction];
