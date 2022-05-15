@@ -14,7 +14,6 @@
  */
 package com.codingrodent.microprocessor.performance;
 
-import com.codingrodent.microprocessor.ProcessorException;
 import com.codingrodent.microprocessor.Z80.Z80Core;
 import com.codingrodent.microprocessor.support.Z80IOEcho;
 import com.codingrodent.microprocessor.support.Z80Memory;
@@ -67,7 +66,7 @@ class TimedExecution {
         while (!z80.getHalt()) {
             try {
                 z80.executeOneInstruction();
-            } catch (ProcessorException e) {
+            } catch (Exception e) {
                 System.out.println("Hardware crash, oops! " + e.getMessage());
             }
         }

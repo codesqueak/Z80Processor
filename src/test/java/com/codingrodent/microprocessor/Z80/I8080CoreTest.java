@@ -14,13 +14,10 @@
  */
 package com.codingrodent.microprocessor.Z80;
 
-import com.codingrodent.microprocessor.ProcessorException;
-import com.codingrodent.microprocessor.support.Z80IO;
-import com.codingrodent.microprocessor.support.Z80Memory;
+import com.codingrodent.microprocessor.support.*;
 import org.junit.jupiter.api.BeforeEach;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class I8080CoreTest {
@@ -48,13 +45,7 @@ public class I8080CoreTest {
         //
         // Ok, run the program
         while (!z80.getHalt()) {
-            try {
-                z80.executeOneInstruction();
-                // System.out.println(utilities.getWord(z80.getRegisterValue(RegisterNames.PC)));
-            } catch (ProcessorException e) {
-                System.out.println("Hardware crash, oops! " + e.getMessage());
-                e.printStackTrace();
-            }
+            z80.executeOneInstruction();
         }
         assertTrue(z80.getTStates() > 0);
         z80.resetTStates();
