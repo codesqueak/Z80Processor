@@ -1,1 +1,0 @@
-jar -cvf bundle.jar Z80Processor-4.0.0.pom Z80Processor-4.0.0.pom.asc Z80Processor-4.0.0.jar Z80Processor-4.0.0.jar.asc Z80Processor-4.0.0-javadoc.jar Z80Processor-4.0.0-javadoc.jar.asc Z80Processor-4.0.0-sources.jar Z80Processor-4.0.0-sources.jar.asc
