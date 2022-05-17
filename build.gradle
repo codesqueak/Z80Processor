@@ -18,6 +18,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'jacoco'
+    id 'signing'
 }
 
 
@@ -27,6 +28,8 @@ apply plugin: 'com.jfrog.artifactory'
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    withJavadocJar()
+    withSourcesJar()
 }
 
 group = 'com.codingrodent.microprocessor'
@@ -50,55 +53,12 @@ jar {
 }
 
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
 
 javadoc {
     options.addBooleanOption('html5', true)
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
 
-task createPom {
-    doLast {
-        pom
-        {
-            project {
-                artifactId 'Z80Processor'
-                groupId 'com.codingrodent.microprocessor'
-                name 'com.codingrodent.microprocessor.Z80Processor'
-                description 'A Z80 Microprocessor core in Java'
-                url 'https://github.com/codesqueak/Z80Processor'
-                scm {
-                    url 'https://github.com/codesqueak/Z80Processor'
-                    connection 'scm:git:git://github.com/codesqueak/Z80Processor.git'
-                    developerConnection 'scm:git:ssh://github.com:codesqueak/Z80Processor.git'
-                }
-
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution 'repo'
-                    }
-                }
-                developers {
-                    developer {
-                        id 'codesqueak'
-                        name 'codesqueak'
-                        organizationUrl 'http://www.codesqueak.com'
-                        //  organization 'codesqueak'
-                    }
-                }
-            }
-        }.writeTo("$buildDir/libs/" + projectName + "-" + version + ".pom")
-    }
-}
 
 artifacts {
     archives sourcesJar
@@ -145,9 +105,42 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            pom {
+                artifactId= 'Z80Processor'
+                groupId= 'com.codingrodent.microprocessor'
+                name= 'com.codingrodent.microprocessor.Z80Processor'
+                description= 'A Z80 Microprocessor core in Java'
+                url= 'https://github.com/codesqueak/Z80Processor'
+                scm {
+                    url= 'https://github.com/codesqueak/Z80Processor'
+                    connection= 'scm:git:git://github.com/codesqueak/Z80Processor.git'
+                    developerConnection= 'scm:git:ssh://github.com:codesqueak/Z80Processor.git'
+                }
+                licenses {
+                    license {
+                        name= 'The Apache Software License, Version 2.0'
+                        url= 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution ='repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id= 'codesqueak'
+                        name= 'codesqueak'
+                        organizationUrl ='http://www.codesqueak.com'
+                        //  organization 'codesqueak'
+                    }
+                }
+
+            }
         }
     }
 }
+
+signing {
+    sign(publishing.publications["mavenJava"])
+}
+
 
 artifactory {
     contextUrl = "${artifactory_contextUrl}"   //The base Artifactory URL if not overridden by the publisher/resolver
