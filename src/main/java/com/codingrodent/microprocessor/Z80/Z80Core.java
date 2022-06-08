@@ -1639,15 +1639,16 @@ public class Z80Core implements ICPUData {
         instruction = ram.readByte(reg_PC + 1); // fudge for DD CB dd ii
         tStates = tStates + OPCODE_INDEXED_CB_STATES[instruction];
         //
+        var r = instruction & 0x07;
         switch (instruction) {
-            case 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 -> shiftRLCIndexed();
-            case 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F -> shiftRRCIndexed();
-            case 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17 -> shiftRLIndexed();
-            case 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F -> shiftRRIndexed();
-            case 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27 -> shiftSLAIndexed();
-            case 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F -> shiftSRAIndexed();
-            case 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37 -> shiftSLLIndexed();
-            case 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F -> shiftSRLIndexed();
+            case 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 -> shiftRLCIndexed(r);
+            case 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F -> shiftRRCIndexed(r);
+            case 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17 -> shiftRLIndexed(r);
+            case 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F -> shiftRRIndexed(r);
+            case 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27 -> shiftSLAIndexed(r);
+            case 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F -> shiftSRAIndexed(r);
+            case 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37 -> shiftSLLIndexed(r);
+            case 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F -> shiftSRLIndexed(r);
             //
             case 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47 -> testIndexBit(0);
             case 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F -> testIndexBit(1);
@@ -1658,23 +1659,23 @@ public class Z80Core implements ICPUData {
             case 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77 -> testIndexBit(6);
             case 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F -> testIndexBit(7);
             //
-            case 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87 -> bitIndexReset(0);
-            case 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F -> bitIndexReset(1);
-            case 0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97 -> bitIndexReset(2);
-            case 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F -> bitIndexReset(3);
-            case 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7 -> bitIndexReset(4);
-            case 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF -> bitIndexReset(5);
-            case 0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7 -> bitIndexReset(6);
-            case 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF -> bitIndexReset(7);
+            case 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87 -> bitIndexReset(0, r);
+            case 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F -> bitIndexReset(1, r);
+            case 0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97 -> bitIndexReset(2, r);
+            case 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F -> bitIndexReset(3, r);
+            case 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7 -> bitIndexReset(4, r);
+            case 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF -> bitIndexReset(5, r);
+            case 0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7 -> bitIndexReset(6, r);
+            case 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF -> bitIndexReset(7, r);
             //
-            case 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7 -> bitIndexSet(0);
-            case 0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF -> bitIndexSet(1);
-            case 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7 -> bitIndexSet(2);
-            case 0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF -> bitIndexSet(3);
-            case 0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7 -> bitIndexSet(4);
-            case 0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF -> bitIndexSet(5);
-            case 0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7 -> bitIndexSet(6);
-            case 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF -> bitIndexSet(7);
+            case 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7 -> bitIndexSet(0, r);
+            case 0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF -> bitIndexSet(1, r);
+            case 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7 -> bitIndexSet(2, r);
+            case 0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF -> bitIndexSet(3, r);
+            case 0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7 -> bitIndexSet(4, r);
+            case 0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF -> bitIndexSet(5, r);
+            case 0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7 -> bitIndexSet(6, r);
+            case 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF -> bitIndexSet(7, r);
         }
         incPC();
     }
@@ -1682,7 +1683,7 @@ public class Z80Core implements ICPUData {
     /*
      * return an 8 bit register based on its code 000 -> 111
      */
-    private int get8BitRegisterForIO(int reg) {
+    private int get8BitRegister(int reg) {
         return switch (reg) {
             case 0 -> reg_B;
             // B
@@ -1700,6 +1701,30 @@ public class Z80Core implements ICPUData {
             // F
             default -> 0;
         };
+    }
+
+    /*
+     * set an 8 bit register based on its code 000 -> 111
+     */
+    private void set8BitRegister(int reg, int v) {
+        switch (reg) {
+            case 0 -> reg_B = v;
+            // B
+            case 1 -> reg_C = v;
+            // C
+            case 2 -> reg_D = v;
+            // D
+            case 3 -> reg_E = v;
+            // E
+            case 4 -> reg_H = v;
+            // H
+            case 5 -> reg_L = v;
+            // L
+            case 7 -> reg_A = v;
+            // F
+            default -> {
+            }
+        }
     }
 
     /*
@@ -2419,7 +2444,7 @@ public class Z80Core implements ICPUData {
         }
         if (carry) setC();
         else resetC();
-        setPV(PARITY_TABLE[reg_A]); // setPV( PARITY_TABLE[ ans ] );
+        setPV(PARITY_TABLE[reg_A]);
     }
 
     private int shiftGenericRLC(int temp) {
@@ -2443,12 +2468,18 @@ public class Z80Core implements ICPUData {
     }
 
     /**
-     * Extra weird RLC (IX+nn) & LD R,(IX+nn)
+     * very odd instructions
+     * RLC  (IX+nn), followed by LD rr,(IX+nn), but not if rr = 6
      */
-    private void shiftRLCIndexed() {
+    private void shiftRLCIndexed(int reg) {
         int address = getIndexAddress();
         int regValue = shiftGenericRLC(ram.readByte(address));
         ram.writeByte(address, regValue);
+        //
+        if (reg != 6) { // (rr)
+            set8BitRegister(reg, regValue);
+        }
+        //
         reg_R++;
     }
 
@@ -2471,9 +2502,15 @@ public class Z80Core implements ICPUData {
         return temp;
     }
 
-    private void shiftRLIndexed() {
+    private void shiftRLIndexed(int reg) {
         int address = getIndexAddress();
-        ram.writeByte(address, shiftGenericRL(ram.readByte(address)));
+        var regValue = shiftGenericRL(ram.readByte(address));
+        ram.writeByte(address, regValue);
+        //
+        if (reg != 6) { // (rr)
+            set8BitRegister(reg, regValue);
+        }
+        //
         reg_R++;
     }
 
@@ -2494,9 +2531,15 @@ public class Z80Core implements ICPUData {
         return temp;
     }
 
-    private void shiftRRCIndexed() {
+    private void shiftRRCIndexed(int reg) {
         int address = getIndexAddress();
-        ram.writeByte(address, shiftGenericRRC(ram.readByte(address)));
+        int regValue = shiftGenericRRC(ram.readByte(address));
+        ram.writeByte(address, regValue);
+        //
+        if (reg != 6) { // (rr)
+            set8BitRegister(reg, regValue);
+        }
+        //
         reg_R++;
     }
 
@@ -2519,9 +2562,15 @@ public class Z80Core implements ICPUData {
         return temp;
     }
 
-    private void shiftRRIndexed() {
+    private void shiftRRIndexed(int reg) {
         int address = getIndexAddress();
-        ram.writeByte(address, shiftGenericRR(ram.readByte(address)));
+        int regValue = shiftGenericRR(ram.readByte(address));
+        ram.writeByte(address, regValue);
+        //
+        if (reg != 6) { // (rr)
+            set8BitRegister(reg, regValue);
+        }
+        //
         reg_R++;
     }
 
@@ -2543,9 +2592,15 @@ public class Z80Core implements ICPUData {
         return temp;
     }
 
-    private void shiftSLAIndexed() {
+    private void shiftSLAIndexed(int reg) {
         int address = getIndexAddress();
-        ram.writeByte(address, shiftGenericSLA(ram.readByte(address)));
+        var regValue = shiftGenericSLA(ram.readByte(address));
+        ram.writeByte(address, regValue);
+        //
+        if (reg != 6) { // (rr)
+            set8BitRegister(reg, regValue);
+        }
+        //
         reg_R++;
     }
 
@@ -2572,9 +2627,15 @@ public class Z80Core implements ICPUData {
         return temp;
     }
 
-    private void shiftSLLIndexed() {
+    private void shiftSLLIndexed(int reg) {
         int address = getIndexAddress();
-        ram.writeByte(address, shiftGenericSLL(ram.readByte(address)));
+        var regValue = shiftGenericSLL(ram.readByte(address));
+        ram.writeByte(address, regValue);
+        //
+        if (reg != 6) { // (rr)
+            set8BitRegister(reg, regValue);
+        }
+        //
         reg_R++;
     }
 
@@ -2598,9 +2659,15 @@ public class Z80Core implements ICPUData {
         return temp;
     }
 
-    private void shiftSRAIndexed() {
+    private void shiftSRAIndexed(int reg) {
         int address = getIndexAddress();
-        ram.writeByte(address, shiftGenericSRA(ram.readByte(address)));
+        var regValue = shiftGenericSRA(ram.readByte(address));
+        ram.writeByte(address, regValue);
+        //
+        if (reg != 6) { // (rr)
+            set8BitRegister(reg, regValue);
+        }
+        //
         reg_R++;
     }
 
@@ -2619,9 +2686,15 @@ public class Z80Core implements ICPUData {
         return temp;
     }
 
-    private void shiftSRLIndexed() {
+    private void shiftSRLIndexed(int reg) {
         int address = getIndexAddress();
-        ram.writeByte(address, shiftGenericSRL(ram.readByte(address)));
+        var regValue = shiftGenericSRL(ram.readByte(address));
+        ram.writeByte(address, regValue);
+        //
+        if (reg != 6) { // (rr)
+            set8BitRegister(reg, regValue);
+        }
+        //
         reg_R++;
     }
 
@@ -2825,7 +2898,7 @@ public class Z80Core implements ICPUData {
 
     /* OUT (rr),c */
     private void outC(int reg) {
-        io.IOWrite(getBC(), get8BitRegisterForIO(reg));
+        io.IOWrite(getBC(), get8BitRegister(reg));
     }
 
     /*
@@ -3227,38 +3300,44 @@ public class Z80Core implements ICPUData {
         testBitGeneric(bit, temp);
     }
 
-    private void bitIndexSet(int bit) {
+    private void bitIndexSet(int bit, int reg) {
         reg_R++;
         int address = getIndexAddress();
-        int temp = ram.readByte(address);
-        temp = switch (bit) {
-            case 0 -> temp | setBit0;
-            case 1 -> temp | setBit1;
-            case 2 -> temp | setBit2;
-            case 3 -> temp | setBit3;
-            case 4 -> temp | setBit4;
-            case 5 -> temp | setBit5;
-            case 6 -> temp | setBit6;
-            default -> temp | setBit7;
+        int v = ram.readByte(address);
+        v = switch (bit) {
+            case 0 -> v | setBit0;
+            case 1 -> v | setBit1;
+            case 2 -> v | setBit2;
+            case 3 -> v | setBit3;
+            case 4 -> v | setBit4;
+            case 5 -> v | setBit5;
+            case 6 -> v | setBit6;
+            default -> v | setBit7;
         };
-        ram.writeByte(address, temp);
+        if (reg != 6) { // (rr)
+            set8BitRegister(reg, v);
+        }
+        ram.writeByte(address, v);
     }
 
-    private void bitIndexReset(int bit) {
+    private void bitIndexReset(int bit, int reg) {
         reg_R++;
         int address = getIndexAddress();
-        int temp = ram.readByte(address);
-        temp = switch (bit) {
-            case 0 -> temp & resetBit0;
-            case 1 -> temp & resetBit1;
-            case 2 -> temp & resetBit2;
-            case 3 -> temp & resetBit3;
-            case 4 -> temp & resetBit4;
-            case 5 -> temp & resetBit5;
-            case 6 -> temp & resetBit6;
-            default -> temp & resetBit7;
+        int v = ram.readByte(address);
+        v = switch (bit) {
+            case 0 -> v & resetBit0;
+            case 1 -> v & resetBit1;
+            case 2 -> v & resetBit2;
+            case 3 -> v & resetBit3;
+            case 4 -> v & resetBit4;
+            case 5 -> v & resetBit5;
+            case 6 -> v & resetBit6;
+            default -> v & resetBit7;
         };
-        ram.writeByte(address, temp);
+        if (reg != 6) { // (rr)
+            set8BitRegister(reg, v);
+        }
+        ram.writeByte(address, v);
     }
 
     /* LD (ix+dd),nn */
