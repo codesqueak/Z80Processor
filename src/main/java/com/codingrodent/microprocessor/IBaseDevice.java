@@ -22,7 +22,8 @@ public interface IBaseDevice {
     /**
      * Read data from an I/O port
      *
-     * @param address The port to be read from
+     * @param address The address contains the full 16 bit address
+     *                The port to be read from is contained in the lower 8 bits
      * @return The 8 bit value at the request port address
      */
     default int IORead(int address) {
@@ -32,7 +33,8 @@ public interface IBaseDevice {
     /**
      * Write data to an I/O port
      *
-     * @param address The port to be written to
+     * @param address The address contains the full 16 bit address
+     *                The port to be read from is contained in the lower 8 bits
      * @param data    The 8 bit value to be written
      */
     default void IOWrite(int address, int data) {
