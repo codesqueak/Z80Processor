@@ -303,7 +303,7 @@ public class Z80CoreTestED {
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
         run(0xC000);
-        assertEquals(0x00, z80.getRegisterValue(CPUConstants.RegisterNames.A));
+        assertEquals(0x80, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         assertEquals(0x80, z80.getRegisterValue(CPUConstants.RegisterNames.R));
     }
 
