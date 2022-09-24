@@ -2858,16 +2858,21 @@ public class Z80Core implements ICPUData {
 
     /* IN A,(NN) */
     private void inAN() {
-        reg_A = io.IORead(ram.readByte(reg_PC));
+        reg_A = io.IORead(getInOutAddressRegA());
         incPC();
         reg_R++;
     }
 
     /* OUT (NN),A */
     private void outNA() {
-        io.IOWrite(ram.readByte(reg_PC), reg_A);
+        io.IOWrite(getInOutAddressRegA(), reg_A);
         incPC();
         reg_R++;
+    }
+
+    private int getInOutAddressRegA() {
+        // high order address bits from A reg - for IN,OUT A
+        return (reg_A << 8) + ram.readByte(reg_PC);
     }
 
     /* IN rr,(c) */
@@ -3071,7 +3076,7 @@ public class Z80Core implements ICPUData {
 
     /* block IO */
     private void INI() {
-        ram.writeByte(getHL(), io.IORead(reg_C));
+        ram.writeByte(getHL(), io.IORead(getBC()));
         reg_B = (reg_B - 1) & lsb;
         setHL(ALU16BitInc(getHL()));
         setZ(reg_B == 0);
@@ -3085,7 +3090,7 @@ public class Z80Core implements ICPUData {
     }
 
     private void IND() {
-        ram.writeByte(getHL(), io.IORead(reg_C));
+        ram.writeByte(getHL(), io.IORead(getBC()));
         reg_B = (reg_B - 1) & lsb;
         setHL(ALU16BitDec(getHL()));
         setZ(reg_B == 0);
@@ -3099,7 +3104,7 @@ public class Z80Core implements ICPUData {
     }
 
     private void OUTI() {
-        io.IOWrite(reg_C, ram.readByte(getHL()));
+        io.IOWrite(getBC(), ram.readByte(getHL()));
         reg_R++;
         reg_B = (reg_B - 1) & lsb;
         setHL(ALU16BitInc(getHL()));
@@ -3114,7 +3119,7 @@ public class Z80Core implements ICPUData {
     }
 
     private void OUTD() {
-        io.IOWrite(reg_C, ram.readByte(getHL()));
+        io.IOWrite(getBC(), ram.readByte(getHL()));
         reg_R++;
         reg_B = (reg_B - 1) & lsb;
         setHL(ALU16BitDec(getHL()));
