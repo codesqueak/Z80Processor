@@ -13,14 +13,13 @@ buildscript {
 }
 
 plugins {
-    id "com.github.spotbugs" version "5.0.6"
+    id "com.github.spotbugs" version "5.0.12"
     id 'java'
     id 'idea'
     id 'maven-publish'
     id 'jacoco'
     id 'signing'
 }
-
 
 apply plugin: 'com.jfrog.artifactory'
 
@@ -52,12 +51,9 @@ jar {
             }
 }
 
-
-
 javadoc {
     options.addBooleanOption('html5', true)
 }
-
 
 
 artifacts {
@@ -70,7 +66,7 @@ repositories {
 }
 
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.8"
 }
 
 test {
@@ -96,7 +92,7 @@ jacocoTestReport {
 
 
 spotbugs {
-    toolVersion = '4.7.0'
+    toolVersion = '4.7.2'
     ignoreFailures = false
     effort = 'max'
 }
@@ -131,7 +127,6 @@ publishing {
                         //  organization 'codesqueak'
                     }
                 }
-
             }
         }
     }
@@ -169,16 +164,16 @@ artifactory {
 // check.dependsOn jacocoTestReport
 
 dependencies {
-    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.0'
+    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.2'
     //
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.0'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.0'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.1'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.9.1'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.8.0'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
 }
 
 
 wrapper {
-    gradleVersion = '7.4.2'
+    gradleVersion = '7.5.1'
     distributionType = Wrapper.DistributionType.BIN
 }
