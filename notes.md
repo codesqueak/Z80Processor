@@ -1,6 +1,6 @@
 # Build & Deploy Notes
 
-`./gradlew clean build test publishToMavenLocal`
+`./gradlew clean build test publishToMavenLocal artifactoryPublish`
 
 This will generate the build products in your local maven repo `~/.m2`
 
@@ -15,4 +15,14 @@ The following field are required in the gradle.properties
 `signing.secretKeyRingFile=< file location/.gnupg/secring.gpg >`  
 
 To see your key, `use gpg -k`
+
+## Make a bundle
+
+example: 
+
+jar -cvf bundle.jar   Z80Processor-4.1.0-javadoc.jar Z80Processor-4.1.0-javadoc.jar.asc Z80Processor-4.1.0-sources.jar Z80Processor-4.1.0-sources.jar.asc Z80Processor-4.1.0.jar Z80Processor-4.1.0.jar.asc Z80Processor-4.1.0.module Z80Processor-4.1.0.module.asc Z80Processor-4.1.0.pom Z80Processor-4.1.0.pom.asc
+
+# Manual Publish Bundle
+
+[Publish to Sonotype / Maven Central](https://central.sonatype.org/publish/publish-manual/)
 
