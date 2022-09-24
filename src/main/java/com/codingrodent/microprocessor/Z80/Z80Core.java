@@ -38,7 +38,7 @@ public class Z80Core implements ICPUData {
     private int reg_B, reg_C, reg_D, reg_E, reg_H, reg_L;
     private int reg_B_ALT, reg_C_ALT, reg_D_ALT, reg_E_ALT, reg_H_ALT, reg_L_ALT;
     private int reg_IX, reg_IY, reg_PC, reg_SP;
-    private int reg_A, reg_A_ALT, reg_F, reg_F_ALT, reg_I, reg_R;
+    private int reg_A, reg_A_ALT, reg_F, reg_F_ALT, reg_I, reg_R, reg_R8;
     private int reg_index;
     private boolean EIDIFlag;
     private boolean IFF1, IFF2;
@@ -85,7 +85,7 @@ public class Z80Core implements ICPUData {
         reg_B = reg_C = reg_D = reg_E = reg_H = reg_L = 0;
         reg_B_ALT = reg_C_ALT = reg_D_ALT = reg_E_ALT = reg_H_ALT = reg_L_ALT = 0;
         reg_IX = reg_IY = reg_SP = 0;
-        reg_A = reg_A_ALT = reg_F = reg_F_ALT = reg_I = reg_R = 0;
+        reg_A = reg_A_ALT = reg_F = reg_F_ALT = reg_I = reg_R = reg_R8 = 0;
         IFF1 = IFF2 = false;
         EIDIFlag = false;
         NMI_FF = false;
@@ -169,7 +169,7 @@ public class Z80Core implements ICPUData {
             case A_ALT -> reg_A_ALT;
             case F_ALT -> reg_F_ALT;
             case I -> reg_I;
-            case R -> reg_R & 0x7F;
+            case R -> getR();
         };
     }
 
@@ -196,7 +196,7 @@ public class Z80Core implements ICPUData {
             case A_ALT -> reg_A_ALT = value & 0xFF;
             case F_ALT -> reg_F_ALT = value & 0xFF;
             case I -> reg_I = value & 0xFF;
-            case R -> reg_R = value & 0x7F;
+            case R -> setR(value);
         }
     }
 
@@ -2278,6 +2278,15 @@ public class Z80Core implements ICPUData {
         reg_F = reg_F & flag_C_N;
     }
 
+    private int getR() {
+        return reg_R & 0x7F + reg_R8;
+    }
+
+    private void setR(int r) {
+        reg_R = r; // internally reg_R is unbounded
+        reg_R8 = r & 0x80;
+    }
+
     private int getBC() {
         return (reg_B << 8) + reg_C;
     }
@@ -3179,7 +3188,7 @@ public class Z80Core implements ICPUData {
      */
 
     private void LDAR() {
-        reg_A = reg_R & 0x7F;
+        reg_A = getR();
         resetS();
         setZ(reg_A == 0);
         resetH();
@@ -3189,7 +3198,7 @@ public class Z80Core implements ICPUData {
     }
 
     private void LDRA() {
-        reg_R = reg_A;
+        setR(reg_A);
     }
 
     //
