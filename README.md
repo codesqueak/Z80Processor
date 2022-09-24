@@ -1,4 +1,5 @@
 ![CodeQL](https://github.com/codesqueak/Z80Processor/workflows/CodeQL/badge.svg)
+[![Java CI with Gradle](https://github.com/codesqueak/Z80Processor/actions/workflows/gradle.yml/badge.svg)](https://github.com/codesqueak/Z80Processor/actions/workflows/gradle.yml)
 [![License: MIT](https://img.shields.io/badge/license-Apache_2.0-brightgreen.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.codingrodent.microprocessor/Z80Processor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.codingrodent.microprocessor/Z80Processor)
 
@@ -6,8 +7,12 @@
 
 Z80Processor is a an implementation of the Mostek / Zilog Z80 processor in Java
 
-The code is not designed to be nice / clean / compact - however it is designed to be fast. It has been heavily profiled
-using [Yourkit](https://www.yourkit.com/) while running 'real' applications to identify hotspots.
+The code is not designed to be nice / clean / compact - however it is designed to be fast and easily checkable with every instruction 
+on its own switch / case statement. 
+
+If you are looking for a compact implementation, have a look at the Go implementation [here](https://github.com/codesqueak/z80)
+
+It code has been heavily profiled using [Yourkit](https://www.yourkit.com/) while running 'real' applications to identify hotspots.
 
 If you find this project useful, you may want to [__Buy me a Coffee!__ :coffee:](https://www.buymeacoffee.com/codesqueak) Thanks :thumbsup:
 
@@ -23,10 +28,9 @@ Linux
 
 The build may take a few minutes as it includes a comprehensive test suite for the Z80 instruction set.
 
+## Java Version
 
-## Using Jenkins
-
-The project includes a Jenkins file to control a pipeline build.  At present the available version of the Jacoco plugin (2.0.1 at time of writing) does not support a 'publisher'.  The build was tested using a hand built plugin from the master branch of the  [project](https://github.com/jenkinsci/jacoco-plugin)
+Version 4.0.0 onwards of the emulator require Java 17 or above
 
 ### Include Using Maven
 
@@ -35,7 +39,7 @@ The project includes a Jenkins file to control a pipeline build.  At present the
 <dependency>
     <groupId>com.codingrodent.microprocessor</groupId>
     <artifactId>Z80Processor</artifactId>
-    <version>3.2.0</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
@@ -43,7 +47,7 @@ The project includes a Jenkins file to control a pipeline build.  At present the
 
 ```
 // https://mvnrepository.com/artifact/com.codingrodent.microprocessor/Z80Processor
-compile group: 'com.codingrodent.microprocessor', name: 'Z80Processor', version: '3.2.0'
+compile group: 'com.codingrodent.microprocessor', name: 'Z80Processor', version: '4.0.0'
 ```
 
 ## Undocumented instruction

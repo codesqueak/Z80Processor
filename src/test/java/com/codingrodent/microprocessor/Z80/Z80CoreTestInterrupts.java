@@ -14,10 +14,8 @@
  */
 package com.codingrodent.microprocessor.Z80;
 
-import com.codingrodent.microprocessor.ProcessorException;
 import com.codingrodent.microprocessor.Z80.CPUConstants.RegisterNames;
-import com.codingrodent.microprocessor.support.Z80IO;
-import com.codingrodent.microprocessor.support.Z80Memory;
+import com.codingrodent.microprocessor.support.*;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -120,7 +118,7 @@ public class Z80CoreTestInterrupts {
                     nmi = false;
                     z80.setNMI();
                 }
-            } catch (ProcessorException e) {
+            } catch (Exception e) {
                 System.out.println("Hardware crash, oops! " + e.getMessage());
             }
         }

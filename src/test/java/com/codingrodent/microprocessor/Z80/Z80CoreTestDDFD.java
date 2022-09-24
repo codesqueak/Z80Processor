@@ -14,9 +14,7 @@
  */
 package com.codingrodent.microprocessor.Z80;
 
-import com.codingrodent.microprocessor.ProcessorException;
-import com.codingrodent.microprocessor.support.Z80IO;
-import com.codingrodent.microprocessor.support.Z80Memory;
+import com.codingrodent.microprocessor.support.*;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -134,7 +132,7 @@ public class Z80CoreTestDDFD {
             try {
                 // System.out.println(utilities.getWord(z80.getRegisterValue(RegisterNames.PC)));
                 z80.executeOneInstruction();
-            } catch (ProcessorException e) {
+            } catch (Exception e) {
                 System.out.println("Hardware crash, oops! " + e.getMessage());
             }
         }

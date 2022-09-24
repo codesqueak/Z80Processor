@@ -2,7 +2,6 @@ buildscript {
     repositories {
         mavenCentral()
         mavenLocal()
-        jcenter()
         maven {
             url "https://plugins.gradle.org/m2/"
         }
@@ -14,20 +13,23 @@ buildscript {
 }
 
 plugins {
-    id "com.github.spotbugs" version "4.5.1"
+    id "com.github.spotbugs" version "5.0.6"
     id 'java'
     id 'idea'
     id 'maven-publish'
     id 'jacoco'
+    id 'signing'
 }
 
-apply plugin: 'maven'
+
 apply plugin: 'com.jfrog.artifactory'
 
 // set the java version
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withJavadocJar()
+    withSourcesJar()
 }
 
 group = 'com.codingrodent.microprocessor'
@@ -51,55 +53,12 @@ jar {
 }
 
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
 
 javadoc {
     options.addBooleanOption('html5', true)
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
 
-task createPom {
-    doLast {
-        pom
-        {
-            project {
-                artifactId 'Z80Processor'
-                groupId 'com.codingrodent.microprocessor'
-                name 'com.codingrodent.microprocessor.Z80Processor'
-                description 'A Z80 Microprocessor core in Java'
-                url 'https://github.com/codesqueak/Z80Processor'
-                scm {
-                    url 'https://github.com/codesqueak/Z80Processor'
-                    connection 'scm:git:git://github.com/codesqueak/Z80Processor.git'
-                    developerConnection 'scm:git:ssh://github.com:codesqueak/Z80Processor.git'
-                }
-
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution 'repo'
-                    }
-                }
-                developers {
-                    developer {
-                        id 'codesqueak'
-                        name 'codesqueak'
-                        organizationUrl 'http://www.codesqueak.com'
-                        //  organization 'codesqueak'
-                    }
-                }
-            }
-        }.writeTo("$buildDir/libs/" + projectName + "-" + version + ".pom")
-    }
-}
 
 artifacts {
     archives sourcesJar
@@ -111,7 +70,7 @@ repositories {
 }
 
 jacoco {
-    toolVersion = "0.8.5"
+    toolVersion = "0.8.7"
 }
 
 test {
@@ -137,7 +96,7 @@ jacocoTestReport {
 
 
 spotbugs {
-    toolVersion = '4.1.4'
+    toolVersion = '4.7.0'
     ignoreFailures = false
     effort = 'max'
 }
@@ -146,9 +105,42 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            pom {
+                artifactId= 'Z80Processor'
+                groupId= 'com.codingrodent.microprocessor'
+                name= 'com.codingrodent.microprocessor.Z80Processor'
+                description= 'A Z80 Microprocessor core in Java'
+                url= 'https://github.com/codesqueak/Z80Processor'
+                scm {
+                    url= 'https://github.com/codesqueak/Z80Processor'
+                    connection= 'scm:git:git://github.com/codesqueak/Z80Processor.git'
+                    developerConnection= 'scm:git:ssh://github.com:codesqueak/Z80Processor.git'
+                }
+                licenses {
+                    license {
+                        name= 'The Apache Software License, Version 2.0'
+                        url= 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution ='repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id= 'codesqueak'
+                        name= 'codesqueak'
+                        organizationUrl ='http://www.codesqueak.com'
+                        //  organization 'codesqueak'
+                    }
+                }
+
+            }
         }
     }
 }
+
+signing {
+    sign(publishing.publications["mavenJava"])
+}
+
 
 artifactory {
     contextUrl = "${artifactory_contextUrl}"   //The base Artifactory URL if not overridden by the publisher/resolver
@@ -177,6 +169,8 @@ artifactory {
 // check.dependsOn jacocoTestReport
 
 dependencies {
+    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.0'
+    //
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.0'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.0'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
@@ -185,6 +179,6 @@ dependencies {
 
 
 wrapper {
-    gradleVersion = '6.7.1'
+    gradleVersion = '7.4.2'
     distributionType = Wrapper.DistributionType.BIN
 }
