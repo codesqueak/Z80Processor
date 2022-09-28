@@ -124,4 +124,74 @@ public class Z80CoreTestInterrupts {
         }
     }
 
+    @Test
+    public final void testNMIdisabledAfterEIDI() {
+
+        // Test DI Block NMI's for 1 additional instruction, after DI
+
+        int addr = 0xC000;
+        z80Memory.writeByte(addr++, 0xF3); // DI
+        z80Memory.writeByte(addr++, 0x3C); // INC A
+        z80Memory.writeByte(addr++, 0x3C); // INC A
+        z80Memory.writeByte(addr++, 0x00); // NOP
+        z80Memory.writeByte(addr, 0x76); // HALT
+        //
+        addr = 0x0066;
+        z80Memory.writeByte(addr++, 0x3C); // INC A
+        z80Memory.writeByte(addr++, 0x00); // NOP
+        z80Memory.writeByte(addr, 0x76); // HALT
+
+        // executing (with DI) with NMI after DI instruction
+        testNMI(0xC000, 1);
+        // thus NMI will be delayed by 1 instruction, so 2 x INC
+        assertEquals(0x02, z80.getRegisterValue(RegisterNames.A));
+
+        // executing (with DI) with NMI after INC instruction
+        testNMI(0xC000, 2);
+        // thus NMI will be delayed by 1 instruction, so 2 x INC
+        assertEquals(0x02, z80.getRegisterValue(RegisterNames.A));
+
+        // executing (without DI) with NMI after INC instruction
+        testNMI(0xC001, 1);
+        // thus NMI will be delayed by 1 instruction, so 2 x INC
+        assertEquals(0x02, z80.getRegisterValue(RegisterNames.A));
+
+        // Now Same Tests for EI
+
+        addr = 0xC000;
+        z80Memory.writeByte(addr++, 0xFB); // EI
+
+        // executing (with EI) with NMI after EI instruction
+        testNMI(0xC000, 1);
+        // thus NMI will be delayed by 1 instruction, so 2 x INC
+        assertEquals(0x02, z80.getRegisterValue(RegisterNames.A));
+
+        // executing (with EI) with NMI after INC instruction
+        testNMI(0xC000, 2);
+        // thus NMI will be delayed by 1 instruction, so 2 x INC
+        assertEquals(0x02, z80.getRegisterValue(RegisterNames.A));
+
+        // executing (without EI) with NMI after INC instruction
+        testNMI(0xC001, 1);
+        // thus NMI will be delayed by 1 instruction, so 2 x INC
+        assertEquals(0x02, z80.getRegisterValue(RegisterNames.A));
+
+    }
+
+    private void testNMI(int address, int nmiCount) {
+        // Ok, run the program
+        z80.reset();
+        z80.setProgramCounter(address);
+        while (!z80.getHalt()) {
+            try {
+                // System.out.println(utilities.getWord(z80.getRegisterValue(RegisterNames.PC)));
+                z80.executeOneInstruction();
+                if (--nmiCount == 0) { // dec and test
+                    z80.setNMI(); // force the NMI after N instructions
+                }
+            } catch (Exception e) {
+                System.out.println("Hardware crash, oops! " + e.getMessage());
+            }
+        }
+    }
 }
