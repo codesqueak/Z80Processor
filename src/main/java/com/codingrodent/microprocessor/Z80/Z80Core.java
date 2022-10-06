@@ -409,150 +409,81 @@ public class Z80Core implements ICPUData {
             } // ld a,n
             case 0x3F -> CCF(); // ccf
             // LD B,*
-            case 0x40 -> {
-            }  /* reg_B = reg_B; */
-            // ld b,b
-            case 0x41 -> reg_B = reg_C;
-            // ld b,c
-            case 0x42 -> reg_B = reg_D;
-            // ld b,d
-            case 0x43 -> reg_B = reg_E;
-            // ld b,e
-            case 0x44 -> reg_B = reg_H;
-            // ld b,h
-            case 0x45 -> reg_B = reg_L;
-            // ld b,l
-            case 0x46 -> reg_B = ram.readByte(getHL());
-            // ld b,(hl)
-            case 0x47 -> reg_B = reg_A;
-            // ld b,a
+            case 0x40 -> {} /* reg_B = reg_B; */ // ld b,b
+            case 0x41 -> reg_B = reg_C; // ld b,c
+            case 0x42 -> reg_B = reg_D; // ld b,d
+            case 0x43 -> reg_B = reg_E; // ld b,e
+            case 0x44 -> reg_B = reg_H; // ld b,h
+            case 0x45 -> reg_B = reg_L; // ld b,l
+            case 0x46 -> reg_B = ram.readByte(getHL()); // ld b,(hl)
+            case 0x47 -> reg_B = reg_A; // ld b,a
             // LD C,*
-            case 0x48 -> reg_C = reg_B;
-            // ld c,b
-            case 0x49 -> {
-            }/* reg_C = reg_C; */
-            // ld c,c
-            case 0x4A -> reg_C = reg_D;
-            // ld c,d
-            case 0x4B -> reg_C = reg_E;
-            // ld c,e
-            case 0x4C -> reg_C = reg_H;
-            // ld c,h
-            case 0x4D -> reg_C = reg_L;
-            // ld c,l
-            case 0x4E -> reg_C = ram.readByte(getHL());
-            // ld c,(hl)
-            case 0x4F -> reg_C = reg_A;
-            // ld c,a
+            case 0x48 -> reg_C = reg_B; // ld c,b
+            case 0x49 -> {} /* reg_C = reg_C; */ // ld c,c
+            case 0x4A -> reg_C = reg_D; // ld c,d
+            case 0x4B -> reg_C = reg_E; // ld c,e
+            case 0x4C -> reg_C = reg_H; // ld c,h
+            case 0x4D -> reg_C = reg_L; // ld c,l
+            case 0x4E -> reg_C = ram.readByte(getHL()); // ld c,(hl)
+            case 0x4F -> reg_C = reg_A; // ld c,a
             // LD D,*
-            case 0x50 -> reg_D = reg_B;
-            // ld d,b
-            case 0x51 -> reg_D = reg_C;
-            // ld d,c
-            case 0x52 -> {
-            }  /* reg_D = reg_D; */
-            // ld d,d
-            case 0x53 -> reg_D = reg_E;
-            // ld d,e
-            case 0x54 -> reg_D = reg_H;
-            // ld d,h
-            case 0x55 -> reg_D = reg_L;
-            // ld d,l
-            case 0x56 -> reg_D = ram.readByte(getHL());
-            // ld d,(hl)
-            case 0x57 -> reg_D = reg_A;
-            // ld d,a
+            case 0x50 -> reg_D = reg_B; // ld d,b
+            case 0x51 -> reg_D = reg_C; // ld d,c
+            case 0x52 -> {}  /* reg_D = reg_D; */ // ld d,d
+            case 0x53 -> reg_D = reg_E; // ld d,e
+            case 0x54 -> reg_D = reg_H; // ld d,h
+            case 0x55 -> reg_D = reg_L; // ld d,l
+            case 0x56 -> reg_D = ram.readByte(getHL()); // ld d,(hl)
+            case 0x57 -> reg_D = reg_A; // ld d,a
             // LD E,*
-            case 0x58 -> reg_E = reg_B;
-            // ld e,b
-            case 0x59 -> reg_E = reg_C;
-            // ld e,c
-            case 0x5A -> reg_E = reg_D;
-            // ld e,d
-            case 0x5B -> {
-            }  /* reg_E = reg_E; */
-            // ld e,e
-            case 0x5C -> reg_E = reg_H;
-            // ld e,h
-            case 0x5D -> reg_E = reg_L;
-            // ld e,l
-            case 0x5E -> reg_E = ram.readByte(getHL());
-            // ld e,(hl)
-            case 0x5F -> reg_E = reg_A;
-            // ld e,a
+            case 0x58 -> reg_E = reg_B; // ld e,b
+            case 0x59 -> reg_E = reg_C; // ld e,c
+            case 0x5A -> reg_E = reg_D; // ld e,d
+            case 0x5B -> {}  /* reg_E = reg_E; */ // ld e,e
+            case 0x5C -> reg_E = reg_H; // ld e,h
+            case 0x5D -> reg_E = reg_L; // ld e,l
+            case 0x5E -> reg_E = ram.readByte(getHL()); // ld e,(hl)
+            case 0x5F -> reg_E = reg_A; // ld e,a
             // LD H,*
-            case 0x60 -> reg_H = reg_B;
-            // ld h,b
-            case 0x61 -> reg_H = reg_C;
-            // ld h,c
-            case 0x62 -> reg_H = reg_D;
-            // ld h,d
-            case 0x63 -> reg_H = reg_E;
-            // ld h,e
-            case 0x64 -> {
-            }  /* reg_H = reg_H; */
-            // ld h,h
-            case 0x65 -> reg_H = reg_L;
-            // ld h,l
-            case 0x66 -> reg_H = ram.readByte(getHL());
-            // ld h,(hl)
-            case 0x67 -> reg_H = reg_A;
-            // ld h,a
+            case 0x60 -> reg_H = reg_B; // ld h,b
+            case 0x61 -> reg_H = reg_C; // ld h,c
+            case 0x62 -> reg_H = reg_D; // ld h,d
+            case 0x63 -> reg_H = reg_E; // ld h,e
+            case 0x64 -> {}  /* reg_H = reg_H; */ // ld h,h
+            case 0x65 -> reg_H = reg_L; // ld h,l
+            case 0x66 -> reg_H = ram.readByte(getHL()); // ld h,(hl)
+            case 0x67 -> reg_H = reg_A; // ld h,a
             // LD L,*
-            case 0x68 -> reg_L = reg_B;
-            // ld l,b
-            case 0x69 -> reg_L = reg_C;
-            // ld l,c
-            case 0x6A -> reg_L = reg_D;
-            // ld l,d
-            case 0x6B -> reg_L = reg_E;
-            // ld l,e
-            case 0x6C -> reg_L = reg_H;
-            // ld l,h
-            case 0x6D -> {
-            }  /* reg_L = reg_L; */
-            // ld l,l
-            case 0x6E -> reg_L = ram.readByte(getHL());
-            // ld l,(hl)
-            case 0x6F -> reg_L = reg_A;
-            // ld l,a
+            case 0x68 -> reg_L = reg_B; // ld l,b
+            case 0x69 -> reg_L = reg_C; // ld l,c
+            case 0x6A -> reg_L = reg_D; // ld l,d
+            case 0x6B -> reg_L = reg_E; // ld l,e
+            case 0x6C -> reg_L = reg_H; // ld l,h
+            case 0x6D -> {}  /* reg_L = reg_L; */ // ld l,l
+            case 0x6E -> reg_L = ram.readByte(getHL()); // ld l,(hl)
+            case 0x6F -> reg_L = reg_A; // ld l,a
             // LD (HL),*
-            case 0x70 -> ram.writeByte(getHL(), reg_B);
-            // ld (hl),b
-            case 0x71 -> ram.writeByte(getHL(), reg_C);
-            // ld (hl),c
-            case 0x72 -> ram.writeByte(getHL(), reg_D);
-            // ld (hl),d
-            case 0x73 -> ram.writeByte(getHL(), reg_E);
-            // ld (hl),e
-            case 0x74 -> ram.writeByte(getHL(), reg_H);
-            // ld (hl),h
-            case 0x75 -> ram.writeByte(getHL(), reg_L);
-            // ld (hl),l
+            case 0x70 -> ram.writeByte(getHL(), reg_B); // ld (hl),b
+            case 0x71 -> ram.writeByte(getHL(), reg_C); // ld (hl),c
+            case 0x72 -> ram.writeByte(getHL(), reg_D); // ld (hl),d
+            case 0x73 -> ram.writeByte(getHL(), reg_E); // ld (hl),e
+            case 0x74 -> ram.writeByte(getHL(), reg_H); // ld (hl),h
+            case 0x75 -> ram.writeByte(getHL(), reg_L); // ld (hl),l
+            // HALT
             case 0x76 -> {
                 decPC(); // execute it forever !
                 halt = true;
             }
-            case 0x77 -> ram.writeByte(getHL(), reg_A);
-            // ld (hl),a
+            case 0x77 -> ram.writeByte(getHL(), reg_A); // ld (hl),a
             // LD A,*
-            case 0x78 -> reg_A = reg_B;
-            // ld a,b
-            case 0x79 -> reg_A = reg_C;
-            // ld a,c
-            case 0x7A -> reg_A = reg_D;
-            // ld a,d
-            case 0x7B -> reg_A = reg_E;
-            // ld a,e
-            case 0x7C -> reg_A = reg_H;
-            // ld a,h
-            case 0x7D -> reg_A = reg_L;
-            // ld a,l
-            case 0x7E -> reg_A = ram.readByte(getHL());
-            // ld a,(hl)
-            case 0x7F -> {
-            }  /* reg_A = reg_A; */
-            // ld a,a
+            case 0x78 -> reg_A = reg_B; // ld a,b
+            case 0x79 -> reg_A = reg_C; // ld a,c
+            case 0x7A -> reg_A = reg_D; // ld a,d
+            case 0x7B -> reg_A = reg_E; // ld a,e
+            case 0x7C -> reg_A = reg_H; // ld a,h
+            case 0x7D -> reg_A = reg_L; // ld a,l
+            case 0x7E -> reg_A = ram.readByte(getHL()); // ld a,(hl)
+            case 0x7F -> {}  /* reg_A = reg_A; */ // ld a,a
             // add
             case 0x80 -> ALU8BitAdd(reg_B);
             case 0x81 -> ALU8BitAdd(reg_C);
