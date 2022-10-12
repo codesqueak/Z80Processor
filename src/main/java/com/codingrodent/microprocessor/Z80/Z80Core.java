@@ -2843,11 +2843,13 @@ public class Z80Core implements ICPUData {
      */
     private void DI() {
         IFF1 = false;
+        IFF2 = false; // load both
         EIDIFlag = true;
     }
 
     private void EI() {
         IFF1 = true;
+        IFF2 = true; // load both
         EIDIFlag = true;
     }
 
