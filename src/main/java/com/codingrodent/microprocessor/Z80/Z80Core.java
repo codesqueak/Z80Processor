@@ -218,9 +218,7 @@ public class Z80Core implements ICPUData {
         // NMI check first
         if (NMI_FF) {
             // can't interrupt straight after an EI or DI
-            if (EIDIFlag) {
-                EIDIFlag = false;
-            } else {
+            if (! EIDIFlag) {
                 NMI_FF = false; // interrupt accepted
                 IFF2 = IFF1; // store IFF state
                 dec2SP();
@@ -234,6 +232,7 @@ public class Z80Core implements ICPUData {
         halt = false;
         instruction = ram.readByte(reg_PC);
         incPC();
+        EIDIFlag = false; // clear prior to decoding next instruction
         decodeOneByteInstruction(instruction);
     }
 
@@ -2853,11 +2852,13 @@ public class Z80Core implements ICPUData {
      */
     private void DI() {
         IFF1 = false;
+        IFF2 = false; // load both
         EIDIFlag = true;
     }
 
     private void EI() {
         IFF1 = true;
+        IFF2 = true; // load both
         EIDIFlag = true;
     }
 
