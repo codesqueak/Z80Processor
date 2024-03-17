@@ -47,7 +47,9 @@ jar {
     manifest
             {
                 attributes 'Implementation-Title': projectName,
-                        'Implementation-Version': version
+                        'Implementation-Version': version,
+                        'Automatic-Module-Name': 'Z80Processor'
+
             }
 }
 
