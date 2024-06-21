@@ -26,15 +26,12 @@ public class SyncIoQueue implements IoQueue {
 
     @Override
     public void readByte(int address, Consumer<Integer> callback) {
-        int b = memory.readByte(address);
-        callback.accept(b);
-
+        callback.accept(memory.readByte(address));
     }
 
     @Override
     public void readWord(int address, Consumer<Integer> callback) {
-        int word = memory.readWord(address);
-        callback.accept(word);
+        callback.accept(memory.readWord(address));
     }
 
     @Override
