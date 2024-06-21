@@ -101,7 +101,7 @@ spotbugs {
     effort = 'max'
 }
 
-/*publishing {
+publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
@@ -135,7 +135,7 @@ spotbugs {
         }
     }
 }
-
+/*
 signing {
     sign(publishing.publications["mavenJava"])
 }*/
