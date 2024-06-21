@@ -5,6 +5,7 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
+        maven { url 'https://jitpack.io' }
     }
     dependencies {
         //Check for the latest version here: http://plugins.gradle.org/plugin/com.jfrog.artifactory
@@ -65,6 +66,7 @@ artifacts {
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 jacoco {
