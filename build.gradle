@@ -19,7 +19,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'jacoco'
-    id 'signing'
+//    id 'signing'
 }
 
 apply plugin: 'com.jfrog.artifactory'
@@ -101,7 +101,7 @@ spotbugs {
     effort = 'max'
 }
 
-publishing {
+/*publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
@@ -138,7 +138,7 @@ publishing {
 
 signing {
     sign(publishing.publications["mavenJava"])
-}
+}*/
 
 
 artifactory {
