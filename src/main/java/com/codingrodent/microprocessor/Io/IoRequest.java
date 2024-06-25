@@ -1,13 +1,11 @@
 package com.codingrodent.microprocessor.Io;
 
-import java.util.function.Consumer;
-
 public class IoRequest {
     public final int address;
     public final boolean isMemory;
     public boolean isWrite;
     public int payload;
-    public Consumer<Integer> callback;
+    public Callback callback;
 
     //Write request
     public IoRequest(int address, int payload, boolean isMemory) {
@@ -18,7 +16,7 @@ public class IoRequest {
     }
 
     //Read request
-    public IoRequest(int address, boolean isMemory, Consumer<Integer> callback) {
+    public IoRequest(int address, boolean isMemory, Callback callback) {
         this.address = address;
         this.isMemory = isMemory;
         this.callback = callback;

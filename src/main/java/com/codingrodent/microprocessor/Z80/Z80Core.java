@@ -18,6 +18,7 @@ import com.codingrodent.microprocessor.IBaseDevice;
 import com.codingrodent.microprocessor.ICPU;
 import com.codingrodent.microprocessor.ICPUData;
 import com.codingrodent.microprocessor.IMemory;
+import com.codingrodent.microprocessor.Io.Callback;
 import com.codingrodent.microprocessor.Io.IoQueue;
 import com.codingrodent.microprocessor.Io.SyncIoQueue;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -3466,7 +3467,7 @@ public class Z80Core implements ICPU, ICPUData {
     /*
      * Support for 8 bit index register manipulation (IX as IXH IXL)
      */
-    private void getIndexAddressUndocumented(int reg, Consumer<Integer> consumer) {
+    private void getIndexAddressUndocumented(int reg, Callback consumer) {
         int reg_index = getIndexReg();
         switch (reg) {
             case 4 -> consumer.accept((reg_index & msb) >> 8); // IXH
@@ -3499,7 +3500,7 @@ public class Z80Core implements ICPU, ICPUData {
     /*
      * return an 8 bit register based on its code 000 -> 111
      */
-    private void get8BitRegisterIndexed(int reg, Consumer<Integer> consumer) {
+    private void get8BitRegisterIndexed(int reg, Callback consumer) {
         switch (reg) {
             case 4 -> consumer.accept(reg_H); // H
             case 5 -> consumer.accept(reg_L); // L
