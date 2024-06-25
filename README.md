@@ -1,7 +1,7 @@
-![CodeQL](https://github.com/codesqueak/Z80Processor/workflows/CodeQL/badge.svg)
-[![Java CI with Gradle](https://github.com/codesqueak/Z80Processor/actions/workflows/gradle.yml/badge.svg)](https://github.com/codesqueak/Z80Processor/actions/workflows/gradle.yml)
-[![License: MIT](https://img.shields.io/badge/license-Apache_2.0-brightgreen.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.codingrodent.microprocessor/Z80Processor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.codingrodent.microprocessor/Z80Processor)
+Fork with Async IO implementation.
+It's possible now complete IO request later in same thread.
+[![](https://jitpack.io/v/kopavel/Z80Processor.svg)](https://jitpack.io/#kopavel/Z80Processor)
+
 
 # Z80 Processor in Java
 
