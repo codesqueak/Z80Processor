@@ -20,7 +20,18 @@ To see your key, `use gpg -k`
 
 example: 
 
-jar -cvf bundle.jar   Z80Processor-4.1.0-javadoc.jar Z80Processor-4.1.0-javadoc.jar.asc Z80Processor-4.1.0-sources.jar Z80Processor-4.1.0-sources.jar.asc Z80Processor-4.1.0.jar Z80Processor-4.1.0.jar.asc Z80Processor-4.1.0.module Z80Processor-4.1.0.module.asc Z80Processor-4.1.0.pom Z80Processor-4.1.0.pom.asc
+sign your files first
+
+`gpg -ab Z80Processor-5.0.0.jar`  
+`gpg -ab Z80Processor-5.0.0-javadoc.jar`  
+`gpg -ab Z80Processor-5.0.0.module`  
+`gpg -ab Z80Processor-5.0.0.pom`  
+`gpg -ab Z80Processor-5.0.0-sources.jar`  
+
+
+then bundle
+
+jar -cvf bundle.jar   Z80Processor-5.0.0-javadoc.jar Z80Processor-5.0.0-javadoc.jar.asc Z80Processor-5.0.0-sources.jar Z80Processor-5.0.0-sources.jar.asc Z80Processor-5.0.0.jar Z80Processor-5.0.0.jar.asc Z80Processor-5.0.0.module Z80Processor-5.0.0.module.asc Z80Processor-5.0.0.pom Z80Processor-5.0.0.pom.asc
 
 # Manual Publish Bundle
 

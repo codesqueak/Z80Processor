@@ -1,5 +1,3 @@
-![CodeQL](https://github.com/codesqueak/Z80Processor/workflows/CodeQL/badge.svg)
-[![Java CI with Gradle](https://github.com/codesqueak/Z80Processor/actions/workflows/gradle.yml/badge.svg)](https://github.com/codesqueak/Z80Processor/actions/workflows/gradle.yml)
 [![License: MIT](https://img.shields.io/badge/license-Apache_2.0-brightgreen.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.codingrodent.microprocessor/Z80Processor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.codingrodent.microprocessor/Z80Processor)
 
@@ -30,7 +28,7 @@ The build may take a few minutes as it includes a comprehensive test suite for t
 
 ## Java Version
 
-Version 4.0.0 onwards of the emulator require Java 17 or above
+Version 5.0.0 onwards of the emulator require Java 25 or above
 
 ### Include Using Maven
 
@@ -39,7 +37,7 @@ Version 4.0.0 onwards of the emulator require Java 17 or above
 <dependency>
     <groupId>com.codingrodent.microprocessor</groupId>
     <artifactId>Z80Processor</artifactId>
-    <version>4.2.0</version>
+    <version>5.0.0</version>
 </dependency>
 ```
 
@@ -47,7 +45,7 @@ Version 4.0.0 onwards of the emulator require Java 17 or above
 
 ```
 // https://mvnrepository.com/artifact/com.codingrodent.microprocessor/Z80Processor
-compile group: 'com.codingrodent.microprocessor', name: 'Z80Processor', version: '4.2.0'
+compile group: 'com.codingrodent.microprocessor', name: 'Z80Processor', version: '5.0.0'
 ```
 
 ## Undocumented instruction

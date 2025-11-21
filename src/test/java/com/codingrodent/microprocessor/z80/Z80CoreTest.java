@@ -12,12 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.z80;
 
-import com.codingrodent.microprocessor.support.*;
-import org.junit.jupiter.api.*;
+import com.codingrodent.microprocessor.support.Z80IO;
+import com.codingrodent.microprocessor.support.Z80Memory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class Z80CoreTest {
     private Z80Core z80;
@@ -28,10 +31,6 @@ public class Z80CoreTest {
         z80Memory = new Z80Memory("NAS_Test.nas");
         z80 = new Z80Core(z80Memory, new Z80IO());
         z80.reset();
-    }
-
-    @AfterEach
-    public void tearDown() {
     }
 
     /**
@@ -500,31 +499,26 @@ public class Z80CoreTest {
         run(0xC000);
         assertEquals(0x0008, z80.getProgramCounter());
         //
-        addr = 0xC000;
         z80.reset();
         z80Memory.writeByte(addr, 0xD7); // RST 10
         run(0xC000);
         assertEquals(0x0010, z80.getProgramCounter());
         //
-        addr = 0xC000;
         z80.reset();
         z80Memory.writeByte(addr, 0xDF); // RST 18
         run(0xC000);
         assertEquals(0x0018, z80.getProgramCounter());
         //
-        addr = 0xC000;
         z80.reset();
         z80Memory.writeByte(addr, 0xE7); // RST 20
         run(0xC000);
         assertEquals(0x0020, z80.getProgramCounter());
         //
-        addr = 0xC000;
         z80.reset();
         z80Memory.writeByte(addr, 0xEF); // RST 28
         run(0xC000);
         assertEquals(0x0028, z80.getProgramCounter());
         //
-        addr = 0xC000;
         z80.reset();
         z80Memory.writeByte(addr++, 0xF7); // RST 30
         z80Memory.writeByte(addr, 0x76); // HALT
@@ -563,11 +557,11 @@ public class Z80CoreTest {
         assertEquals(0x00, z80.getRegisterValue(CPUConstants.RegisterNames.I));
         assertEquals(0x00, z80.getRegisterValue(CPUConstants.RegisterNames.R));
         //
-        assertEquals(z80.getMajorVersion(), "4");
-        assertEquals(z80.getMinorVersion(), "0");
-        assertEquals(z80.getPatchVersion(), "0");
-        assertEquals(z80.getName(), "Z80A_NMOS");
-        assertEquals(z80.toString(), "Z80A_NMOS Revision 4.0.0");
+        assertEquals("5", z80.getMajorVersion());
+        assertEquals("0", z80.getMinorVersion());
+        assertEquals("0", z80.getPatchVersion());
+        assertEquals("Z80A_NMOS", z80.getName());
+        assertEquals("Z80A_NMOS Revision 5.0.0", z80.toString());
     }
 
     private void run(int address) { //

@@ -12,28 +12,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.z80;
 
-import com.codingrodent.microprocessor.support.*;
-import org.junit.jupiter.api.*;
+import com.codingrodent.microprocessor.support.Z80IO;
+import com.codingrodent.microprocessor.support.Z80Memory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class Z80NasTest {
     private Z80Core z80;
-    private Z80Memory z80Memory;
     private int a = 0;
 
     @BeforeEach
     public void setUp() {
-        z80Memory = new Z80Memory("NAS_Test.nas");
+        Z80Memory z80Memory = new Z80Memory("NAS_Test.nas");
         z80 = new Z80Core(z80Memory, new Z80IO());
         z80.reset();
-    }
-
-    @AfterEach
-    public void tearDown() {
     }
 
     /**
@@ -43,18 +41,17 @@ public class Z80NasTest {
     @Test
     public final void testCore() {
         // Initial setup
-        assertEquals(z80.getProgramCounter(), 0x0000);
+        assertEquals(0x0000, z80.getProgramCounter());
         z80.setResetAddress(0x1234);
         z80.reset();
-        assertEquals(z80.getProgramCounter(), 0x1234);
+        assertEquals(0x1234, z80.getProgramCounter());
         z80.setProgramCounter(0x1000);
-        assertEquals(z80.getProgramCounter(), 0x1000);
+        assertEquals(0x1000, z80.getProgramCounter());
         //
         // T states ?
         assertEquals(0, z80.getTStates());
         //
         // Ok, run the program
-//        int c = 0x2000;
         while (!z80.getHalt()) {
             try {
                 //       System.out.println(getRegs());
@@ -62,10 +59,7 @@ public class Z80NasTest {
                 z80.executeOneInstruction();
             } catch (Exception e) {
                 System.out.println("Hardware crash, oops! " + e.getMessage());
-                e.printStackTrace();
             }
-//            c--;
-//                if (c<0) break;
         }
         assertTrue(z80.getTStates() > 0);
         z80.resetTStates();

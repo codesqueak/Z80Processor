@@ -12,21 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.z80;
 
-import com.codingrodent.microprocessor.support.*;
+import com.codingrodent.microprocessor.support.Z80IO;
+import com.codingrodent.microprocessor.support.Z80Memory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class I8080CoreTest {
     private Z80Core z80;
-    private Z80Memory z80Memory;
 
     @BeforeEach
     public void setUp() {
-        z80Memory = new Z80Memory("8080EX1.nas");
+        var z80Memory = new Z80Memory("8080EX1.nas");
         z80 = new Z80Core(z80Memory, new Z80IO());
         z80.reset();
     }
@@ -34,11 +36,11 @@ public class I8080CoreTest {
     /**
      * Test core by running an initial i8080 test set
      */
-    //   @Test
-    public final void test8080Core() {
+    @Disabled
+    public void intel8080Core() {
         // Initial setup
         z80.setProgramCounter(0x0100);
-        assertEquals(z80.getProgramCounter(), 0x0100);
+        assertEquals(0x0100, z80.getProgramCounter());
         //
         // T states ?
         assertEquals(0, z80.getTStates());

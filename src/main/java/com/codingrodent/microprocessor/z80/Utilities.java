@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.z80;
 
 import java.util.HexFormat;
 
@@ -76,7 +76,7 @@ public class Utilities {
     /**
      * Generate a string representing the contents of the flag register
      *
-     * @param value Flag regsiter value, 0x00 .. 0XFF
+     * @param value Flag register value, 0x00 .. 0XFF
      * @return String representing the set flag values for each bit, or space(s) where not set
      */
     public static String getFlags(final int value) {

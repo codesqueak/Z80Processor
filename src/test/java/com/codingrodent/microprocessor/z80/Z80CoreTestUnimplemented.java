@@ -12,24 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.z80;
 
-import com.codingrodent.microprocessor.support.*;
-import org.junit.jupiter.api.*;
+import com.codingrodent.microprocessor.support.Z80IO;
+import com.codingrodent.microprocessor.support.Z80Memory;
+import org.junit.jupiter.api.BeforeEach;
 
 public class Z80CoreTestUnimplemented {
     private Z80Core z80;
-    private Z80Memory z80Memory;
 
     @BeforeEach
     public void setUp() {
-        z80Memory = new Z80Memory("NAS_Test.nas");
+        var z80Memory = new Z80Memory("NAS_Test.nas");
         z80 = new Z80Core(z80Memory, new Z80IO());
         z80.reset();
-    }
-
-    @AfterEach
-    public void tearDown() {
     }
 
     private void run(int address) { //

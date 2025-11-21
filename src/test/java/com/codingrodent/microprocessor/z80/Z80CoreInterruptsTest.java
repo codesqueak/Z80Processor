@@ -12,15 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.z80;
 
-import com.codingrodent.microprocessor.Z80.CPUConstants.RegisterNames;
-import com.codingrodent.microprocessor.support.*;
-import org.junit.jupiter.api.*;
+import com.codingrodent.microprocessor.support.Z80IO;
+import com.codingrodent.microprocessor.support.Z80Memory;
+import com.codingrodent.microprocessor.z80.CPUConstants.RegisterNames;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class Z80CoreTestInterrupts {
+public class Z80CoreInterruptsTest {
     private Z80Core z80;
     private Z80Memory z80Memory;
 
@@ -29,10 +31,6 @@ public class Z80CoreTestInterrupts {
         z80Memory = new Z80Memory("NAS_Test.nas");
         z80 = new Z80Core(z80Memory, new Z80IO());
         z80.reset();
-    }
-
-    @AfterEach
-    public void tearDown() {
     }
 
     /**
@@ -159,7 +157,7 @@ public class Z80CoreTestInterrupts {
         // Now Same Tests for EI
 
         addr = 0xC000;
-        z80Memory.writeByte(addr++, 0xFB); // EI
+        z80Memory.writeByte(addr, 0xFB); // EI
 
         // executing (with EI) with NMI after EI instruction
         testNMI(0xC000, 1);
