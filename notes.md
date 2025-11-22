@@ -16,6 +16,21 @@ The following field are required in the gradle.properties
 
 To see your key, `use gpg -k`
 
+You will; need to generate a key ring
+
+`gpg --export-secret-keys >~/.gnupg/secring.gpg`
+
+You will also need the short form of the key id
+
+`gpg --list-keys --keyid-format short`
+
+
+`signing.password=`   
+`signing.secretKeyRingFile=/home/wherever/.gnupg/secring.gpg`   
+`signing.keyId=<short form>>`
+`
+
+
 ## Make a bundle
 
 example: 
@@ -28,10 +43,12 @@ sign your files first
 `gpg -ab Z80Processor-5.0.0.pom`  
 `gpg -ab Z80Processor-5.0.0-sources.jar`  
 
+Then generate Invalid sha1 and md5 files for each
 
-then bundle
+then zip
 
-jar -cvf bundle.jar   Z80Processor-5.0.0-javadoc.jar Z80Processor-5.0.0-javadoc.jar.asc Z80Processor-5.0.0-sources.jar Z80Processor-5.0.0-sources.jar.asc Z80Processor-5.0.0.jar Z80Processor-5.0.0.jar.asc Z80Processor-5.0.0.module Z80Processor-5.0.0.module.asc Z80Processor-5.0.0.pom Z80Processor-5.0.0.pom.asc
+The files should be in the sub-directory com/codingrodent/microprocessor/Z80Processor/5.0.0/
+
 
 # Manual Publish Bundle
 

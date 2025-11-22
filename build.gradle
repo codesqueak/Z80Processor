@@ -28,8 +28,8 @@ plugins {
     id 'maven-publish'
     id 'jacoco'
     id "com.jfrog.artifactory" version "6.+"
+    id 'signing'
 }
-
 
 // set the java version
 java {
@@ -125,6 +125,7 @@ artifactory {
     }
 }
 
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -158,6 +159,10 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    sign(publishing.publications["mavenJava"])
 }
 
 // check.dependsOn jacocoTestReport
