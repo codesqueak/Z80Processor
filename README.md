@@ -5,7 +5,7 @@
 
 # Z80 Processor in Java
 
-Z80Processor is a an implementation of the Mostek / Zilog Z80 processor in Java
+Z80Processor is an implementation of the Mostek / Zilog Z80 processor in Java
 
 The code is not designed to be nice / clean / compact - however it is designed to be fast and easily checkable with every instruction 
 on its own switch / case statement. 
