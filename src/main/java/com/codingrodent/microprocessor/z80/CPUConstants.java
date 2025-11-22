@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.z80;
 
 /**
  * Various constant data structures and types to support the CPU

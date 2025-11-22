@@ -14,8 +14,9 @@
  */
 package com.codingrodent.microprocessor.performance;
 
-import com.codingrodent.microprocessor.Z80.Z80Core;
-import com.codingrodent.microprocessor.support.*;
+import com.codingrodent.microprocessor.support.Z80IOEcho;
+import com.codingrodent.microprocessor.support.Z80Memory;
+import com.codingrodent.microprocessor.z80.Z80Core;
 
 class TimedExecution {
 
@@ -24,7 +25,7 @@ class TimedExecution {
     /**
      * Very basic timing loop to check on throughput
      */
-    public static void main(String[] args) {
+    static void main(String[] args) {
         {
             {
                 {
@@ -33,12 +34,12 @@ class TimedExecution {
                 }
             }
         }
-        TimedExecution timedExecution = new TimedExecution();
+        var timedExecution = new TimedExecution();
         var average = 0;
         var cycles = 25;
         for (int i = 0; i < cycles; i++) {
             timedExecution.init();
-            var mhz = (int) timedExecution.run(0x1000);
+            var mhz = (int) timedExecution.run();
             average = average + mhz;
             System.out.println("MHz: " + mhz);
         }
@@ -56,12 +57,11 @@ class TimedExecution {
     /**
      * Run through op-code test program
      *
-     * @param address Loaded address
      * @return Rough speed in MHz
      */
-    private float run(final int address) {
+    private float run() {
         long t = System.currentTimeMillis();
-        z80.setProgramCounter(address);
+        z80.setProgramCounter(0x1000);
         while (!z80.getHalt()) {
             try {
                 z80.executeOneInstruction();

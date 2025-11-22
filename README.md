@@ -30,7 +30,7 @@ The build may take a few minutes as it includes a comprehensive test suite for t
 
 ## Java Version
 
-Version 4.0.0 onwards of the emulator require Java 17 or above
+Version 5.0.0 onwards of the emulator require Java 25 or above
 
 ### Include Using Maven
 
@@ -39,7 +39,7 @@ Version 4.0.0 onwards of the emulator require Java 17 or above
 <dependency>
     <groupId>com.codingrodent.microprocessor</groupId>
     <artifactId>Z80Processor</artifactId>
-    <version>4.2.0</version>
+    <version>5.0.0</version>
 </dependency>
 ```
 
@@ -47,7 +47,7 @@ Version 4.0.0 onwards of the emulator require Java 17 or above
 
 ```
 // https://mvnrepository.com/artifact/com.codingrodent.microprocessor/Z80Processor
-compile group: 'com.codingrodent.microprocessor', name: 'Z80Processor', version: '4.2.0'
+compile group: 'com.codingrodent.microprocessor', name: 'Z80Processor', version: '5.0.0'
 ```
 
 ## Undocumented instruction

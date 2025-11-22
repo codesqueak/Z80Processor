@@ -12,15 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.z80;
 
-import com.codingrodent.microprocessor.support.*;
-import org.junit.jupiter.api.*;
+import com.codingrodent.microprocessor.support.Z80IO;
+import com.codingrodent.microprocessor.support.Z80Memory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class Z80CoreTestDDFD {
+public class Z80CoreDDFDTest {
+    private final static int BASE = 0xC000;
     private Z80Core z80;
     private Z80Memory z80Memory;
 
@@ -31,16 +34,12 @@ public class Z80CoreTestDDFD {
         z80.reset();
     }
 
-    @AfterEach
-    public void tearDown() {
-    }
-
     /**
      * Verify instructions not covered in the main test program [DD prefix set]
      */
     @Test
     public final void testDD() {
-        int addr = 0xC000;
+        int addr = BASE;
         // JP (IX)
         z80Memory.writeByte(addr++, 0xDD); // LD IX
         z80Memory.writeByte(addr++, 0x21); //
@@ -55,11 +54,11 @@ public class Z80CoreTestDDFD {
         z80Memory.writeByte(addr++, 0x34); //
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
-        run(0xC000);
+        run();
         assertEquals(0x34, z80.getRegisterValue(CPUConstants.RegisterNames.A));
         //
         // LD SP,IX
-        addr = 0xC000;
+        addr = BASE;
         z80Memory.writeByte(addr++, 0xDD); // LD IX
         z80Memory.writeByte(addr++, 0x21); //
         z80Memory.writeByte(addr++, 0x34); //
@@ -68,11 +67,11 @@ public class Z80CoreTestDDFD {
         z80Memory.writeByte(addr++, 0xF9); //
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
-        run(0xC000);
+        run();
         assertEquals(0x1234, z80.getRegisterValue(CPUConstants.RegisterNames.SP));
         //
         // EX (SP),IX
-        addr = 0xC000;
+        addr = BASE;
         z80Memory.writeByte(addr++, 0x31); // LD SP
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0x10); //
@@ -89,7 +88,7 @@ public class Z80CoreTestDDFD {
         z80Memory.writeByte(addr, 0x76); // HALT
         //
         z80.reset();
-        run(0xC000);
+        run();
         assertEquals(0x5678, z80.getRegisterValue(CPUConstants.RegisterNames.IX));
     }
 
@@ -105,14 +104,14 @@ public class Z80CoreTestDDFD {
      * <p>
      * Test Program: #DD #CB nn #00 RLC (IX+nn)
      * <p>
-     * Docs (e.g. http://www.z80.info/z80undoc.htm) : #DD #CB nn #00 RLC (IX+nn) & LD B,(IX+nn)
+     * Docs (e.g. <a href="http://www.z80.info/z80undoc.htm">...</a>) : #DD #CB nn #00 RLC (IX+nn) & LD B,(IX+nn)
      * <p>
      * The issue is if the parallel load actually happens (e.g. LD B,(IX+nn)). The test program is derived from a real
      * chip so going with that for now. May change !!!
      */
     @Test
     public final void testDDCB() {
-        int addr = 0xC000;
+        int addr = BASE;
         //
         for (int opcode = 0; opcode <= 0xFF; opcode++) {
             z80Memory.writeByte(addr++, 0xDD); // DD FD
@@ -122,12 +121,12 @@ public class Z80CoreTestDDFD {
         }
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
-        run(0xC000);
+        run();
     }
 
-    private void run(int address) { //
+    private void run() { //
         // Ok, run the program
-        z80.setProgramCounter(address);
+        z80.setProgramCounter(BASE);
         while (!z80.getHalt()) {
             try {
                 // System.out.println(utilities.getWord(z80.getRegisterValue(RegisterNames.PC)));

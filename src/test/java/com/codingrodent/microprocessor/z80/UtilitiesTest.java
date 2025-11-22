@@ -1,4 +1,4 @@
-package com.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.z80;
 
 import org.junit.jupiter.api.Test;
 

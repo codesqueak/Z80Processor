@@ -12,16 +12,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingrodent.microprocessor.Z80;
+package com.codingrodent.microprocessor.z80;
 
-import com.codingrodent.microprocessor.Z80.CPUConstants.RegisterNames;
-import com.codingrodent.microprocessor.support.*;
-import org.junit.jupiter.api.*;
+import com.codingrodent.microprocessor.support.Z80IO;
+import com.codingrodent.microprocessor.support.Z80Memory;
+import com.codingrodent.microprocessor.z80.CPUConstants.RegisterNames;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class Z80CoreTestCB {
+public class Z80CoreCBTest {
+    private final static int BASE = 0xC000;
     private Z80Core z80;
     private Z80Memory z80Memory;
 
@@ -32,16 +35,12 @@ public class Z80CoreTestCB {
         z80.reset();
     }
 
-    @AfterEach
-    public void tearDown() {
-    }
-
     /**
      * Verify instructions not covered in the main test program [CB prefix set]
      */
     @Test
     public final void testCB() {
-        int addr = 0xC000;
+        int addr = BASE;
         // RLC B
         z80Memory.writeByte(addr++, 0x06); // LD B
         z80Memory.writeByte(addr++, 0x00); //
@@ -49,93 +48,92 @@ public class Z80CoreTestCB {
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
-        run(0xC000);
+        run();
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
         //
         // RRC B
-        addr = 0xC000;
+        addr = BASE;
         z80Memory.writeByte(addr++, 0x06); // LD B
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // RRC B
         z80Memory.writeByte(addr++, 0x08); //
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
-        run(0xC000);
+        run();
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
         //
         // RL B
-        addr = 0xC000;
+        addr = BASE;
         z80Memory.writeByte(addr++, 0x06); // LD B
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // RL B
         z80Memory.writeByte(addr++, 0x10); //
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
-        run(0xC000);
+        run();
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
         //
         // RR B
-        addr = 0xC000;
+        addr = BASE;
         z80Memory.writeByte(addr++, 0x06); // LD B
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // RR B
         z80Memory.writeByte(addr++, 0x18); //
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
-        run(0xC000);
+        run();
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
         //
         // SLA B
-        addr = 0xC000;
+        addr = BASE;
         z80Memory.writeByte(addr++, 0x06); // LD B
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // SLA B
         z80Memory.writeByte(addr++, 0x20); //
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
-        run(0xC000);
+        run();
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
         //
         // SRA B
-        addr = 0xC000;
+        addr = BASE;
         z80Memory.writeByte(addr++, 0x06); // LD B
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // SRA B
         z80Memory.writeByte(addr++, 0x28); //
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
-        run(0xC000);
+        run();
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
         //
         // SLL B
-        addr = 0xC000;
+        addr = BASE;
         z80Memory.writeByte(addr++, 0x06); // LD B
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // SLL B
         z80Memory.writeByte(addr++, 0x30); //
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
-        run(0xC000);
+        run();
         assertEquals(0x0100, z80.getRegisterValue(RegisterNames.BC));
         //
         // SRL B
-        addr = 0xC000;
+        addr = BASE;
         z80Memory.writeByte(addr++, 0x06); // LD B
         z80Memory.writeByte(addr++, 0x00); //
         z80Memory.writeByte(addr++, 0xCB); // SRL B
         z80Memory.writeByte(addr++, 0x38); //
         z80Memory.writeByte(addr, 0x76); // HALT
         z80.reset();
-        run(0xC000);
+        run();
         assertEquals(0x0000, z80.getRegisterValue(RegisterNames.BC));
     }
 
-    private void run(int address) { //
+    private void run() { //
         // Ok, run the program
-        z80.setProgramCounter(address);
+        z80.setProgramCounter(BASE);
         while (!z80.getHalt()) {
             try {
-                // System.out.println(utilities.getWord(z80.getRegisterValue(RegisterNames.PC)));
                 z80.executeOneInstruction();
             } catch (Exception e) {
                 System.out.println("Hardware crash, oops! " + e.getMessage());
